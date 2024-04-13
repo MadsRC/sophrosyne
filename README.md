@@ -1,4 +1,21 @@
-# sophrosyne
+# Sophrosyne
+
+Sophrosyne is a horizontally scaleable content moderation API built for the
+age of Generative AI.
+
+The API allows you to register upstream modules to perform artibrary checks
+on input data and return a `go`/`no-go` verdict. Checks are associated with
+profiles, allowing several checks to be run on a piece of input data.
+
+The application provides the API, but does not include any checks. Checks
+are expected to be implemented as self-contained services communicating with
+sophrosyne via gRPC. Reference implementations and documentation for how these
+services should function will be provided.
+
+## Stability
+
+This project follows semantic versioning, and will introduce breaking changes
+several times before reaching version 1.0.0.
 
 ## Todo
 
