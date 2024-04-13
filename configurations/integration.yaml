@@ -1,0 +1,8 @@
+security:
+  site_key: 'lecGtZB0czpTHnCAKAbK3biwvDb+uFUZZ6yQL4CAb3lC8RpokUfAr0cBp8CNzYXLHOl+8paSnJDifq4F7Rx70A=='
+  salt: 'BtNgvcpdVBxV7OQ9hIm4XJGOru0k7GonkIJKBcjQoNY='
+  key_path: 'build/server.key'
+  certificate_path: 'build/server.crt'
+  outgoing_tls_ca_path: 'build/server.crt'
+database:
+  host: 'db'

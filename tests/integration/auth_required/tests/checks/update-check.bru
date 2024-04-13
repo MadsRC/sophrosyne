@@ -1,0 +1,21 @@
+meta {
+  name: update-check
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{scheme}}{{host}}:{{port}}/v1/checks/update-check
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+assert {
+  res.status: eq 403
+  res.body: isDefined
+  res.body.detail: Not authenticated
+}

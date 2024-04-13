@@ -1,0 +1,26 @@
+meta {
+  name: delete-user
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{scheme}}{{host}}:{{port}}/v1/users/delete-user
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name":"inactiveUser01"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.ok: eq true
+}

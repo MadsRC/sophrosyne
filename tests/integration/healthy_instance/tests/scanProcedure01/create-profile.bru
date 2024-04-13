@@ -1,0 +1,30 @@
+meta {
+  name: create-profile
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{scheme}}{{host}}:{{port}}/v1/profiles/create-profile
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name":"scanProcedure01",
+    "checks":["local:dummy:scanProcedure01"]
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.name: eq scanProcedure01
+  res.body.checks: length 1
+  res.body.checks[0]: eq local:dummy:scanProcedure01
+  res.body.created_at: isDefined
+}

@@ -1,0 +1,103 @@
+[tool.poetry]
+name = "sophrosyne"
+version = "0.1.0"
+description = ""
+authors = ["Mads R. Havmand <mads@v42.dk>"]
+readme = "README.md"
+packages = [
+    { include = "sophrosyne", from = "src" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.110.0"
+pydantic = {extras = ["email"], version = "^2.6.4"}
+pydantic-settings = {extras = ["yaml"], version = "^2.2.1"}
+sqlmodel = "^0.0.16"
+click = "^8.1.7"
+h11 = "^0.14.0"
+grpcio = "^1.62.1"
+protobuf = "<5.0dev"
+uvicorn = "^0.29.0"
+asyncpg = "^0.29.0"
+greenlet = "^3.0.3"
+alembic = "^1.13.1"
+cryptography = "^42.0.5"
+requests = "^2.31.0"
+structlog = "^24.1.0"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.0.0"
+coverage = "^7.2.7"
+toml-cli = "^0.6.0"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+pydoc-markdown = "^4.8.2"
+ruff = "^0.3.4"
+mypy = "^1.9.0"
+grpcio-tools = "^1.62.1"
+grpc-stubs = "^1.53.0.5"
+types-protobuf = "^4.24.0.20240311"
+types-requests = "^2.31.0.20240406"
+better-exceptions = "^0.3.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = [ "src" ]
+testpaths = [
+    "tests",
+]
+
+[tool.coverage.run]
+branch = true
+data_file = "reports/.coverage"
+source = [ "src" ]
+
+[tool.coverage.xml]
+output = "reports/coverage.xml"
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.coverage.html]
+directory = "reports/htmlcov"
+
+[[tool.pydoc-markdown.loaders]]
+type = "python"
+search_path = [ "src" ]
+packages = [ "sophrosyne" ]
+
+[tool.pydoc-markdown.renderer]
+type = "markdown"
+filename = "docs/api.md"
+
+[tool.ruff.lint]
+# Enable all `pydocstyle` rules, limiting to those that adhere to the
+# Google convention via `convention = "google"`, below.
+select = ["D", "I"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.extend-per-file-ignores]
+# Do not lint test files for pydocstyle
+"tests/*" = ["D"]
+
+[tool.mypy]
+packages = [
+    "sophrosyne",
+    "tests"
+]
+# https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
+mypy_path = "src,tests"
+namespace_packages = true
+explicit_package_bases = true

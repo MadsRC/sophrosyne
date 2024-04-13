@@ -1,0 +1,30 @@
+meta {
+  name: list-users
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{scheme}}{{host}}:{{port}}/v1/users/list-users
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{user_token}}
+}
+
+assert {
+  res.status: eq 403
+  res.body.detail: eq Not authenticated
+}
+
+tests {
+  test("should have used token from previous call", function() {
+    expect(req.getHeader("Authorization")).to.equal("Bearer "+bru.getEnvVar("user_token"));
+  })
+}

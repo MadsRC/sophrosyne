@@ -1,0 +1,21 @@
+meta {
+  name: list-checks
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{scheme}}{{host}}:{{port}}/v1/checks/list-checks
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+assert {
+  res.status: eq 403
+  res.body: isDefined
+  res.body.detail: Not authenticated
+}

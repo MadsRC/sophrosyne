@@ -1,0 +1,20 @@
+{
+  "version": "1",
+  "name": "sophrosyne",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "migrations",
+    "src",
+    "tests/unit",
+    "build",
+    "dist",
+    "configurations"
+  ]
+}

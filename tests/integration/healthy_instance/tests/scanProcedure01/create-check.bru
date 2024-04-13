@@ -1,0 +1,39 @@
+meta {
+  name: create-check
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{scheme}}{{host}}:{{port}}/v1/checks/create-check
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name":"local:dummy:scanProcedure01",
+    "upstream_services": ["127.0.0.1:50051"],
+    "supported_types": ["text"],
+    "config": {
+      "result": true
+    }
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.name: eq local:dummy:scanProcedure01
+  res.body.upstream_services: length 1
+  res.body.upstream_services[0]: eq 127.0.0.1:50051
+  res.body.config: isDefined
+  res.body.config.result: eq 1
+  res.body.profiles: isDefined
+  res.body.profiles: length 0
+  res.body.supported_types: length 1
+  res.body.supported_types[0]: eq text
+}

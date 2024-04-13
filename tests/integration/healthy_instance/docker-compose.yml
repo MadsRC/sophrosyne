@@ -1,0 +1,47 @@
+services:
+
+  tester:
+    image: bruno:latest
+    depends_on:
+      api:
+        condition: service_healthy
+    command: run --env integration --insecure --env-var root_token="${ROOT_TOKEN}" ./tests -r
+    volumes:
+      - ./tests:/app/tests:ro
+      - ./bruno.json:/app/bruno.json:ro
+      - ./environments:/app/environments:ro
+      - ./collection.bru:/app/collection.bru:ro
+
+  api:
+    image: sophrosyne:${VERSION}
+    ports:
+      - "8000:8000"
+    environment:
+      - SOPH_DEVELOPMENT__STATIC_ROOT_TOKEN=${ROOT_TOKEN}
+      - SOPH__CONFIG_YAML_FILE=/app/integration.yaml
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./config.yaml:/app/integration.yaml:ro
+      - ../../../build:/app/build:ro
+    healthcheck:
+      test: ["CMD", "python", "-m", "sophrosyne.main", "healthcheck"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  db:
+    image: postgres
+    restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: 128mb
+    ports:
+    - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

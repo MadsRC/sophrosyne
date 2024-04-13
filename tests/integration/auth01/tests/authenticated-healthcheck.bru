@@ -1,0 +1,26 @@
+meta {
+  name: authenticated-healthcheck
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{scheme}}{{host}}:{{port}}/health
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{root_token}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: pass
+  res.body.version: isDefined
+  res.body.checks: isDefined
+}

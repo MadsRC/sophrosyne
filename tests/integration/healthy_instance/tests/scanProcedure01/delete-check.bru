@@ -1,0 +1,26 @@
+meta {
+  name: delete-check
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{scheme}}{{host}}:{{port}}/v1/checks/delete-check
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name":"local:dummy:scanProcedure01"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.ok: eq true
+}

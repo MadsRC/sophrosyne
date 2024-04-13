@@ -1,0 +1,21 @@
+meta {
+  name: list-users
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{scheme}}{{host}}:{{port}}/v1/users/list-users
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+assert {
+  res.status: eq 403
+  res.body: isDefined
+  res.body.detail: Not authenticated
+}
