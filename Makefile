@@ -20,10 +20,6 @@ dist/sophrosyne-$(VERSION)-py3-none-any.whl: src/sophrosyne/* src/sophrosyne/grp
 	@mkdir -p $(@D)
 	poetry build --format=wheel
 
-dist/bruno.tar:
-	mkdir -p $(@D)
-	docker build -t bruno:latest -f bruno.dockerfile --no-cache --attest=type=provenance,mode=max --attest=type=sbom --platform=linux/arm64 --output type=oci,dest=- . > $@
-
 dist/sophrosyne.tar: dist/sophrosyne-$(VERSION)-py3-none-any.whl build/requirements.txt
 	mkdir -p $(@D)
 	docker build --build-arg="dist_file=sophrosyne-$(VERSION)-py3-none-any.whl" --secret id=requirements,src=build/requirements.txt --no-cache --tag sophrosyne:$(VERSION) --attest=type=provenance,mode=max --attest=type=sbom --platform=linux/arm64 --output type=oci,dest=- . > $@
@@ -60,26 +56,19 @@ build/.image_loaded_sentinel: dist/sophrosyne.tar
 	@printf "\n"
 	touch $@
 
-build/.bruno_image_loaded_sentinel: dist/bruno.tar
-	mkdir -p $(@D)
-	docker load --input dist/bruno.tar
-	@# For some reason the previous command doesn't include a newline in its output
-	@printf "\n"
-	touch $@
-
 build/integration/root_token:
 	mkdir -p $(@D)
 	openssl rand -hex 128 > $@
 
 
 .PHONY: test/integration
-test/integration: test/integration/healthy_instance test/integration/auth01
+test/integration: test/integration/healthy_instance test/integration/auth01 test/integration/auth_required
 
 .PHONY: test/integration/%
-test/integration/%: build/.certificate_sentinel build/.bruno_image_loaded_sentinel build/.image_loaded_sentinel build/integration/root_token
-	$(MAKE) destroy/test/integration/%
+test/integration/%: build/.certificate_sentinel build/.image_loaded_sentinel build/integration/root_token
+	$(MAKE) destroy/test/integration/$*
 	VERSION=$(VERSION) ROOT_TOKEN="$$(cat build/integration/root_token)" docker compose -f tests/integration/$*/docker-compose.yml up --exit-code-from tester
-	$(MAKE) destroy/test/integration/%
+	$(MAKE) destroy/test/integration/$*
 
 .PHONY: destroy/test/integration/%
 destroy/test/integration/%:
@@ -106,3 +95,7 @@ build/.certificate_sentinel:
 	chmod 0777 build/server.key
 	chmod 0777 build/server.crt
 	touch $@
+
+.PHONY:
+dev/install:
+	poetry install --with dev,test

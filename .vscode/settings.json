@@ -13,5 +13,9 @@
     "python.testing.pytestEnabled": true,
     "files.exclude": {
         "**/__pycache__": true
+    },
+    "sonarlint.connectedMode.project": {
+        "connectionId": "madsrc",
+        "projectKey": "MadsRC_sophrosyne"
     }
 }
