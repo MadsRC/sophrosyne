@@ -1,7 +1,7 @@
 services:
 
   tester:
-    image: bruno:latest
+    image: ghcr.io/madsrc/bru:latest
     depends_on:
       api:
         condition: service_healthy
