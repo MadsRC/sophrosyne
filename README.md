@@ -7,8 +7,8 @@
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=MadsRC_sophrosyne&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=MadsRC_sophrosyne)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/MadsRC/sophrosyne/badge)](https://securityscorecards.dev/viewer/?uri=github.com/MadsRC/sophrosyne)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/8804/badge)](https://www.bestpractices.dev/projects/8804)
-![build](https://github.com/ossf/scorecard/workflows/build/badge.svg?branch=main)
-![CodeQL](https://github.com/ossf/scorecard/workflows/CodeQL/badge.svg?branch=main)
+[![CodeQL](https://github.com/MadsRC/sophrosyne/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/MadsRC/sophrosyne/actions/workflows/github-code-scanning/codeql)
+[![Semgrep](https://github.com/MadsRC/sophrosyne/actions/workflows/semgrep.yml/badge.svg)](https://github.com/MadsRC/sophrosyne/actions/workflows/semgrep.yml)
 
 Sophrosyne is a horizontally scaleable content moderation API built for the
 age of Generative AI.
