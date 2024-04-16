@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.11.0
+      - run: pipx install poetry
       - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d #v 5.1.0
         with:
             cache: poetry
-      - run: pip install poetry
       - name: Run Snyk to check for vulnerabilities
         continue-on-error: true # To make sure that SARIF upload gets called
         uses: snyk/actions/python@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.40.0
