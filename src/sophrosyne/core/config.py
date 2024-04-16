@@ -103,20 +103,16 @@ Attributes:
 
 import logging
 import os
-import pathlib
 import sys
-from enum import Enum
 from functools import lru_cache
-from typing import Annotated, List, Literal, Optional, Tuple, Type, Union
+from typing import Annotated, List, Literal, Tuple, Type
 
 from pydantic import (
     AnyHttpUrl,
     Base64Bytes,
-    BaseModel,
     EmailStr,
     Field,
     computed_field,
-    validator,
 )
 from pydantic_settings import (
     BaseSettings,
@@ -243,6 +239,9 @@ class Development(BaseSettings):
     )
 
 
+_default_key = b"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+
+
 class Security(BaseSettings):
     """Configuration class for security settings.
 
@@ -265,13 +264,28 @@ class Security(BaseSettings):
     """
 
     token_length: int = 128
-    site_key: Annotated[Base64Bytes, Field(min_length=32, max_length=64)]
-    salt: Annotated[Base64Bytes, Field(min_length=32)]
+    site_key: Annotated[Base64Bytes, Field(min_length=32, max_length=64)] = _default_key
+    salt: Annotated[Base64Bytes, Field(min_length=32)] = _default_key
     certificate_path: str | None = None
     key_path: str | None = None
     key_password: str | None = None
     outgoing_tls_verify: bool = True
     outgoing_tls_ca_path: str | None = None
+
+    def assert_non_default_cryptographic_material(self) -> None:
+        """Asserts that important cryptographic materials do not have a default value.
+
+        This function must be called as soon as theres a slight possibility that
+        the cryptographic key material provided by this class is needed.
+
+        Raises:
+           ValueError: If site_key or salt has the default value, a ValueError
+           will be raised.
+        """
+        if self.site_key == b"\x00" * 32:
+            raise ValueError("security.site_key must be set")
+        if self.salt == b"\x00" * 32:
+            raise ValueError("security.salt must be set")
 
     model_config = SettingsConfigDict(
         secrets_dir=secrets_dir, env_prefix="SOPH_security__"
@@ -332,7 +346,7 @@ class Settings(BaseSettings):
     root_contact: EmailStr = "replaceme@withareal.email"  # type: ignore NOSONAR
     hostnames: List[str] = ["localhost"]
     database: Database = Database()
-    security: Security
+    security: Security = Security()
     server: Server = Server()
     development: Development = Development()
     logging: Logging = Logging()

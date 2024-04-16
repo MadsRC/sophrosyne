@@ -83,7 +83,7 @@ filename = "docs/api.md"
 [tool.ruff.lint]
 # Enable all `pydocstyle` rules, limiting to those that adhere to the
 # Google convention via `convention = "google"`, below.
-select = ["D", "I"]
+select = ["D", "I", "F"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

@@ -10,8 +10,6 @@ import structlog
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from sophrosyne.core.config import get_settings
-
 
 def get_logger() -> Any:
     """Get a logger.

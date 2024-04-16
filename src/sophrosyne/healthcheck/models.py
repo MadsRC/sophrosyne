@@ -10,19 +10,15 @@ Attributes:
     HealthCheck (BaseModel): The health check.
 """
 
-from datetime import datetime
 from enum import Enum
-from typing import Annotated, Any
+from typing import Any
 
 from pydantic import (
     AwareDatetime,
     BaseModel,
     Field,
-    ValidationInfo,
-    field_validator,
     model_serializer,
 )
-from pydantic.config import ConfigDict
 
 
 class Status(str, Enum):

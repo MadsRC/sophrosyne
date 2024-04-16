@@ -1,10 +1,8 @@
 """Safety module for performing safety checks on profiles."""
 
-from enum import Enum
-from typing import Iterable, Union
+from typing import Iterable
 
 from fastapi import HTTPException
-from pydantic import BaseModel, Field
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 

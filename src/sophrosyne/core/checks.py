@@ -4,21 +4,16 @@ Checks may either be completely implemented in this module
 or may call out to external services to perform the check.
 """
 
-from enum import Enum
 from random import choice
-from typing import Union
 
 import grpc
-from pydantic import BaseModel, Field, constr
 
-from sophrosyne.core.config import get_settings
 from sophrosyne.core.models import (
     CheckBase,
     SafetyServicePayload,
     SafetyServicePayloadImage,
     SafetyServicePayloadText,
     SafetyServicePayloadType,
-    Verdict,
 )
 from sophrosyne.grpc.checks import checks_pb2, checks_pb2_grpc
 

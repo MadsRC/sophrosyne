@@ -1,7 +1,7 @@
 """This module is responsible for creating the database and tables, and also for creating the root user."""
 
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from sophrosyne.core.config import get_settings

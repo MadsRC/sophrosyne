@@ -8,7 +8,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from sophrosyne.api.dependencies import auth_and_return_user, get_db_session, require_admin
+from sophrosyne.api.dependencies import (
+    auth_and_return_user,
+    get_db_session,
+    require_admin,
+)
 from sophrosyne.api.v1.models import (
     UsersCreateUserRequest,
     UsersCreateUserResponse,

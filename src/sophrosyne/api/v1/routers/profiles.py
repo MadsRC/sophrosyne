@@ -4,7 +4,6 @@ Attributes:
     router (APIRouter): The FastAPI router for the profiles API.
 """
 
-from typing import Sequence
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import col, select
