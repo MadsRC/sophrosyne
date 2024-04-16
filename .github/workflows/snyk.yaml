@@ -15,16 +15,12 @@ jobs:
       - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d #v 5.1.0
         with:
             cache: poetry
-      - name: Run Snyk monitor
-        uses: snyk/actions/python@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.40.0
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          command: monitor
       - name: Run Snyk to check for vulnerabilities
         continue-on-error: true # To make sure that SARIF upload gets called
         uses: snyk/actions/python@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.40.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          command: test
           args: --sarif-file-output=snyk.sarif
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v2
