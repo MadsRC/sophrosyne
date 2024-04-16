@@ -21,11 +21,10 @@ jobs:
             cache: poetry
       - name: Run Snyk to check for vulnerabilities
         continue-on-error: true # To make sure that SARIF upload gets called
-        uses: snyk/actions/python@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.40.0
+        uses: snyk/actions/setup@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.40.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          command: test
-          args: --sarif-file-output=snyk.sarif
+          run: snyk test --sarif-file-output=snyk.sarif || true && ls -la
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@24b71bdbcc679a427e2e62208824ee8b23364747
         with:
