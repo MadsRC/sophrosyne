@@ -11,10 +11,21 @@ on:
   pull_request:
       types: [opened, synchronize, reopened]
 name: SonarCloud analysis
+permissions:
+  contents: read
+
 jobs:
   sonarcloud:
+    permissions:
+      contents: read  # for actions/checkout to fetch code
+      pull-requests: read  # for sonarsource/sonarcloud-github-action to determine which PR to decorate
     runs-on: ubuntu-latest
     steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+      with:
+        egress-policy: audit
+
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       with:
         # Disabling shallow clone is recommended for improving relevancy of reporting
