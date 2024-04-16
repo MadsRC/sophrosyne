@@ -1,5 +1,11 @@
 name: Snyk Analysis
-on: push
+on:
+    push:
+      branches: [ "main" ]
+    pull_request:
+      branches: [ "main" ]
+    schedule:
+      - cron: '15 13 * * 6'
 jobs:
   snyk:
     runs-on: ubuntu-latest
