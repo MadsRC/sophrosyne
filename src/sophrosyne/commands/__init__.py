@@ -1,24 +1,55 @@
+"""Commands for Sophrosyne."""
+
+#
+# Do NOT import any modules from sophrosyne before making sure you've read the
+# docstring of the _necessary_evil function.
+#
+
 import asyncio
-import sys
 from contextlib import asynccontextmanager
 from functools import wraps
 
 import click
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
-from sophrosyne.api import api_router
-from sophrosyne.core.config import get_settings
-from sophrosyne.core.database import (
-    create_db_and_tables,
-    create_default_profile,
-    create_root_user,
-    engine,
-)
-from sophrosyne.core.logging import LoggingMiddleware, get_logger
-from sophrosyne.core.security import TLS
 
-log = get_logger()
+def _necessary_evil(path: str):
+    """Run some initial setup.
+
+    This code, as the name implies, is a necessary evil to make up for a
+    missing feature, or perhaps my own personal shortcomings, of Pydantic. It
+    does not seem possible to dynamically specify external configuration files
+    via `model_config` in Pydantic, forcing us to have the value of the
+    `yaml_file` argument be a variable that is set at module import time. This
+    unfortunately creates the side effect that the location of the yaml file
+    must be known the config module is imported.
+
+    The way this is handled is to have this function take care of setting the
+    necessary environment variables to configure the config module before
+    importing it.
+
+    It is imperative that this function is run before any other modules from
+    sophrosyne is imported. This is because many other modules import the
+    config module, and if that happens before this function is run, everything
+    breaks.
+
+    Additionally, because this function is run early and by pretty much all
+    commands, it is also used to centralize other things such as initialization
+    of logging.
+    """
+    import os
+
+    if "SOPH__CONFIG_YAML_FILE" not in os.environ:
+        os.environ["SOPH__CONFIG_YAML_FILE"] = path
+    import sophrosyne.core.config  # noqa: F401
+    from sophrosyne.core.config import get_settings
+    from sophrosyne.core.logging import initialize_logging
+
+    initialize_logging(
+        log_level=get_settings().logging.level_as_int,
+        format=get_settings().logging.format,
+        event_field=get_settings().logging.event_field,
+    )
 
 
 def async_cmd(func):
@@ -56,6 +87,15 @@ def async_cmd(func):
 @asynccontextmanager
 async def _lifespan(app: FastAPI):
     """FastAPI lifespan event handler."""
+    from sophrosyne.core.logging import get_logger
+
+    log = get_logger()
+    from sophrosyne.core.database import (
+        create_db_and_tables,
+        create_default_profile,
+        create_root_user,
+    )
+
     await create_db_and_tables()
     rt = await create_default_profile()
     if rt:
@@ -76,12 +116,44 @@ def version():
 
 
 @click.command()
+@click.option("--config", default="config.yaml", help="path to configuration file.")
+@click.option(
+    "--pretty",
+    is_flag=True,
+    default=False,
+    help="If set, prints configuration with indents for easier reading.",
+)
+def config(config, pretty):
+    """Print the configuration to stdout as JSON."""
+    _necessary_evil(config)
+
+    from sophrosyne.core.config import get_settings
+
+    indent = None
+    if pretty:
+        indent = 2
+
+    print(get_settings().model_dump_json(indent=indent))
+
+
+@click.command()
+@click.option("--config", default="config.yaml", help="path to configuration file.")
 @async_cmd
-async def healthcheck():
+async def healthcheck(config):
     """Check the health of the SOPH API service."""
+    _necessary_evil(config)
+
     import sys
 
     import requests
+
+    from sophrosyne.core.config import get_settings
+    from sophrosyne.core.database import (
+        engine,
+    )
+    from sophrosyne.core.logging import get_logger
+
+    log = get_logger()
 
     # Disable warnings for insecure requests
     requests.packages.urllib3.disable_warnings()
@@ -95,10 +167,8 @@ async def healthcheck():
             f"https://{get_settings().server.listen_host}:{get_settings().server.port}/health/ping",
             verify=verify,
         )
-        if resp.status_code == 200 and resp.text == '"pong"':
-            print("API is responding.")
-        else:
-            print("API returned abnormal response.")
+        if resp.status_code != 200 and resp.text != '"pong"':
+            log.error("API returned abnormal response.")
             return sys.exit(1)
     except requests.exceptions.ConnectionError as e:
         # This is not really a nice way of doing this, is there not a better way?
@@ -107,9 +177,9 @@ async def healthcheck():
             reason = reason.removeprefix("certificate verify failed: ")
             reason = reason[: reason.rfind(" (")]
             reason = reason.strip()
-            print(f"SSL/TLS verification failure: {reason}")
+            log.error(f"SSL/TLS verification failure: {reason}")
         else:
-            print("API is not responding.")
+            log.error("API is not responding.")
         return sys.exit(1)
 
     from sqlalchemy.ext.asyncio import async_sessionmaker
@@ -127,18 +197,38 @@ async def healthcheck():
         if hc.status == "pass":
             log.info("The server is healthy.")
         else:
-            log.info("The server is not healthy.")
+            log.error("The server is not healthy.")
             return sys.exit(1)
 
 
 @click.command()
-def run():
+@click.option("--config", default="config.yaml", help="path to configuration file.")
+def run(config):
     """Run the SOPH API service."""
+    _necessary_evil(config)
+
+    import sys
+
+    import uvicorn
+    from fastapi import FastAPI
+    from fastapi.middleware.cors import CORSMiddleware
+
+    from sophrosyne.api import api_router
+    from sophrosyne.core.config import get_settings
+    from sophrosyne.core.logging import LoggingMiddleware
+    from sophrosyne.core.security import TLS
+
     try:
         get_settings().security.assert_non_default_cryptographic_material()
     except ValueError as e:
         print(f"configuration error: {e}")
         sys.exit(1)
+
+    tls = TLS(
+        certificate_path=get_settings().security.certificate_path,
+        key_path=get_settings().security.key_path,
+        key_password=get_settings().security.key_password,
+    )
 
     app = FastAPI(
         lifespan=_lifespan,
@@ -157,19 +247,14 @@ def run():
         LoggingMiddleware,
     )
     app.include_router(api_router)
-    import uvicorn
-
-    tls = TLS(
-        certificate_path=get_settings().security.certificate_path,
-        key_path=get_settings().security.key_path,
-        key_password=get_settings().security.key_password,
-    )
 
     uvicorn.run(
         app,
         host=get_settings().server.listen_host,
         port=get_settings().server.port,
         log_level="info",
+        log_config=None,
+        access_log=False,
         ssl_certfile=tls.to_path(input=tls.certificate),
         ssl_keyfile=tls.to_path(input=tls.private_key),
         # Mypy complains about ssl_keyfile_password being a bytes object, when

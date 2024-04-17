@@ -101,6 +101,7 @@ Attributes:
     does not exist.
 """
 
+import base64
 import logging
 import os
 import sys
@@ -109,8 +110,9 @@ from typing import Annotated, List, Literal, Tuple, Type
 
 from pydantic import (
     AnyHttpUrl,
-    Base64Bytes,
+    Base64Encoder,
     EmailStr,
+    EncodedBytes,
     Field,
     computed_field,
 )
@@ -136,6 +138,21 @@ if create_secrets_dir and secrets_dir == "":
 
 if create_secrets_dir:
     os.makedirs(secrets_dir, exist_ok=True)
+
+
+class Base64EncoderSansNewline(Base64Encoder):
+    """Encode Base64 without adding a trailing newline.
+
+    The default Base64Bytes encoder in PydanticV2 appends a trailing newline
+    when encoding. See https://github.com/pydantic/pydantic/issues/9072
+    """
+
+    @classmethod
+    def encode(cls, value: bytes) -> bytes:  # noqa: D102
+        return base64.b64encode(value)
+
+
+Base64Bytes = Annotated[bytes, EncodedBytes(encoder=Base64EncoderSansNewline)]
 
 
 class Logging(BaseSettings):

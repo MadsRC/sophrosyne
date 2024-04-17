@@ -12,6 +12,14 @@ Example:
         $ python src/sophrosyne/main.py run
 """
 
+#
+#
+# Do NOT import any modules from sophrosyne, except the commands module, before
+# you've read the docstring for the sophrosyne.commands._necessary_evil
+# function.
+#
+#
+
 import sys
 
 # Remove local directory from sys.path to avoid importing local modules by mistake
@@ -21,26 +29,18 @@ sys.path = sys.path[1:]
 
 import click
 
-from sophrosyne.commands import healthcheck, run, version
-from sophrosyne.core.config import get_settings
-from sophrosyne.core.logging import get_logger, initialize_logging
-
-log = get_logger()
-initialize_logging(
-    log_level=get_settings().logging.level_as_int,
-    format=get_settings().logging.format,
-    event_field=get_settings().logging.event_field,
-)
+from sophrosyne.commands import config, healthcheck, run, version
 
 
 @click.group()
-def _cli():
+def _cli():  # NOSONAR
     pass
 
 
 _cli.add_command(version)
 _cli.add_command(run)
 _cli.add_command(healthcheck)
+_cli.add_command(config)
 
 if __name__ == "__main__":
     _cli()

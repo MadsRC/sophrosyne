@@ -102,10 +102,6 @@ def initialize_logging(
         logging.getLogger(name).handlers.clear()
         logging.getLogger(name).propagate = True
 
-    # Silence the uvicorn access logger, as we reimplement this ourselves.
-    logging.getLogger("uvicorn.access").handlers.clear()
-    logging.getLogger("uvicorn.access").propagate = False
-
     def handle_exception(exc_type, exc_value, exc_traceback):
         """Log any uncaught exception.
 
