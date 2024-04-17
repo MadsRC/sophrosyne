@@ -2,9 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from sophrosyne.grpc.checks import (
-    checks_pb2 as sophrosyne_dot_grpc_dot_checks_dot_checks__pb2,
-)
+from sophrosyne.grpc.checks import checks_pb2 as sophrosyne_dot_grpc_dot_checks_dot_checks__pb2
 
 
 class CheckServiceStub(object):

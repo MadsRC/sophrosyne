@@ -29,7 +29,7 @@ sys.path = sys.path[1:]
 
 import click
 
-from sophrosyne.commands import config, healthcheck, run, version
+from sophrosyne.commands import config, healthcheck, migrate, run, version
 
 
 @click.group()
@@ -41,6 +41,7 @@ _cli.add_command(version)
 _cli.add_command(run)
 _cli.add_command(healthcheck)
 _cli.add_command(config)
+_cli.add_command(migrate.cmd)
 
 if __name__ == "__main__":
     _cli()

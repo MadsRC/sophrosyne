@@ -1,5 +1,8 @@
 """This module is responsible for creating the database and tables, and also for creating the root user."""
 
+from typing import Literal
+
+from alembic import command, config
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -20,8 +23,15 @@ log = get_logger()
 
 async def create_db_and_tables():
     """Create the database and tables."""
+    cfg = config.Config("src/sophrosyne/alembic.ini")
+
+    def stamp(connection):
+        cfg.attributes["connection"] = connection
+        command.stamp(cfg, "head")
+
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+        await conn.run_sync(stamp)
 
 
 async def create_default_profile():
@@ -72,3 +82,53 @@ async def create_root_user() -> str:
         await session.commit()
 
         return token
+
+
+async def upgrade(revision: str):
+    cfg = config.Config("src/sophrosyne/alembic.ini")
+
+    def _upgrade(revision: str):
+        def execute(connection):
+            cfg.attributes["connection"] = connection
+            command.upgrade(cfg, revision)
+
+        return execute
+
+    async with engine.begin() as conn:
+        await conn.run_sync(_upgrade(revision))
+
+
+async def downgrade(revision: str):
+    cfg = config.Config("src/sophrosyne/alembic.ini")
+
+    def _downgrade(revision: str):
+        def execute(connection):
+            cfg.attributes["connection"] = connection
+            command.downgrade(cfg, revision)
+
+        return execute
+
+    async with engine.begin() as conn:
+        await conn.run_sync(_downgrade(revision))
+
+
+async def history(verbose: bool):
+    cfg = config.Config("src/sophrosyne/alembic.ini")
+
+    def show(connection):
+        cfg.attributes["connection"] = connection
+        command.history(cfg, verbose=verbose, indicate_current=True)
+
+    async with engine.begin() as conn:
+        await conn.run_sync(show)
+
+
+async def current(verbose: bool):
+    cfg = config.Config("src/sophrosyne/alembic.ini")
+
+    def show(connection):
+        cfg.attributes["connection"] = connection
+        command.current(cfg, verbose=verbose)
+
+    async with engine.begin() as conn:
+        await conn.run_sync(show)
