@@ -32,22 +32,25 @@ from sophrosyne.core.security import new_token, sign
 
 router = APIRouter()
 
+USER_NOT_FOUND = "User not found"
+
 
 @router.post(
-    "/users/create-user", response_model=UsersCreateUserResponse, tags=[Tags.users]
+    "/users/create-user",
+    response_model=UsersCreateUserResponse,
+    tags=[Tags.users],
+    dependencies=[Depends(require_admin)],
 )
 async def create_user(
     *,
     db_session: AsyncSession = Depends(get_db_session),
     user: UsersCreateUserRequest,
-    require_admin=Depends(require_admin),
 ):
     """Create a new user.
 
     Args:
         db_session (AsyncSession): The database session.
         user (UsersCreateUserRequest): The request payload containing user data.
-        require_admin (bool): The admin requirement dependency.
 
     Returns:
         UsersCreateUserResponse: The newly created user.
@@ -66,14 +69,16 @@ async def create_user(
 
 
 @router.get(
-    "/users/list-users", response_model=UsersListUsersResponse, tags=[Tags.users]
+    "/users/list-users",
+    response_model=UsersListUsersResponse,
+    tags=[Tags.users],
+    dependencies=Depends(require_admin),
 )
 async def read_users(
     *,
     db_session: AsyncSession = Depends(get_db_session),
     offset: int = 0,
     limit: int = Query(100, le=100),
-    require_admin=Depends(require_admin),
 ):
     """Retrieve a list of users from the database.
 
@@ -81,7 +86,6 @@ async def read_users(
         db_session (AsyncSession): The database session.
         offset (int): The offset for pagination. Defaults to 0.
         limit (int): The maximum number of users to retrieve. Defaults to 100.
-        require_admin (bool): The admin requirement dependency.
 
     Returns:
         UsersListUsersResponse: A list of user objects.
@@ -121,20 +125,22 @@ async def read_user(
     result = await db_session.exec(select(User).where(User.name == req.name))
     user = result.first()
     if not user:
-        raise HTTPException(status_code=400, detail="User not found")
+        raise HTTPException(status_code=400, detail=USER_NOT_FOUND)
     if current_user.name != user.name:
-        raise HTTPException(status_code=403, detail="User not found")
+        raise HTTPException(status_code=403, detail=USER_NOT_FOUND)
     return user
 
 
 @router.patch(
-    "/users/update-user", response_model=UsersUpdateUserResponse, tags=[Tags.users]
+    "/users/update-user",
+    response_model=UsersUpdateUserResponse,
+    tags=[Tags.users],
+    dependencies=[Depends(require_admin)],
 )
 async def update_user(
     *,
     db_session: AsyncSession = Depends(get_db_session),
     req: UsersUpdateUserRequest,
-    require_admin=Depends(require_admin),
 ):
     """Update a user in the database.
 
@@ -151,7 +157,7 @@ async def update_user(
     result = await db_session.exec(select(User).where(User.name == req.name))
     db_user = result.first()
     if not db_user:
-        raise HTTPException(status_code=400, detail="User not found")
+        raise HTTPException(status_code=400, detail=USER_NOT_FOUND)
     user_data = req.model_dump(exclude_unset=True)
     db_user.sqlmodel_update(user_data)
     db_session.add(db_user)
@@ -161,13 +167,15 @@ async def update_user(
 
 
 @router.delete(
-    "/users/delete-user", response_model=UsersDeleteUserResponse, tags=[Tags.users]
+    "/users/delete-user",
+    response_model=UsersDeleteUserResponse,
+    tags=[Tags.users],
+    dependencies=[Depends(require_admin)],
 )
 async def delete_user(
     *,
     db_session: AsyncSession = Depends(get_db_session),
     req: UsersDeleteUserRequest,
-    require_admin=Depends(require_admin),
 ):
     """Delete a user from the database.
 
@@ -181,7 +189,7 @@ async def delete_user(
     result = await db_session.exec(select(User).where(User.name == req.name))
     db_user = result.first()
     if not db_user:
-        raise HTTPException(status_code=400, detail="User not found")
+        raise HTTPException(status_code=400, detail=USER_NOT_FOUND)
     await db_session.delete(db_user)
     await db_session.commit()
     return UsersDeleteUserResponse(ok=True)
@@ -212,7 +220,7 @@ async def rotate_user_token(
     result = await db_session.exec(select(User).where(User.name == req.name))
     db_user = result.first()
     if not db_user:
-        raise HTTPException(status_code=400, detail="User not found")
+        raise HTTPException(status_code=400, detail=USER_NOT_FOUND)
     if current_user.name != db_user.name and not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Not authorized")
     token = new_token()

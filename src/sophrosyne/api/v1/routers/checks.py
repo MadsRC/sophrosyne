@@ -25,6 +25,8 @@ from sophrosyne.api.v1.models import (
 from sophrosyne.api.v1.tags import Tags
 from sophrosyne.core.models import Check, Profile
 
+CHECK_NOT_FOUND: str = "Check not found"
+
 router = APIRouter(dependencies=[Depends(require_admin)])
 
 
@@ -113,7 +115,7 @@ async def read_check(
     result = await db_session.exec(select(Check).where(Check.name == req.name))
     check = result.first()
     if not check:
-        raise HTTPException(status_code=404, detail="Check not found")
+        raise HTTPException(status_code=404, detail=CHECK_NOT_FOUND)
     return ChecksListCheckResponse.model_validate(
         check, update={"profiles": [p.name for p in check.profiles]}
     )
@@ -142,7 +144,7 @@ async def update_check(
     result = await db_session.exec(select(Check).where(Check.name == req.name))
     db_check = result.first()
     if not db_check:
-        raise HTTPException(status_code=404, detail="Check not found")
+        raise HTTPException(status_code=404, detail=CHECK_NOT_FOUND)
 
     if req.profiles is not None:
         db_profiles = await db_session.exec(
@@ -175,7 +177,7 @@ async def delete_check(
     result = await db_session.exec(select(Check).where(Check.name == req.name))
     db_check = result.first()
     if not db_check:
-        raise HTTPException(status_code=404, detail="Check not found")
+        raise HTTPException(status_code=404, detail=CHECK_NOT_FOUND)
     await db_session.delete(db_check)
     await db_session.commit()
     return ChecksDeleteCheckResponse(ok=True)

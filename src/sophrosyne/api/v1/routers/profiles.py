@@ -4,7 +4,6 @@ Attributes:
     router (APIRouter): The FastAPI router for the profiles API.
 """
 
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -25,6 +24,8 @@ from sophrosyne.api.v1.models import (
 from sophrosyne.core.models import Check, Profile
 
 router = APIRouter(dependencies=[Depends(require_admin)])
+
+PROFILE_NOT_FOUND: str = "Profile not found"
 
 
 @router.post(
@@ -124,7 +125,7 @@ async def read_profile(
     result = await db_session.exec(select(Profile).where(Profile.name == req.name))
     profile = result.first()
     if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
+        raise HTTPException(status_code=404, detail=PROFILE_NOT_FOUND)
     return ProfilesListProfileResponse.model_validate(
         profile, update={"checks": [c.name for c in profile.checks]}
     )
@@ -155,7 +156,7 @@ async def update_profile(
     result = await db_session.exec(select(Profile).where(Profile.name == req.name))
     db_profile = result.first()
     if not db_profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
+        raise HTTPException(status_code=404, detail=PROFILE_NOT_FOUND)
 
     if req.checks is not None:
         db_checks = await db_session.exec(
@@ -197,7 +198,7 @@ async def delete_profile(
     result = await db_session.exec(select(Profile).where(Profile.name == req.name))
     db_profile = result.first()
     if not db_profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
+        raise HTTPException(status_code=404, detail=PROFILE_NOT_FOUND)
     await db_session.delete(db_profile)
     await db_session.commit()
     return ProfilesDeleteProfileResponse(ok=True)
