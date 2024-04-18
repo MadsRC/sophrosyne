@@ -16,7 +16,6 @@ If a model or schema doesn't directy affect the input or output of the API, it
 should be defined in the core.models module instead.
 """
 
-from datetime import datetime
 from typing import Annotated, Literal, Union
 
 from pydantic import EmailStr, Field

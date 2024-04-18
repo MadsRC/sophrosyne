@@ -7,7 +7,6 @@ Attributes:
     api_router (APIRouter): The API router for the v1 version of the API.
 """
 
-from typing import Annotated
 
 from fastapi import APIRouter, Depends
 

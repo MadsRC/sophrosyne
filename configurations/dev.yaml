@@ -1,6 +1,7 @@
 security:
   site_key: '6fAkguc1RQkgdWwoLdslkQjA/N5ujPvGEmG2l97Gt+4='
   salt: 'KULByt65QDNWy4BhtkOagb3td08q992ZfPWLthFw00s='
+  outgoing_tls_verify: False
 development:
   static_root_token: "thisisastaticroottoken"
 logging:

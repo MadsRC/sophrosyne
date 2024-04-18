@@ -10,8 +10,6 @@ import structlog
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from sophrosyne.core.config import get_settings
-
 
 def get_logger() -> Any:
     """Get a logger.
@@ -103,10 +101,6 @@ def initialize_logging(
     for name in ["uvicorn", "uvicorn.error"]:
         logging.getLogger(name).handlers.clear()
         logging.getLogger(name).propagate = True
-
-    # Silence the uvicorn access logger, as we reimplement this ourselves.
-    logging.getLogger("uvicorn.access").handlers.clear()
-    logging.getLogger("uvicorn.access").propagate = False
 
     def handle_exception(exc_type, exc_value, exc_traceback):
         """Log any uncaught exception.

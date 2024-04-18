@@ -4,10 +4,9 @@ Attributes:
     router (APIRouter): The FastAPI router for the safety endpoints.
 """
 
-from typing import Annotated, Literal, Union
+from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends
-from pydantic import Field
 
 from sophrosyne.api.dependencies import auth_and_return_user, get_safety_service
 from sophrosyne.api.v1.models import (

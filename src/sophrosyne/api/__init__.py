@@ -4,9 +4,7 @@ Attributes:
     api_router (APIRouter): The API router for the API.
 """
 
-from typing import Annotated
-
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 from sophrosyne.api.routers.health import router as health_router
 from sophrosyne.api.v1.api import api_router as v1_api_router
