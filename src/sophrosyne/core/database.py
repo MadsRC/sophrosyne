@@ -1,7 +1,5 @@
 """This module is responsible for creating the database and tables, and also for creating the root user."""
 
-from typing import Literal
-
 from alembic import command, config
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlmodel import SQLModel, select
@@ -21,9 +19,18 @@ engine = create_async_engine(
 log = get_logger()
 
 
+def alembic_config() -> config.Config:
+    """Creates an returns a configuration for alembic."""
+    cfg = config.Config()
+    cfg.set_main_option("script_location", "sophrosyne:migrations")
+    cfg.set_main_option("sqlalchemy.url", get_settings().database.dsn)
+
+    return cfg
+
+
 async def create_db_and_tables():
     """Create the database and tables."""
-    cfg = config.Config("src/sophrosyne/alembic.ini")
+    cfg = alembic_config()
 
     def stamp(connection):
         cfg.attributes["connection"] = connection
@@ -85,7 +92,12 @@ async def create_root_user() -> str:
 
 
 async def upgrade(revision: str):
-    cfg = config.Config("src/sophrosyne/alembic.ini")
+    """Run database upgrade migration using alembic.
+
+    Args:
+       revision (str): The ID of the revision to upgrade the database do.
+    """
+    cfg = alembic_config()
 
     def _upgrade(revision: str):
         def execute(connection):
@@ -99,7 +111,12 @@ async def upgrade(revision: str):
 
 
 async def downgrade(revision: str):
-    cfg = config.Config("src/sophrosyne/alembic.ini")
+    """Run database downgrade migration using alembic.
+
+    Args:
+       revision (str): The ID of the revision to downgrade the database do.
+    """
+    cfg = alembic_config()
 
     def _downgrade(revision: str):
         def execute(connection):
@@ -113,7 +130,12 @@ async def downgrade(revision: str):
 
 
 async def history(verbose: bool):
-    cfg = config.Config("src/sophrosyne/alembic.ini")
+    """Show the database migration history.
+
+    Args:
+       verbose (bool): Be verbose in the output.
+    """
+    cfg = alembic_config()
 
     def show(connection):
         cfg.attributes["connection"] = connection
@@ -124,7 +146,12 @@ async def history(verbose: bool):
 
 
 async def current(verbose: bool):
-    cfg = config.Config("src/sophrosyne/alembic.ini")
+    """Show the current database migration.
+
+    Args:
+       verbose (bool): Be verbose in the output.
+    """
+    cfg = alembic_config()
 
     def show(connection):
         cfg.attributes["connection"] = connection

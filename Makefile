@@ -45,6 +45,10 @@ dev/run: build/.certificate_sentinel
 	docker compose -f docker-compose.development.yml up -d
 	SOPH__CONFIG_YAML_FILE=configurations/dev.yaml poetry run python src/sophrosyne/main.py run
 
+.PHONY: dev/db/up
+dev/db/up:
+	docker compose -f docker-compose.development.yml up -d
+
 .PHONY: dev/db/down
 dev/db/down:
 	docker compose -f docker-compose.development.yml down

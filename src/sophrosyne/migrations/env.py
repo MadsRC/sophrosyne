@@ -1,7 +1,8 @@
+"""environment setup for alembic."""
+
 import asyncio
 from logging.config import fileConfig
 
-import sophrosyne.core.models
 from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
@@ -69,6 +70,7 @@ def run_migrations_online() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
+    """Run migrations synchronously."""
     context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
@@ -76,6 +78,7 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations(connectable) -> None:
+    """Run migrations asynchronously."""
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
     await connectable.dispose()

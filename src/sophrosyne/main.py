@@ -27,21 +27,7 @@ import sys
 # `grpc` module will be imported instead of the installed `grpc` module.
 sys.path = sys.path[1:]
 
-import click
-
-from sophrosyne.commands import config, healthcheck, migrate, run, version
-
-
-@click.group()
-def _cli():  # NOSONAR
-    pass
-
-
-_cli.add_command(version)
-_cli.add_command(run)
-_cli.add_command(healthcheck)
-_cli.add_command(config)
-_cli.add_command(migrate.cmd)
+from sophrosyne.commands import setup_and_run_commands
 
 if __name__ == "__main__":
-    _cli()
+    setup_and_run_commands()
