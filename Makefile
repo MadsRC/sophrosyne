@@ -43,7 +43,7 @@ alembic/revision:
 .PHONY: dev/run
 dev/run: build/.certificate_sentinel
 	docker compose -f docker-compose.development.yml up -d
-	SOPH__CONFIG_YAML_FILE=configurations/dev.yaml poetry run python src/sophrosyne/main.py run
+    SOPH_LOGGING_LEVEL=debug SOPH_TRACING_OUTPUT=http SOPH_METRICS_OUTPUT=http SOPH_METRICS_ENABLED=true SOPH_TRACING_ENABLED=true OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:4318" OTEL_TRACES_EXPORTER="otlp" OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf" go run cmd/sophrosyne/main.go
 
 .PHONY: dev/db/up
 dev/db/up:

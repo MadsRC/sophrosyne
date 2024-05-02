@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a9152082-80d9-4d6c-886a-c2713d5de713" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/sophrosyne.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cache.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmd/other/main.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/docs.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/errors.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/cedar/cedar.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/cedar/cedarschema.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/cedar/policies.cedar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/configProvider/config.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/configProvider/config_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/configProvider/testdata/config.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/configProvider/testdata/file.binary" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/configProvider/testdata/security.salt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/configProvider/testdata/security.sitekey" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/configProvider/testdata/test.file" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/http/http.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/http/middleware/middleware.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/migrate/migrate.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/migrate/migrations/000001_create_xid.down.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/migrate/migrations/000001_create_xid.up.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/migrate/migrations/000002_create_users_table.down.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/migrate/migrations/000002_create_users_table.up.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/otel/otel.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/pgx/pgx.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/rpc/internal/jsonrpc/jsonrpc.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/rpc/internal/jsonrpc/jsonrpc_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/rpc/rpc.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/rpc/rpc_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/rpc/services/userservice.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/tls/tls.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/validator/validator.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/validator/validator_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/logging.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/users.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.python-version" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alembic.ini" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/configurations/dev.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configurations/dev.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configurations/integration.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configurations/integration.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.development.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/poetry.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/poetry.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pyproject.toml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/api/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/api/dependencies.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/api/routers/health.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/api/v1/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/api/v1/api.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/api/v1/models.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/api/v1/routers/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/api/v1/routers/checks.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/api/v1/routers/profiles.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/api/v1/routers/safety.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/api/v1/routers/users.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/api/v1/tags.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/commands/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/commands/database.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/commands/internal/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/core/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/core/checks.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/core/config.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/core/database.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/core/logging.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/core/models.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/core/safety.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/core/security.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/grpc/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/grpc/checks/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/grpc/checks/checks.proto" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/grpc/checks/checks_pb2.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/grpc/checks/checks_pb2.pyi" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/grpc/checks/checks_pb2_grpc.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/healthcheck/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/healthcheck/models.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/migrations/env.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/migrations/script.py.mako" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/migrations/versions/089f4a23cd3c_init.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sophrosyne/py.typed" beforeDir="false" afterPath="$PROJECT_DIR$/internal/configProvider/testdata/empty.file" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/__init__.py" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" url="file:///opt/homebrew/opt/go/libexec" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="2fv9CUc3Q3puSq5b47e5Cm6nnn6" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.automatic.dependencies.download&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;goRewrite&quot;,
+    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
+    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/user/projects/sophrosyne/configurations&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;configurable.group.appearance&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/configurations" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/docs" />
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="go build logging.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="sophrosyne" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <package value="github.com/madsrc/sophrosyne" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/logging.go" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.go build logging.go" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-gosdk-33c477a475b1-e0158606a674-org.jetbrains.plugins.go.sharedIndexes.bundled-GO-241.15989.157" />
+        <option value="bundled-js-predefined-1d06a55b98c1-91d5c284f522-JavaScript-GO-241.15989.157" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VgoProject">
+    <settings-migrated>true</settings-migrated>
+  </component>
+</project>

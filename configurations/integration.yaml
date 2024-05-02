@@ -1,8 +1,7 @@
-security:
-  site_key: 'lecGtZB0czpTHnCAKAbK3biwvDb+uFUZZ6yQL4CAb3lC8RpokUfAr0cBp8CNzYXLHOl+8paSnJDifq4F7Rx70A=='
-  salt: 'BtNgvcpdVBxV7OQ9hIm4XJGOru0k7GonkIJKBcjQoNY='
-  key_path: 'build/server.key'
-  certificate_path: 'build/server.crt'
-  outgoing_tls_ca_path: 'build/server.crt'
 database:
-  host: 'db'
+  host: db
+security:
+  sitekey: !!binary 73ce1bdaa9f7d724c54a0084d1fa384df00cc394673a652dc48587810b5c15c171118b156a39a1fbb831b12978de9752c7685ca45540f1570b3a3a5937d48389
+  salt: !!binary 2d7ce39772ed70e6c2f8d68758cc1ee4da75d33258d49a1c6a3950978e870407
+development:
+  staticroottoken: 'thisisastatictoken'
