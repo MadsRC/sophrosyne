@@ -184,6 +184,10 @@ func (c *UserServiceCache) RotateToken(ctx context.Context, id string) ([]byte, 
 	return c.userService.RotateToken(ctx, id)
 }
 
+func (c *UserServiceCache) Health(ctx context.Context) (bool, []byte) {
+	return true, []byte(`{"ok"}`)
+}
+
 type GetUserRequest struct {
 	ID    string `json:"id"`
 	Email string `json:"email"`

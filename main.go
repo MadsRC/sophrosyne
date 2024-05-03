@@ -180,3 +180,12 @@ type AuthorizationRequest struct {
 type RPCServer interface {
 	HandleRPCRequest(ctx context.Context, req []byte) ([]byte, error)
 }
+
+type HealthCheckService interface {
+	UnauthenticatedHealthcheck(ctx context.Context) bool
+	AuthenticatedHealthcheck(ctx context.Context) ([]byte, error)
+}
+
+type HealthChecker interface {
+	Health(ctx context.Context) (bool, []byte)
+}

@@ -174,6 +174,15 @@ func (s *UserService) RotateToken(ctx context.Context, name string) ([]byte, err
 	return token, nil
 }
 
+func (s *UserService) Health(ctx context.Context) (bool, []byte) {
+	_, err := s.pool.Exec(ctx, "SELECT 1")
+	if err != nil {
+		s.logger.DebugContext(ctx, "healthcheck database error", "error", err)
+		return false, []byte(`{"users":{"healthy":false}}`)
+	}
+	return true, []byte(`{"users":{"healthy":true}}`)
+}
+
 func (s *UserService) createRootUser(ctx context.Context) error {
 	// Begin transaction
 	tx, err := s.pool.Begin(ctx)

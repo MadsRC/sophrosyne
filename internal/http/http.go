@@ -76,6 +76,19 @@ func RPCHandler(logger *slog.Logger, rpcService sophrosyne.RPCServer) http.Handl
 	})
 }
 
+func HealthcheckHandler(logger *slog.Logger, healthcheckService sophrosyne.HealthCheckService) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ok := healthcheckService.UnauthenticatedHealthcheck(r.Context())
+		if ok {
+			WriteResponse(r.Context(), w, http.StatusOK, "application/json", nil, logger)
+			return
+		}
+		w.Header().Set("Retry-After", "5")
+		WriteResponse(r.Context(), w, http.StatusServiceUnavailable, "application/json", nil, logger)
+		return
+	})
+}
+
 func WriteResponse(ctx context.Context, w http.ResponseWriter, status int, contentType string, data []byte, logger *slog.Logger) {
 	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(status)

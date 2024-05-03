@@ -45,3 +45,7 @@ func (m *MigrationService) Down() error {
 func (m *MigrationService) Close() (source error, database error) {
 	return m.migrate.Close()
 }
+
+func (m *MigrationService) Versions() (version uint, dirty bool, err error) {
+	return m.migrate.Version()
+}
