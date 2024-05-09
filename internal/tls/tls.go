@@ -201,7 +201,7 @@ func readPrivateKeyPath(path string) (interface{}, error) {
 	return x509.ParsePKCS8PrivateKey(data.Bytes)
 }
 
-func NewTLSConfig(config *sophrosyne.Config, randSource io.Reader) (*tls.Config, error) {
+func NewTLSServerConfig(config *sophrosyne.Config, randSource io.Reader) (*tls.Config, error) {
 	var priv interface{}
 	var err error
 	var certBytes []byte
@@ -231,4 +231,13 @@ func NewTLSConfig(config *sophrosyne.Config, randSource io.Reader) (*tls.Config,
 	return &tls.Config{
 		Certificates: []tls.Certificate{cert},
 	}, nil
+}
+
+func NewTLSClientConfig(config *sophrosyne.Config) (*tls.Config, error) {
+	c := &tls.Config{}
+	if config.Security.TLS.InsecureSkipVerify {
+		c.InsecureSkipVerify = true
+	}
+
+	return c, nil
 }

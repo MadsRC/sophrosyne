@@ -1,0 +1,14 @@
+#!/bin/sh
+# mise outputs=[]
+
+set -e
+
+version=$(grep -E "^go .*$" go.mod | awk '{print $2}')
+
+echo "Version extracted from go.mod: $version"
+
+echo "Setting go version in .mise.toml"
+mise use "go@$version"
+
+echo "Setting go version in .idea/workspace.xml"
+sed -i "s/.local\/share\/mise\/installs\/go\/.*\"/.local\/share\/mise\/installs\/go\/$version\"/g" .idea/workspace.xml

@@ -21,8 +21,11 @@ import (
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
 	"log/slog"
+	http2 "net/http"
 	"os"
 	"os/signal"
+	"syscall"
+	"time"
 )
 
 func main() {
@@ -121,8 +124,49 @@ func main() {
 			{
 				Name:  "healthcheck",
 				Usage: "check if the server is running",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "target",
+						Usage: "target server address. Must include scheme and port number",
+						Value: "https://127.0.0.1:8080/healthz",
+					},
+					&cli.BoolFlag{
+						Name:  "insecure-skip-verify",
+						Usage: "Skip TLS certificate verification",
+						Value: false,
+					},
+				},
 				Action: func(c *cli.Context) error {
-					return nil
+					validate := validator.NewValidator()
+					config, err := getConfig(c.String("config"), map[string]interface{}{
+						"security.tls.insecureSkipVerify": c.Bool("insecure-skip-verify"),
+					}, c.StringSlice("secretfiles"), validate)
+					if err != nil {
+						return err
+					}
+
+					tlsConfig, err := tls.NewTLSClientConfig(config)
+					if err != nil {
+						return err
+					}
+					client := http2.Client{
+						Timeout: 5 * time.Second,
+						Transport: &http2.Transport{
+							TLSClientConfig: tlsConfig,
+						},
+					}
+					resp, err := client.Get(c.String("target"))
+					if err != nil {
+						if errors.Is(err, syscall.ECONNREFUSED) {
+							return cli.Exit("unhealthy", 2)
+						}
+						return cli.Exit(err.Error(), 1)
+					}
+					if resp.StatusCode == http2.StatusOK {
+						return cli.Exit("healthy", 0)
+					}
+					return cli.Exit("unhealthy", 3)
+
 				},
 			},
 		},
@@ -196,7 +240,17 @@ func run(c *cli.Context) error {
 		return dbError
 	}
 
-	userServiceDatabase, err := pgx.NewUserService(ctx, config, logger, rand.Reader)
+	checkServiceDatabase, err := pgx.NewCheckService(ctx, config, logger)
+	if err != nil {
+		return err
+	}
+
+	profileServiceDatabase, err := pgx.NewProfileService(ctx, config, logger, checkServiceDatabase)
+	if err != nil {
+		return err
+	}
+
+	userServiceDatabase, err := pgx.NewUserService(ctx, config, logger, rand.Reader, profileServiceDatabase)
 	if err != nil {
 		return err
 	}
@@ -206,7 +260,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	authzProvider, err := cedar.NewAuthorizationProvider(ctx, logger, userService, otelService)
+	authzProvider, err := cedar.NewAuthorizationProvider(ctx, logger, userService, otelService, profileServiceDatabase, checkServiceDatabase)
 
 	rpcServer, err := rpc.NewRPCServer(logger)
 	if err != nil {
@@ -218,9 +272,27 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	rpcServer.Register(rpcUserService.EntityID(), rpcUserService)
+	rpcCheckService, err := services.NewCheckService(checkServiceDatabase, authzProvider, logger, validate)
+	if err != nil {
+		return err
+	}
 
-	tlsConfig, err := tls.NewTLSConfig(config, rand.Reader)
+	rpcProfileService, err := services.NewProfileService(profileServiceDatabase, authzProvider, logger, validate)
+	if err != nil {
+		return err
+	}
+
+	rpcScanService, err := services.NewScanService(authzProvider, logger, validate, profileServiceDatabase, checkServiceDatabase)
+	if err != nil {
+		return err
+	}
+
+	rpcServer.Register(rpcUserService.EntityID(), rpcUserService)
+	rpcServer.Register(rpcCheckService.EntityID(), rpcCheckService)
+	rpcServer.Register(rpcProfileService.EntityID(), rpcProfileService)
+	rpcServer.Register(rpcScanService.EntityID(), rpcScanService)
+
+	tlsConfig, err := tls.NewTLSServerConfig(config, rand.Reader)
 
 	healthcheckService, err := healthchecker.NewHealthcheckService(
 		[]sophrosyne.HealthChecker{
@@ -241,12 +313,15 @@ func run(c *cli.Context) error {
 			otelService,
 			middleware.SetupTracing(
 				otelService,
-				middleware.Authentication(
-					nil,
-					config,
-					userService,
+				middleware.RequestLogging(
 					logger,
-					http.RPCHandler(logger, rpcServer),
+					middleware.Authentication(
+						nil,
+						config,
+						userService,
+						logger,
+						http.RPCHandler(logger, rpcServer),
+					),
 				),
 			),
 		),
@@ -258,7 +333,10 @@ func run(c *cli.Context) error {
 			otelService,
 			middleware.SetupTracing(
 				otelService,
-				http.HealthcheckHandler(logger, healthcheckService),
+				middleware.RequestLogging(
+					logger,
+					http.HealthcheckHandler(logger, healthcheckService),
+				),
 			),
 		),
 	)

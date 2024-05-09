@@ -7,14 +7,15 @@ import (
 )
 
 type User struct {
-	ID        string
-	Name      string
-	Email     string
-	Token     []byte
-	IsAdmin   bool
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt *time.Time
+	ID             string
+	Name           string
+	Email          string
+	Token          []byte
+	IsAdmin        bool
+	DefaultProfile Profile
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	DeletedAt      *time.Time
 }
 
 func (u User) EntityType() string {
@@ -49,6 +50,130 @@ type UserService interface {
 	UpdateUser(ctx context.Context, user UpdateUserRequest) (User, error)
 	DeleteUser(ctx context.Context, name string) error
 	RotateToken(ctx context.Context, name string) ([]byte, error)
+}
+
+type GetUserRequest struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
+}
+
+func (p GetUserRequest) Validate(interface{}) error {
+	if p.ID == "" && p.Name == "" && p.Email == "" {
+		return fmt.Errorf("one of ID, Name or Email must be provided")
+	}
+	if p.ID != "" && (p.Name != "" || p.Email != "") {
+		return fmt.Errorf("only one of ID, Name or Email must be provided")
+	}
+	return nil
+}
+
+type GetUserResponse struct {
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	IsAdmin   bool   `json:"is_admin"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+	DeletedAt string `json:"deleted_at,omitempty"`
+}
+
+func (r *GetUserResponse) FromUser(u User) *GetUserResponse {
+	r.Name = u.Name
+	r.Email = u.Email
+	r.IsAdmin = u.IsAdmin
+	r.CreatedAt = u.CreatedAt.Format(TimeFormatInResponse)
+	r.UpdatedAt = u.UpdatedAt.Format(TimeFormatInResponse)
+	if u.DeletedAt != nil {
+		r.DeletedAt = u.DeletedAt.Format(TimeFormatInResponse)
+	}
+
+	return r
+}
+
+type GetUsersRequest struct {
+	Cursor string `json:"cursor"`
+}
+
+type GetUsersResponse struct {
+	Users  []GetUserResponse `json:"users"`
+	Cursor string            `json:"cursor"`
+	Total  int               `json:"total"`
+}
+
+type CreateUserRequest struct {
+	Name    string `json:"name" validate:"required"`
+	Email   string `json:"email" validate:"required"`
+	IsAdmin bool   `json:"is_admin"`
+}
+
+type CreateUserResponse struct {
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	Token     []byte `json:"token"`
+	IsAdmin   bool   `json:"is_admin"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+	DeletedAt string `json:"deleted_at,omitempty"`
+}
+
+func (r *CreateUserResponse) FromUser(u User) *CreateUserResponse {
+	r.Name = u.Name
+	r.Email = u.Email
+	r.Token = u.Token
+	r.IsAdmin = u.IsAdmin
+	r.CreatedAt = u.CreatedAt.Format(TimeFormatInResponse)
+	r.UpdatedAt = u.UpdatedAt.Format(TimeFormatInResponse)
+	if u.DeletedAt != nil {
+		r.DeletedAt = u.DeletedAt.Format(TimeFormatInResponse)
+	}
+
+	return r
+}
+
+type UpdateUserRequest struct {
+	Name    string `json:"name" validate:"required"`
+	Email   string `json:"email"`
+	IsAdmin bool   `json:"is_admin"`
+}
+
+type UpdateUserResponse struct {
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	IsAdmin   bool   `json:"is_admin"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+	DeletedAt string `json:"deleted_at,omitempty"`
+}
+
+func (r *UpdateUserResponse) FromUser(u User) *UpdateUserResponse {
+	r.Name = u.Name
+	r.Email = u.Email
+	r.IsAdmin = u.IsAdmin
+	r.CreatedAt = u.CreatedAt.Format(TimeFormatInResponse)
+	r.UpdatedAt = u.UpdatedAt.Format(TimeFormatInResponse)
+	if u.DeletedAt != nil {
+		r.DeletedAt = u.DeletedAt.Format(TimeFormatInResponse)
+	}
+
+	return r
+}
+
+type DeleteUserRequest struct {
+	Name string `json:"name" validate:"required"`
+}
+
+type RotateTokenRequest struct {
+	Name string `json:"name" validate:"required"`
+}
+
+type RotateTokenResponse struct {
+	Token []byte `json:"token"`
+}
+
+func (r *RotateTokenResponse) FromUser(u User) *RotateTokenResponse {
+	r.Token = u.Token
+
+	return r
 }
 
 type UserContextKey struct{}
@@ -186,128 +311,4 @@ func (c *UserServiceCache) RotateToken(ctx context.Context, id string) ([]byte, 
 
 func (c *UserServiceCache) Health(ctx context.Context) (bool, []byte) {
 	return true, []byte(`{"ok"}`)
-}
-
-type GetUserRequest struct {
-	ID    string `json:"id"`
-	Email string `json:"email"`
-	Name  string `json:"name"`
-}
-
-func (p GetUserRequest) Validate(interface{}) error {
-	if p.ID == "" && p.Name == "" && p.Email == "" {
-		return fmt.Errorf("one of ID, Name or Email must be provided")
-	}
-	if p.ID != "" && (p.Name != "" || p.Email != "") {
-		return fmt.Errorf("only one of ID, Name or Email must be provided")
-	}
-	return nil
-}
-
-type GetUserResponse struct {
-	Name      string `json:"name"`
-	Email     string `json:"email"`
-	IsAdmin   bool   `json:"is_admin"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
-	DeletedAt string `json:"deleted_at,omitempty"`
-}
-
-func (r *GetUserResponse) FromUser(u User) *GetUserResponse {
-	r.Name = u.Name
-	r.Email = u.Email
-	r.IsAdmin = u.IsAdmin
-	r.CreatedAt = u.CreatedAt.Format(TimeFormatInResponse)
-	r.UpdatedAt = u.UpdatedAt.Format(TimeFormatInResponse)
-	if u.DeletedAt != nil {
-		r.DeletedAt = u.DeletedAt.Format(TimeFormatInResponse)
-	}
-
-	return r
-}
-
-type GetUsersRequest struct {
-	Cursor string `json:"cursor"`
-}
-
-type GetUsersResponse struct {
-	Users  []GetUserResponse `json:"users"`
-	Cursor string            `json:"cursor"`
-	Total  int               `json:"total"`
-}
-
-type CreateUserRequest struct {
-	Name    string `json:"name" validate:"required"`
-	Email   string `json:"email" validate:"required"`
-	IsAdmin bool   `json:"is_admin"`
-}
-
-type CreateUserResponse struct {
-	Name      string `json:"name"`
-	Email     string `json:"email"`
-	Token     []byte `json:"token"`
-	IsAdmin   bool   `json:"is_admin"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
-	DeletedAt string `json:"deleted_at,omitempty"`
-}
-
-func (r *CreateUserResponse) FromUser(u User) *CreateUserResponse {
-	r.Name = u.Name
-	r.Email = u.Email
-	r.Token = u.Token
-	r.IsAdmin = u.IsAdmin
-	r.CreatedAt = u.CreatedAt.Format(TimeFormatInResponse)
-	r.UpdatedAt = u.UpdatedAt.Format(TimeFormatInResponse)
-	if u.DeletedAt != nil {
-		r.DeletedAt = u.DeletedAt.Format(TimeFormatInResponse)
-	}
-
-	return r
-}
-
-type UpdateUserRequest struct {
-	Name    string `json:"name" validate:"required"`
-	Email   string `json:"email"`
-	IsAdmin bool   `json:"is_admin"`
-}
-
-type UpdateUserResponse struct {
-	Name      string `json:"name"`
-	Email     string `json:"email"`
-	IsAdmin   bool   `json:"is_admin"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
-	DeletedAt string `json:"deleted_at,omitempty"`
-}
-
-func (r *UpdateUserResponse) FromUser(u User) *UpdateUserResponse {
-	r.Name = u.Name
-	r.Email = u.Email
-	r.IsAdmin = u.IsAdmin
-	r.CreatedAt = u.CreatedAt.Format(TimeFormatInResponse)
-	r.UpdatedAt = u.UpdatedAt.Format(TimeFormatInResponse)
-	if u.DeletedAt != nil {
-		r.DeletedAt = u.DeletedAt.Format(TimeFormatInResponse)
-	}
-
-	return r
-}
-
-type DeleteUserRequest struct {
-	Name string `json:"name" validate:"required"`
-}
-
-type RotateTokenRequest struct {
-	Name string `json:"name" validate:"required"`
-}
-
-type RotateTokenResponse struct {
-	Token []byte `json:"token"`
-}
-
-func (r *RotateTokenResponse) FromUser(u User) *RotateTokenResponse {
-	r.Token = u.Token
-
-	return r
 }

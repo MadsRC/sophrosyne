@@ -45,12 +45,7 @@ func (u UserService) EntityID() string {
 }
 
 func (u UserService) InvokeMethod(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
-	if u.methods[req.Method] == nil {
-		u.logger.DebugContext(ctx, "cannot invoke method", "method", req.Method)
-		return rpc.ErrorFromRequest(&req, jsonrpc.MethodNotFound, string(jsonrpc.MethodNotFoundMessage))
-	}
-
-	return u.methods[req.Method].Invoke(ctx, req)
+	return invokeMethod(ctx, u.logger, u.methods, req)
 }
 
 type getUser struct {

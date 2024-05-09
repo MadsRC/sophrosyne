@@ -36,26 +36,29 @@ type ConfigProvider interface {
 //
 // Values that should not have a default value should not be included.
 var DefaultConfig = map[string]interface{}{
-	"database.user":            "postgres",
-	"database.host":            "localhost",
-	"database.port":            5432,
-	"database.name":            "postgres",
-	"server.port":              8080,
-	"logging.level":            LogLevelInfo,
-	"logging.format":           LogFormatJSON,
-	"logging.enabled":          true,
-	"tracing.enabled":          true,
-	"tracing.batch.timeout":    5,
-	"tracing.output":           OtelOutputStdout,
-	"metrics.enabled":          false,
-	"metrics.interval":         60,
-	"metrics.output":           OtelOutputStdout,
-	"principals.root.name":     "root",
-	"principals.root.email":    "root@localhost",
-	"principals.root.recreate": false,
-	"services.users.pageSize":  2,
-	"services.users.cacheTTL":  100,
-	"security.tls.keyType":     "EC-P384",
+	"database.user":                   "postgres",
+	"database.host":                   "localhost",
+	"database.port":                   5432,
+	"database.name":                   "postgres",
+	"server.port":                     8080,
+	"logging.level":                   LogLevelInfo,
+	"logging.format":                  LogFormatJSON,
+	"logging.enabled":                 true,
+	"tracing.enabled":                 true,
+	"tracing.batch.timeout":           5,
+	"tracing.output":                  OtelOutputStdout,
+	"metrics.enabled":                 false,
+	"metrics.interval":                60,
+	"metrics.output":                  OtelOutputStdout,
+	"principals.root.name":            "root",
+	"principals.root.email":           "root@localhost",
+	"principals.root.recreate":        false,
+	"services.users.pageSize":         2,
+	"services.users.cacheTTL":         100,
+	"security.tls.keyType":            "EC-P384",
+	"security.tls.insecureSkipVerify": false,
+	"services.profiles.pageSize":      2,
+	"services.checks.pageSize":        2,
 }
 
 // The Config struct is used to store the configuration of the application.
@@ -105,9 +108,10 @@ type Config struct {
 		SiteKey []byte `key:"siteKey" validate:"required,min=64,max=64"`
 		Salt    []byte `key:"salt" validate:"required,min=32,max=32"`
 		TLS     struct {
-			KeyType         string `key:"keyType" validate:"required,oneof=RSA-4096 EC-P224 EC-P256 EC-P384 EC-P521 ED25519"`
-			CertificatePath string `key:"certificatePath"`
-			KeyPath         string `key:"keyPath"`
+			KeyType            string `key:"keyType" validate:"required,oneof=RSA-4096 EC-P224 EC-P256 EC-P384 EC-P521 ED25519"`
+			CertificatePath    string `key:"certificatePath"`
+			KeyPath            string `key:"keyPath"`
+			InsecureSkipVerify bool   `key:"insecureSkipVerify"`
 		} `key:"tls" validate:"required"`
 	} `key:"security" validate:"required"`
 	Services struct {
@@ -115,6 +119,12 @@ type Config struct {
 			PageSize int   `key:"pageSize" validate:"required,min=2"`
 			CacheTTL int64 `key:"cacheTTL" validate:"required,min=0"`
 		} `key:"users" validate:"required"`
+		Profiles struct {
+			PageSize int `key:"pageSize" validate:"required,min=2"`
+		} `key:"profiles" validate:"required"`
+		Checks struct {
+			PageSize int `key:"pageSize" validate:"required,min=2"`
+		} `key:"checks" validate:"required"`
 	} `key:"services" validate:"required"`
 	Development struct {
 		StaticRootToken string `key:"staticRootToken"`

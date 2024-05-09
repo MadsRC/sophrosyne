@@ -1,0 +1,7 @@
+[tools]
+go = "1.22.2"
+watchexec = "latest"
+
+[settings]
+experimental = true
+go_set_gobin = true

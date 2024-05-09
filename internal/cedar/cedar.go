@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
+	"fmt"
 	"github.com/cedar-policy/cedar-go"
 	"github.com/madsrc/sophrosyne"
 	"log/slog"
@@ -15,7 +16,7 @@ var Policies []byte
 
 func UserToEntity(u sophrosyne.User) cedar.Entity {
 	out := cedar.Entity{
-		UID: cedar.EntityUID{Type: "User", ID: u.ID},
+		UID: cedar.EntityUID{Type: u.EntityType(), ID: u.EntityID()},
 		Attributes: cedar.Record{
 			"id":         cedar.String(u.ID),
 			"name":       cedar.String(u.Name),
@@ -31,18 +32,54 @@ func UserToEntity(u sophrosyne.User) cedar.Entity {
 	return out
 }
 
+func ProfileToEntity(u sophrosyne.Profile) cedar.Entity {
+	out := cedar.Entity{
+		UID: cedar.EntityUID{Type: u.EntityType(), ID: u.EntityID()},
+		Attributes: cedar.Record{
+			"id":         cedar.String(u.ID),
+			"name":       cedar.String(u.Name),
+			"created_at": cedar.Long(u.CreatedAt.Unix()),
+			"updated_at": cedar.Long(u.UpdatedAt.Unix()),
+		},
+	}
+	if u.DeletedAt != nil {
+		out.Attributes["deleted_at"] = cedar.Long(u.DeletedAt.Unix())
+	}
+	return out
+}
+
+func CheckToEntity(u sophrosyne.Check) cedar.Entity {
+	out := cedar.Entity{
+		UID: cedar.EntityUID{Type: u.EntityType(), ID: u.EntityID()},
+		Attributes: cedar.Record{
+			"id":         cedar.String(u.ID),
+			"name":       cedar.String(u.Name),
+			"created_at": cedar.Long(u.CreatedAt.Unix()),
+			"updated_at": cedar.Long(u.UpdatedAt.Unix()),
+		},
+	}
+	if u.DeletedAt != nil {
+		out.Attributes["deleted_at"] = cedar.Long(u.DeletedAt.Unix())
+	}
+	return out
+}
+
 type AuthorizationProvider struct {
 	policySet      cedar.PolicySet
 	psMutex        *sync.RWMutex
 	logger         *slog.Logger
 	userService    sophrosyne.UserService
+	profileService sophrosyne.ProfileService
+	checkService   sophrosyne.CheckService
 	tracingService sophrosyne.TracingService
 }
 
-func NewAuthorizationProvider(ctx context.Context, logger *slog.Logger, userService sophrosyne.UserService, tracingService sophrosyne.TracingService) (*AuthorizationProvider, error) {
+func NewAuthorizationProvider(ctx context.Context, logger *slog.Logger, userService sophrosyne.UserService, tracingService sophrosyne.TracingService, profileService sophrosyne.ProfileService, checkService sophrosyne.CheckService) (*AuthorizationProvider, error) {
 	ap := AuthorizationProvider{
 		logger:         logger,
 		userService:    userService,
+		profileService: profileService,
+		checkService:   checkService,
 		tracingService: tracingService,
 	}
 	ap.psMutex = &sync.RWMutex{}
@@ -75,11 +112,29 @@ func (a *AuthorizationProvider) fetchEntities(ctx context.Context, req cedar.Req
 	}
 
 	if !req.Resource.IsZero() {
-		res, err := a.userService.GetUser(ctx, req.Resource.ID)
-		if err != nil {
-			return nil, err
+		switch req.Resource.Type {
+		case "User":
+			res, err := a.userService.GetUser(ctx, req.Resource.ID)
+			if err != nil {
+				return nil, err
+			}
+			resource = UserToEntity(res)
+		case "Profile":
+			res, err := a.profileService.GetProfile(ctx, req.Resource.ID)
+			if err != nil {
+				return nil, err
+			}
+			resource = ProfileToEntity(res)
+		case "Check":
+			res, err := a.checkService.GetCheck(ctx, req.Resource.ID)
+			if err != nil {
+				return nil, err
+			}
+			resource = CheckToEntity(res)
+		default:
+			return nil, fmt.Errorf("unknown resource type: %s", req.Resource.Type)
 		}
-		resource = UserToEntity(res)
+
 	}
 
 	principal = UserToEntity(pri)
@@ -115,6 +170,7 @@ func (a *AuthorizationProvider) IsAuthorized(ctx context.Context, req sophrosyne
 	}
 	entities, err := a.fetchEntities(ctx, cReq)
 	if err != nil {
+		a.logger.InfoContext(ctx, "error fetching entities", "error", err.Error())
 		return false
 	}
 

@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // Middleware to catch panics.
@@ -96,5 +97,41 @@ func Authentication(exceptions []string, config *sophrosyne.Config, userService 
 		logger.InfoContext(r.Context(), "authenticated", "result", "success")
 
 		next.ServeHTTP(w, r)
+	})
+}
+
+type responseWrapper struct {
+	http.ResponseWriter
+	status      int
+	wroteHeader bool
+}
+
+func wrapResponseWriter(w http.ResponseWriter) *responseWrapper {
+	return &responseWrapper{ResponseWriter: w}
+}
+
+func (w *responseWrapper) WriteHeader(status int) {
+	if w.wroteHeader {
+		return
+	}
+	w.status = status
+	w.ResponseWriter.WriteHeader(status)
+	w.wroteHeader = true
+
+	return
+}
+
+func (w *responseWrapper) Status() int {
+	return w.status
+}
+
+func RequestLogging(logger *slog.Logger, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		begin := time.Now()
+		defer func() {
+			logger.InfoContext(r.Context(), "request served", "remote", r.RemoteAddr, "method", r.Method, "path", r.URL.Path, "user_agent", r.UserAgent(), "duration_ms", time.Since(begin)+time.Millisecond)
+		}()
+		wrapped := wrapResponseWriter(w)
+		next.ServeHTTP(wrapped, r)
 	})
 }

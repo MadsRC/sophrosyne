@@ -5,8 +5,10 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/jackc/pgx/v5/pgtype"
 	"io"
 	"log/slog"
+	"time"
 
 	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5"
@@ -15,14 +17,7 @@ import (
 	"github.com/madsrc/sophrosyne"
 )
 
-type UserService struct {
-	config       *sophrosyne.Config
-	pool         *pgxpool.Pool
-	logger       *slog.Logger
-	randomSource io.Reader
-}
-
-func NewUserService(ctx context.Context, config *sophrosyne.Config, logger *slog.Logger, randomSource io.Reader) (*UserService, error) {
+func newPool(ctx context.Context, config *sophrosyne.Config, logger *slog.Logger) (*pgxpool.Pool, error) {
 	pgxconfig, err := pgxpool.ParseConfig(fmt.Sprintf("postgres://%s:%s@%s:%d/%s", config.Database.User, config.Database.Password, config.Database.Host, config.Database.Port, config.Database.Name))
 	if err != nil {
 		return nil, err
@@ -32,17 +27,29 @@ func NewUserService(ctx context.Context, config *sophrosyne.Config, logger *slog
 		logger.DebugContext(ctx, "database connection established")
 		return nil
 	}
+	return pgxpool.NewWithConfig(ctx, pgxconfig)
+}
 
-	pool, err := pgxpool.NewWithConfig(ctx, pgxconfig)
+type UserService struct {
+	config         *sophrosyne.Config
+	pool           *pgxpool.Pool
+	logger         *slog.Logger
+	randomSource   io.Reader
+	profileService sophrosyne.ProfileService
+}
+
+func NewUserService(ctx context.Context, config *sophrosyne.Config, logger *slog.Logger, randomSource io.Reader, profileService sophrosyne.ProfileService) (*UserService, error) {
+	pool, err := newPool(ctx, config, logger)
 	if err != nil {
 		return nil, err
 	}
 
 	ue := &UserService{
-		config:       config,
-		pool:         pool,
-		logger:       logger,
-		randomSource: randomSource,
+		config:         config,
+		pool:           pool,
+		logger:         logger,
+		randomSource:   randomSource,
+		profileService: profileService,
 	}
 
 	err = ue.createRootUser(ctx)
@@ -54,6 +61,17 @@ func NewUserService(ctx context.Context, config *sophrosyne.Config, logger *slog
 }
 
 func (s *UserService) getUser(ctx context.Context, column, input any) (sophrosyne.User, error) {
+	type dbret struct {
+		ID             string      `db:"id"`
+		Name           string      `db:"name"`
+		Email          string      `db:"email"`
+		Token          []byte      `db:"token"`
+		IsAdmin        bool        `db:"is_admin"`
+		DefaultProfile pgtype.Text `db:"default_profile"`
+		CreatedAt      time.Time   `db:"created_at"`
+		UpdatedAt      time.Time   `db:"updated_at"`
+		DeletedAt      *time.Time  `db:"deleted_at"`
+	}
 	var rows pgx.Rows
 	if column == "email" {
 		rows, _ = s.pool.Query(ctx, "SELECT * FROM users WHERE email = $1 AND deleted_at IS NULL LIMIT 1", input)
@@ -66,14 +84,40 @@ func (s *UserService) getUser(ctx context.Context, column, input any) (sophrosyn
 	} else {
 		return sophrosyne.User{}, sophrosyne.NewUnreachableCodeError()
 	}
-	user, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByName[sophrosyne.User])
+	user, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByName[dbret])
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return sophrosyne.User{}, sophrosyne.ErrNotFound
 		}
 		return sophrosyne.User{}, err
 	}
-	return *user, nil
+
+	ret := sophrosyne.User{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Token:     user.Token,
+		IsAdmin:   user.IsAdmin,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+		DeletedAt: user.DeletedAt,
+	}
+
+	if user.DefaultProfile.String == "" {
+		prof, err := s.profileService.GetProfileByName(ctx, "default")
+		if err != nil {
+			return sophrosyne.User{}, err
+		}
+		ret.DefaultProfile = prof
+	} else {
+		prof, err := s.profileService.GetProfileByName(ctx, user.DefaultProfile.String)
+		if err != nil {
+			return sophrosyne.User{}, err
+		}
+		ret.DefaultProfile = prof
+	}
+
+	return ret, nil
 }
 
 func (s *UserService) GetUser(ctx context.Context, id string) (sophrosyne.User, error) {
@@ -186,13 +230,13 @@ func (s *UserService) Health(ctx context.Context) (bool, []byte) {
 func (s *UserService) createRootUser(ctx context.Context) error {
 	// Begin transaction
 	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
 	defer func() {
 		s.logger.DebugContext(ctx, "rolling back transaction")
 		tx.Rollback(ctx)
 	}()
-	if err != nil {
-		return err
-	}
 	// Check if root user exists and exit early if it does
 	var exists bool
 	err = tx.QueryRow(ctx, "SELECT EXISTS (SELECT 1 FROM users WHERE name = $1 AND email = $2 AND is_admin = true)", s.config.Principals.Root.Name, s.config.Principals.Root.Email).Scan(&exists)
