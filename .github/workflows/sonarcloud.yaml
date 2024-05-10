@@ -18,7 +18,7 @@ jobs:
     - uses: jdx/mise-action@0c39a522dfbced3ed83924152c45804a71ce216f # v2.0.4
       with:
         experimental: true
-    - run: mise run lint --no-fail
+    - run: mise run dev:lint --no-fail
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
       with:
         # Disabling shallow clone is recommended for improving relevancy of reporting
