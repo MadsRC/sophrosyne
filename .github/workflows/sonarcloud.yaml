@@ -15,7 +15,7 @@ jobs:
   sonarcloud:
     runs-on: ubuntu-latest
     steps:
-    - uses: jdx/mise-action
+    - uses: jdx/mise-action@0c39a522dfbced3ed83924152c45804a71ce216f # v2.0.4
       with:
         experimental: true
     - run: mise run lint --no-fail
