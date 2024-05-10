@@ -1,8 +1,11 @@
+database:
+  user: postgres
+  password: postgres
+  host: localhost
+  port: 5432
+  name: postgres
 security:
-  site_key: '6fAkguc1RQkgdWwoLdslkQjA/N5ujPvGEmG2l97Gt+4='
-  salt: 'KULByt65QDNWy4BhtkOagb3td08q992ZfPWLthFw00s='
-  outgoing_tls_verify: False
+  siteKey: !!binary ZD+b96+IBJranGUCEMZzi2yhrA7eRyrqwgCTYhEG7oIyNz3mcvEjGqC/RRF+rLtpfD+Jbb5DzVlmUM1TlL80BQ==
+  salt: !!binary Ag4k628yFI2h+SWoypEO7OYzrFqBrEz8az9c6Du7ons=
 development:
-  static_root_token: "thisisastaticroottoken"
-logging:
-  format: development
+  staticRootToken: staticroottoken

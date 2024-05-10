@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GoLinterSettings">
+    <option name="enabledLinters">
+      <list>
+        <option value="ineffassign" />
+        <option value="staticcheck" />
+        <option value="govet" />
+        <option value="forbidigo" />
+        <option value="goheader" />
+        <option value="gosec" />
+        <option value="goconst" />
+        <option value="errcheck" />
+        <option value="unused" />
+        <option value="godot" />
+        <option value="goimports" />
+        <option value="gosimple" />
+      </list>
+    </option>
+    <option name="goLinterExe" value="$USER_HOME$/.local/share/mise/installs/go-github.com-golangci-golangci-lint-cmd-golangci-lint/1.58.1/bin/golangci-lint" />
+    <option name="linterSelected" value="true" />
+  </component>
+</project>

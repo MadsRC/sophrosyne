@@ -6,7 +6,6 @@ repos:
         args: ['--maxkb=4000']
       - id: end-of-file-fixer
         exclude: "snapshots|docs/api.md"
-      - id: check-docstring-first
       - id: trailing-whitespace
         exclude: "snapshots|docs/api.md"
       - id: check-merge-conflict
@@ -15,10 +14,4 @@ repos:
       - id: check-case-conflict
       - id: mixed-line-ending
       - id: detect-private-key
-      - id: check-ast
-      - id: check-builtin-literals
       - id: check-executables-have-shebangs
-      - id: check-shebang-scripts-are-executable
-      - id: name-tests-test
-        args: [ "--pytest-test-first" ]
-      - id: requirements-txt-fixer

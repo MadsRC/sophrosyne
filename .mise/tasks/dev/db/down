@@ -1,0 +1,4 @@
+#!/bin/sh
+# mise outputs=[]
+
+docker compose -f docker-compose.development.yml down

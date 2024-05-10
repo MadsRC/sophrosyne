@@ -1,0 +1,73 @@
+{
+    "Users": {
+        "entityTypes": {
+            "User": {
+                "shape": {
+                    "type": "Record",
+                    "attributes": {
+                        "id": {
+                            "type": "String"
+                        },
+                        "name": {
+                            "type": "String"
+                        },
+                        "email": {
+                            "type": "String"
+                        },
+                        "is_admin": {
+                            "type": "Boolean"
+                        },
+                        "created_at": {
+                            "type": "Long"
+                        },
+                        "updated_at": {
+                            "type": "Long"
+                        },
+                        "deleted_at": {
+                            "type": "Long",
+                            "required": false
+                        }
+                    }
+                }
+            }
+        },
+        "actions": {
+            "GetUser": {
+                "appliesTo": {
+                    "principalTypes": [ "User"],
+                    "resourceTypes": [ "User" ]
+                }
+            },
+            "GetUsers": {
+                "appliesTo": {
+                    "principalTypes": [ "User"],
+                    "resourceTypes": [ "User" ]
+                }
+            },
+            "CreateUser": {
+                "appliesTo": {
+                    "principalTypes": [ "User"],
+                    "resourceTypes": [ "User" ]
+                }
+            },
+            "UpdateUser": {
+                "appliesTo": {
+                    "principalTypes": [ "User"],
+                    "resourceTypes": [ "User" ]
+                }
+            },
+            "DeleteUser": {
+                "appliesTo": {
+                    "principalTypes": [ "User"],
+                    "resourceTypes": [ "User" ]
+                }
+            },
+            "RotateToken": {
+                "appliesTo": {
+                    "principalTypes": [ "User"],
+                    "resourceTypes": [ "User" ]
+                }
+            }
+        }
+    }
+}

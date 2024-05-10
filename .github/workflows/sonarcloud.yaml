@@ -7,7 +7,7 @@ on:
   # a pull request.
   push:
     branches:
-      - master
+      - main
   pull_request:
       types: [opened, synchronize, reopened]
 name: SonarCloud analysis
@@ -19,6 +19,10 @@ jobs:
       with:
         # Disabling shallow clone is recommended for improving relevancy of reporting
         fetch-depth: 0
+    - uses: jdx/mise-action@0c39a522dfbced3ed83924152c45804a71ce216f # v2.0.4
+      with:
+        experimental: true
+    - run: mise run dev:lint --no-fail
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@6bbd64e0cb2194e04addb429d669a9ee873eeeef
       env:
