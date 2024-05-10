@@ -88,3 +88,9 @@ Q
 !internal/configProvider/config.go,9/4/94fff78190a05648b67958f306064e0b22a0c2a9
 G
 internal/cedar/cedar.go,5/e/5e5f0bc86687c8ff1cfcce4bdcf3bca5c1f44ea1
+F
+.mise/tasks/dev/format,b/1/b1359a64bfcc9449ec1987fd3561f53db594db75
+M
+.github/workflows/semgrep.yml,d/e/de3722248349a718ab259ea53790cf96abb5556c
+Q
+!.github/workflows/sonarcloud.yaml,9/f/9ff3194bde8e6b85ebab5d28a2d371e662e68f4a

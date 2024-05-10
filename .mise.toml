@@ -2,6 +2,7 @@
 go = "latest"
 watchexec = "latest"
 "go:github.com/golangci/golangci-lint/cmd/golangci-lint" = "1.58.1"
+"go:golang.org/x/tools/cmd/goimports" = "latest"
 
 [settings]
 experimental = true

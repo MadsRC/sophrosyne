@@ -3,11 +3,12 @@ package middleware
 import (
 	"context"
 	"encoding/base64"
-	"github.com/madsrc/sophrosyne"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/madsrc/sophrosyne"
 
 	ownHttp "github.com/madsrc/sophrosyne/internal/http"
 )

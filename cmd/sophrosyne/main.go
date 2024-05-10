@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/madsrc/sophrosyne/internal/configProvider"
 	"log/slog"
 	http2 "net/http"
 	"os"
@@ -18,6 +17,7 @@ import (
 
 	"github.com/madsrc/sophrosyne"
 	"github.com/madsrc/sophrosyne/internal/cedar"
+	"github.com/madsrc/sophrosyne/internal/configProvider"
 	"github.com/madsrc/sophrosyne/internal/healthchecker"
 	"github.com/madsrc/sophrosyne/internal/http"
 	"github.com/madsrc/sophrosyne/internal/http/middleware"
