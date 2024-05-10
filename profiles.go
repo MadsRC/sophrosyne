@@ -86,3 +86,104 @@ type UpdateProfileResponse struct {
 type DeleteProfileRequest struct {
 	Name string `json:"name" validate:"required"`
 }
+
+type ProfileServiceCache struct {
+	cache          *Cache
+	profileService ProfileService
+	tracingService TracingService
+}
+
+func NewProfileServiceCache(config *Config, profileService ProfileService, tracingService TracingService) *ProfileServiceCache {
+	return &ProfileServiceCache{
+		cache:          NewCache(config.Services.Profiles.CacheTTL),
+		profileService: profileService,
+		tracingService: tracingService,
+	}
+}
+
+func (p ProfileServiceCache) GetProfile(ctx context.Context, id string) (Profile, error) {
+	ctx, span := p.tracingService.StartSpan(ctx, "ProfileServiceCache.GetProfile")
+	v, ok := p.cache.Get(id)
+	if ok {
+		span.End()
+		return v.(Profile), nil
+	}
+
+	profile, err := p.profileService.GetProfile(ctx, id)
+	if err != nil {
+		span.End()
+		return Profile{}, err
+	}
+
+	p.cache.Set(id, profile)
+	span.End()
+	return profile, nil
+}
+
+func (p ProfileServiceCache) GetProfileByName(ctx context.Context, name string) (Profile, error) {
+	ctx, span := p.tracingService.StartSpan(ctx, "ProfileServiceCache.GetProfileByName")
+	profile, err := p.profileService.GetProfileByName(ctx, name)
+	if err != nil {
+		span.End()
+		return Profile{}, err
+	}
+
+	p.cache.Set(profile.ID, profile)
+	span.End()
+	return profile, nil
+}
+
+func (p ProfileServiceCache) GetProfiles(ctx context.Context, cursor *DatabaseCursor) ([]Profile, error) {
+	ctx, span := p.tracingService.StartSpan(ctx, "ProfileServiceCache.GetProfiles")
+	profiles, err := p.profileService.GetProfiles(ctx, cursor)
+	if err != nil {
+		span.End()
+		return nil, err
+	}
+
+	for _, user := range profiles {
+		p.cache.Set(user.ID, user)
+	}
+
+	span.End()
+	return profiles, nil
+}
+
+func (p ProfileServiceCache) CreateProfile(ctx context.Context, profile CreateProfileRequest) (Profile, error) {
+	ctx, span := p.tracingService.StartSpan(ctx, "ProfileServiceCache.CreateProfile")
+	createProfile, err := p.profileService.CreateProfile(ctx, profile)
+	if err != nil {
+		span.End()
+		return Profile{}, err
+	}
+
+	p.cache.Set(createProfile.ID, createProfile)
+	span.End()
+	return createProfile, nil
+}
+
+func (p ProfileServiceCache) UpdateProfile(ctx context.Context, profile UpdateProfileRequest) (Profile, error) {
+	ctx, span := p.tracingService.StartSpan(ctx, "ProfileServiceCache.UpdateProfile")
+	updateProfile, err := p.profileService.UpdateProfile(ctx, profile)
+	if err != nil {
+		span.End()
+		return Profile{}, err
+	}
+
+	p.cache.Set(updateProfile.ID, updateProfile)
+	span.End()
+	return updateProfile, nil
+}
+
+func (p ProfileServiceCache) DeleteProfile(ctx context.Context, name string) error {
+	ctx, span := p.tracingService.StartSpan(ctx, "ProfileServiceCache.DeleteProfile")
+	err := p.profileService.DeleteProfile(ctx, name)
+	if err != nil {
+		span.End()
+		return err
+	}
+
+	p.cache.Delete(name)
+	span.End()
+	return nil
+}

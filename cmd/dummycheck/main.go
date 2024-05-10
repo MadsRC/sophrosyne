@@ -3,24 +3,46 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/madsrc/sophrosyne/internal/grpc/checks"
-	"google.golang.org/grpc"
 	"log"
 	"net"
+	"os"
+
+	"github.com/urfave/cli/v2"
+	"google.golang.org/grpc"
+
+	"github.com/madsrc/sophrosyne/internal/grpc/checks"
 )
 
 func main() {
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 11432))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+	app := &cli.App{
+		Flags: []cli.Flag{
+			&cli.IntFlag{
+				Name:  "port",
+				Usage: "port to listen on",
+				Value: 11432,
+			},
+		},
+		Action: func(c *cli.Context) error {
+			lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", c.Int("port")))
+			if err != nil {
+				log.Fatalf("failed to listen: %v", err)
+			}
+			var opts []grpc.ServerOption
+			grpcServer := grpc.NewServer(opts...)
+			checks.RegisterCheckServiceServer(grpcServer, checkServer{})
+			err = grpcServer.Serve(lis)
+			if err != nil {
+				log.Fatalf("failed to serve: %v", err)
+			}
+
+			return nil
+		},
 	}
-	var opts []grpc.ServerOption
-	grpcServer := grpc.NewServer(opts...)
-	checks.RegisterCheckServiceServer(grpcServer, checkServer{})
-	err = grpcServer.Serve(lis)
-	if err != nil {
-		log.Fatalf("failed to serve: %v", err)
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
 	}
+
 }
 
 type checkServer struct {

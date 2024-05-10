@@ -1,11 +1,13 @@
 package rpc
 
 import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
 	"github.com/madsrc/sophrosyne"
 	"github.com/madsrc/sophrosyne/internal/rpc/internal/jsonrpc"
 	"github.com/madsrc/sophrosyne/internal/validator"
-	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestParamsIntoAny(t *testing.T) {

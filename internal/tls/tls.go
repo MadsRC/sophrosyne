@@ -4,50 +4,31 @@ import (
 	"bufio"
 	"crypto/ecdsa"
 	"crypto/ed25519"
-	"crypto/tls"
-	"encoding/pem"
-	"fmt"
-	"github.com/madsrc/sophrosyne"
-	"io"
-	"os"
-
 	"crypto/elliptic"
-
 	"crypto/rand"
-
 	"crypto/rsa"
-
+	"crypto/tls"
 	"crypto/x509"
-
 	"crypto/x509/pkix"
-
+	"encoding/pem"
 	"flag"
-
+	"fmt"
+	"io"
 	"log"
-
 	"math/big"
-
 	"net"
-
+	"os"
 	"strings"
-
 	"time"
+
+	"github.com/madsrc/sophrosyne"
 )
 
 var (
-	host = flag.String("host", "", "Comma-separated hostnames and IPs to generate a certificate for")
-
+	host      = flag.String("host", "", "Comma-separated hostnames and IPs to generate a certificate for")
 	validFrom = flag.String("start-date", "", "Creation date formatted as Jan 1 15:04:05 2011")
-
-	validFor = flag.Duration("duration", 365*24*time.Hour, "Duration that certificate is valid for")
-
-	isCA = flag.Bool("ca", false, "whether this cert should be its own Certificate Authority")
-
-	rsaBits = flag.Int("rsa-bits", 2048, "Size of RSA key to generate. Ignored if --ecdsa-curve is set")
-
-	ecdsaCurve = flag.String("ecdsa-curve", "", "ECDSA curve to use to generate a key. Valid values are P224, P256 (recommended), P384, P521")
-
-	ed25519Key = flag.Bool("ed25519", false, "Generate an Ed25519 key")
+	validFor  = flag.Duration("duration", 365*24*time.Hour, "Duration that certificate is valid for")
+	isCA      = flag.Bool("ca", false, "whether this cert should be its own Certificate Authority")
 )
 
 type KeyType string
@@ -187,7 +168,7 @@ func readCertificate(path string) ([]byte, error) {
 	return data.Bytes, nil
 }
 
-// Has to be PKCS8
+// Has to be PKCS8.
 func readPrivateKeyPath(path string) (interface{}, error) {
 	data, err := readPEMFile(path)
 	if err != nil {

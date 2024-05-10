@@ -2,9 +2,10 @@ package jsonrpc
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestID_MarshalJSON(t *testing.T) {

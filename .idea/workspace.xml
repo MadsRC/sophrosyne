@@ -5,104 +5,43 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a9152082-80d9-4d6c-886a-c2713d5de713" name="Changes" comment="added basic healthcheck">
-      <change afterPath="$PROJECT_DIR$/.mise.toml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mise/tasks/dev/db/down" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mise/tasks/dev/db/up" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mise/tasks/dev/run" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.mise/tasks/sync-go-version" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/checks.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmd/dummycheck/main.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/grpc/checks/checks.pb.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/grpc/checks/checks_grpc.pb.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/migrate/migrations/000003_checks_and_profiles.down.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/migrate/migrations/000003_checks_and_profiles.up.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/migrate/migrations/000004_add_default_profile_to_users.down.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/migrate/migrations/000004_add_default_profile_to_users.up.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/pgx/checks.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/pgx/profiles.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/rpc/services/checkservice.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/rpc/services/profileservice.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/rpc/services/scanservice.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/rpc/services/services.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/profiles.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/proto/checks/checks.proto" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scans.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/integration/startup_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.golangci.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.mise/tasks/dev/lint" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/integration/doc.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/269451f3-7c6a-44a5-be6e-1441e8afc62f.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/269451f3-7c6a-44a5-be6e-1441e8afc62f.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sophrosyne.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sophrosyne.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bruno.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mise.toml" beforeDir="false" afterPath="$PROJECT_DIR$/.mise.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/checks.go" beforeDir="false" afterPath="$PROJECT_DIR$/checks.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/dummycheck/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/dummycheck/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmd/sophrosyne/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/sophrosyne/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/collection.bru" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configurations/integration.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.development.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/environments/integration.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/environments/local.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/cedar/cedar.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/cedar/cedar.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/configProvider/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/configProvider/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/configProvider/config_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/configProvider/config_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/healthchecker/healthchecker.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/healthchecker/healthchecker.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/http/http.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/http/http.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/http/middleware/middleware.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/http/middleware/middleware.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/migrate/migrate.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/migrate/migrate.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/otel/otel.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/otel/otel.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/pgx/checks.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/pgx/checks.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/pgx/pgx.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/pgx/pgx.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/pgx/profiles.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/pgx/profiles.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/rpc/internal/jsonrpc/jsonrpc.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/rpc/internal/jsonrpc/jsonrpc.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/rpc/internal/jsonrpc/jsonrpc_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/rpc/internal/jsonrpc/jsonrpc_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/rpc/rpc.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/rpc/rpc.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/rpc/rpc_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/rpc/rpc_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/rpc/services/checkservice.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/rpc/services/checkservice.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/rpc/services/profileservice.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/rpc/services/profileservice.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/rpc/services/scanservice.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/rpc/services/scanservice.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/rpc/services/services.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/rpc/services/services.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/rpc/services/userservice.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/rpc/services/userservice.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/tls/tls.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/tls/tls.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth01/bruno.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth01/collection.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth01/config.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth01/docker-compose.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth01/environments/integration.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth01/tests/authenticated-healthcheck.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth01/tests/bad-authentication-healthcheck.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth01/tests/unauthenticated-healthcheck.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/bruno.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/collection.bru" beforeDir="false" afterPath="$PROJECT_DIR$/.mise/tasks/clean" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/config.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/docker-compose.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/environments/integration.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/checks/create-check.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/checks/delete-check.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/checks/list-check.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/checks/list-checks.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/checks/update-check.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/profiles/create-profile.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/profiles/delete-profile.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/profiles/list-profile.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/profiles/list-profiles.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/profiles/update-profile.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/safety/scan.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/users/create-user.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/users/delete-user.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/users/list-user.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/users/list-users.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/users/rotate-token.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/auth_required/tests/users/update-users.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/bruno.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/collection.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/config.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/docker-compose.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/environments/integration.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/inactiveUser01/create-user.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/inactiveUser01/delete-user.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/inactiveUser01/list-users.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/inactiveUser01/update-user.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/scanProcedure01/create-check.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/scanProcedure01/create-profile.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/scanProcedure01/delete-check.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/scanProcedure01/delete-profile.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/scanProcedure01/list-check local:dummy:scanProcedure01.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/scanProcedure01/reset default profile for root.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/scanProcedure01/scan.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/scanProcedure01/set default profile for root.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/users/create-user.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/users/delete-user.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/users/list-user as user.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/users/list-user.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/users/list-users.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/users/rotate-token as root.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/users/rotate-token own token.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/integration/healthy_instance/tests/users/update-user.bru" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/users.go" beforeDir="false" afterPath="$PROJECT_DIR$/users.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/validator/validator_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/validator/validator_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logging.go" beforeDir="false" afterPath="$PROJECT_DIR$/logging.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/profiles.go" beforeDir="false" afterPath="$PROJECT_DIR$/profiles.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sonar-project.properties" beforeDir="false" afterPath="$PROJECT_DIR$/sonar-project.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/integration/startup_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/tests/integration/startup_test.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -133,6 +72,9 @@
     "DefaultGoTemplateProperty": "Go File",
     "Docker.Dockerfile.executor": "Run",
     "Go Test.TestSomething in github.com/madsrc/sophrosyne.executor": "Run",
+    "Go Test.TestStartup in github.com/madsrc/sophrosyne/tests/integration.executor": "Run",
+    "Go Test.TestStartup/API_not_served_via_plaintext in github.com/madsrc/sophrosyne/tests/integration.executor": "Run",
+    "Go Test.TestStartup/API_served_via_TLS#01 in github.com/madsrc/sophrosyne/tests/integration.executor": "Run",
     "Go Test.TestWithRedis in github.com/madsrc/sophrosyne/tests/integration.executor": "Run",
     "Makefile Target.dist/sophrosyne.executor": "Run",
     "Makefile Target.dist/sophrosyne.tar.executor": "Run",
@@ -146,7 +88,7 @@
     "git-widget-placeholder": "goRewrite",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "/Users/user/projects/sophrosyne/.mise/tasks/build",
+    "last_opened_file_path": "/Users/user/projects/sophrosyne/.mise/tasks/dev",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
@@ -160,11 +102,11 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/.mise/tasks/dev" />
       <recent name="$PROJECT_DIR$/.mise/tasks/build" />
       <recent name="$PROJECT_DIR$/internal/migrate/migrations" />
       <recent name="$PROJECT_DIR$/internal/pgx" />
       <recent name="$PROJECT_DIR$/internal/rpc/services" />
-      <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/tests/integration" />
@@ -174,7 +116,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Go Test.TestSomething in github.com/madsrc/sophrosyne">
+  <component name="RunManager" selected="Go Test.TestStartup in github.com/madsrc/sophrosyne/tests/integration">
     <configuration name="TestSomething in github.com/madsrc/sophrosyne" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
       <module name="sophrosyne" />
       <working_directory value="$PROJECT_DIR$" />
@@ -184,6 +126,42 @@
       <filePath value="$PROJECT_DIR$" />
       <framework value="gotest" />
       <pattern value="^\QTestSomething\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestStartup in github.com/madsrc/sophrosyne/tests/integration" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="sophrosyne" />
+      <working_directory value="$PROJECT_DIR$/tests/integration" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/madsrc/sophrosyne/tests/integration" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestStartup\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestStartup/API_not_served_via_plaintext in github.com/madsrc/sophrosyne/tests/integration" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="sophrosyne" />
+      <working_directory value="$PROJECT_DIR$/tests/integration" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/madsrc/sophrosyne/tests/integration" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestStartup\E$/^\QAPI_not_served_via_plaintext\E$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestStartup/API_served_via_TLS#01 in github.com/madsrc/sophrosyne/tests/integration" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="sophrosyne" />
+      <working_directory value="$PROJECT_DIR$/tests/integration" />
+      <root_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/madsrc/sophrosyne/tests/integration" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestStartup\E$/^\QAPI_served_via_TLS#01\E$" />
       <method v="2" />
     </configuration>
     <configuration name="TestWithRedis in github.com/madsrc/sophrosyne/tests/integration" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
@@ -198,24 +176,6 @@
       <pattern value="^\QTestWithRedis\E$" />
       <method v="2" />
     </configuration>
-    <configuration name="dist/sophrosyne.tar" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/Makefile" target="dist/sophrosyne.tar" workingDirectory="" arguments="">
-        <envs />
-      </makefile>
-      <method v="2" />
-    </configuration>
-    <configuration name="test/integration" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/Makefile" target="test/integration" workingDirectory="" arguments="">
-        <envs />
-      </makefile>
-      <method v="2" />
-    </configuration>
-    <configuration name="test/integration/%" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile" temporary="true">
-      <makefile filename="$PROJECT_DIR$/Makefile" target="test/integration/%" workingDirectory="" arguments="">
-        <envs />
-      </makefile>
-      <method v="2" />
-    </configuration>
     <configuration default="true" type="docker-deploy" factoryName="dockerfile" temporary="true">
       <deployment type="dockerfile">
         <settings />
@@ -224,11 +184,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Go Test.TestStartup in github.com/madsrc/sophrosyne/tests/integration" />
+        <item itemvalue="Go Test.TestStartup/API_served_via_TLS#01 in github.com/madsrc/sophrosyne/tests/integration" />
+        <item itemvalue="Go Test.TestStartup/API_not_served_via_plaintext in github.com/madsrc/sophrosyne/tests/integration" />
         <item itemvalue="Go Test.TestSomething in github.com/madsrc/sophrosyne" />
         <item itemvalue="Go Test.TestWithRedis in github.com/madsrc/sophrosyne/tests/integration" />
-        <item itemvalue="Makefile Target.test/integration" />
-        <item itemvalue="Makefile Target.test/integration/%" />
-        <item itemvalue="Makefile Target.dist/sophrosyne.tar" />
       </list>
     </recent_temporary>
   </component>

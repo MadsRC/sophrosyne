@@ -5,10 +5,12 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"github.com/cedar-policy/cedar-go"
-	"github.com/madsrc/sophrosyne"
 	"log/slog"
 	"sync"
+
+	"github.com/cedar-policy/cedar-go"
+
+	"github.com/madsrc/sophrosyne"
 )
 
 //go:embed policies.cedar

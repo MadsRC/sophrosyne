@@ -5,9 +5,19 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"github.com/madsrc/sophrosyne/internal/configProvider"
+	"log/slog"
+	http2 "net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/urfave/cli/v2"
+	"gopkg.in/yaml.v3"
+
 	"github.com/madsrc/sophrosyne"
 	"github.com/madsrc/sophrosyne/internal/cedar"
-	"github.com/madsrc/sophrosyne/internal/configProvider"
 	"github.com/madsrc/sophrosyne/internal/healthchecker"
 	"github.com/madsrc/sophrosyne/internal/http"
 	"github.com/madsrc/sophrosyne/internal/http/middleware"
@@ -18,14 +28,6 @@ import (
 	"github.com/madsrc/sophrosyne/internal/rpc/services"
 	"github.com/madsrc/sophrosyne/internal/tls"
 	"github.com/madsrc/sophrosyne/internal/validator"
-	"github.com/urfave/cli/v2"
-	"gopkg.in/yaml.v3"
-	"log/slog"
-	http2 "net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 func main() {
@@ -245,7 +247,9 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	profileServiceDatabase, err := pgx.NewProfileService(ctx, config, logger, checkServiceDatabase)
+	checkService := sophrosyne.NewCheckServiceCache(config, checkServiceDatabase, otelService)
+
+	profileServiceDatabase, err := pgx.NewProfileService(ctx, config, logger, checkService)
 	if err != nil {
 		return err
 	}
@@ -260,7 +264,12 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	authzProvider, err := cedar.NewAuthorizationProvider(ctx, logger, userService, otelService, profileServiceDatabase, checkServiceDatabase)
+	profileService := sophrosyne.NewProfileServiceCache(config, profileServiceDatabase, otelService)
+	if err != nil {
+		return err
+	}
+
+	authzProvider, err := cedar.NewAuthorizationProvider(ctx, logger, userService, otelService, profileService, checkService)
 
 	rpcServer, err := rpc.NewRPCServer(logger)
 	if err != nil {
@@ -272,17 +281,17 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	rpcCheckService, err := services.NewCheckService(checkServiceDatabase, authzProvider, logger, validate)
+	rpcCheckService, err := services.NewCheckService(checkService, authzProvider, logger, validate)
 	if err != nil {
 		return err
 	}
 
-	rpcProfileService, err := services.NewProfileService(profileServiceDatabase, authzProvider, logger, validate)
+	rpcProfileService, err := services.NewProfileService(profileService, authzProvider, logger, validate)
 	if err != nil {
 		return err
 	}
 
-	rpcScanService, err := services.NewScanService(authzProvider, logger, validate, profileServiceDatabase, checkServiceDatabase)
+	rpcScanService, err := services.NewScanService(authzProvider, logger, validate, profileService, checkService)
 	if err != nil {
 		return err
 	}

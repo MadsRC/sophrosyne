@@ -1,15 +1,33 @@
+// Sophrosyne
+//   Copyright (C) 2024  Mads R. Havmand
+//
+// This program is free software: you can redistribute it and/or modify
+//   it under the terms of the GNU Affero General Public License as published by
+//   the Free Software Foundation, either version 3 of the License, or
+//   (at your option) any later version.
+//
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU Affero General Public License for more details.
+//
+//   You should have received a copy of the GNU Affero General Public License
+//   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package http
 
 import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/madsrc/sophrosyne"
 	"io"
+	"log"
 	"log/slog"
 	"net"
 	"net/http"
+	"strings"
 	"time"
+
+	"github.com/madsrc/sophrosyne"
 )
 
 type Server struct {
@@ -35,6 +53,7 @@ func NewServer(ctx context.Context, appConfig *sophrosyne.Config, validator soph
 			ReadTimeout:  time.Second,
 			WriteTimeout: 10 * time.Second,
 			TLSConfig:    tlsConfig,
+			ErrorLog:     log.New(NewSlogLoggerAdapter(logger), "", 0),
 		},
 		mux:            mux,
 		tracingService: tracingService,
@@ -101,4 +120,21 @@ func WriteResponse(ctx context.Context, w http.ResponseWriter, status int, conte
 func WriteInternalServerError(ctx context.Context, w http.ResponseWriter, logger *slog.Logger) {
 	logger.ErrorContext(ctx, "returning internal server error")
 	WriteResponse(ctx, w, http.StatusInternalServerError, "text/plain", []byte("Internal Server Error"), logger)
+}
+
+// SlogLoggerAdapter adapts a *slog.Logger to implement the Log interface.
+type SlogLoggerAdapter struct {
+	slogLogger *slog.Logger
+}
+
+// NewSlogLoggerAdapter creates a new SlogLoggerAdapter.
+func NewSlogLoggerAdapter(logger *slog.Logger) *SlogLoggerAdapter {
+	return &SlogLoggerAdapter{slogLogger: logger}
+}
+
+// Write implements the Write method of the Log interface.
+func (a *SlogLoggerAdapter) Write(p []byte) (n int, err error) {
+	// Use the slog.Logger to log the message.
+	a.slogLogger.Error("server error", "error", strings.TrimRight(string(p), "\n"))
+	return len(p), nil
 }

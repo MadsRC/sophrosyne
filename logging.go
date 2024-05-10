@@ -71,7 +71,7 @@ func (h LogHandler) Enabled(ctx context.Context, Level slog.Level) bool {
 }
 
 // Handle adds contextual attributes to the Record before calling the underlying
-// handler
+// handler.
 func (h LogHandler) Handle(ctx context.Context, r slog.Record) error {
 	if h.tracingService.GetTraceID(ctx) != "" {
 		r.AddAttrs(slog.String("trace_id", h.tracingService.GetTraceID(ctx)))

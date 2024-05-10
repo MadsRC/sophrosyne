@@ -1,4 +1,3 @@
-// Package jsonrpc implements the JSON-RPC 2.0 specification as per https://www.jsonrpc.org/specification.
 package jsonrpc
 
 import (

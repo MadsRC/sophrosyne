@@ -2,9 +2,10 @@ package services
 
 import (
 	"context"
+	"log/slog"
+
 	"github.com/madsrc/sophrosyne/internal/rpc"
 	"github.com/madsrc/sophrosyne/internal/rpc/internal/jsonrpc"
-	"log/slog"
 )
 
 func invokeMethod(ctx context.Context, logger *slog.Logger, methods map[jsonrpc.Method]rpc.Method, req jsonrpc.Request) ([]byte, error) {

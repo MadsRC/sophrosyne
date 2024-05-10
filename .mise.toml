@@ -1,6 +1,7 @@
 [tools]
-go = "1.22.2"
+go = "latest"
 watchexec = "latest"
+"go:github.com/golangci/golangci-lint/cmd/golangci-lint" = "1.58.1"
 
 [settings]
 experimental = true

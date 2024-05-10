@@ -3,10 +3,11 @@ package services
 import (
 	"context"
 	"errors"
+	"log/slog"
+
 	"github.com/madsrc/sophrosyne"
 	"github.com/madsrc/sophrosyne/internal/rpc"
 	"github.com/madsrc/sophrosyne/internal/rpc/internal/jsonrpc"
-	"log/slog"
 )
 
 type UserService struct {

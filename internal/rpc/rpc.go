@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/madsrc/sophrosyne"
-	"github.com/madsrc/sophrosyne/internal/rpc/internal/jsonrpc"
 	"log/slog"
 	"strings"
+
+	"github.com/madsrc/sophrosyne"
+	"github.com/madsrc/sophrosyne/internal/rpc/internal/jsonrpc"
 )
 
 type Server struct {

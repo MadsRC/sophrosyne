@@ -2,6 +2,7 @@ package healthchecker
 
 import (
 	"context"
+
 	"github.com/madsrc/sophrosyne"
 )
 

@@ -1,9 +1,10 @@
 package validator
 
 import (
+	"testing"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestNewValidator(t *testing.T) {

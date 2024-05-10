@@ -58,7 +58,9 @@ var DefaultConfig = map[string]interface{}{
 	"security.tls.keyType":            "EC-P384",
 	"security.tls.insecureSkipVerify": false,
 	"services.profiles.pageSize":      2,
+	"services.profiles.cacheTTL":      100,
 	"services.checks.pageSize":        2,
+	"services.checks.cacheTTL":        100,
 }
 
 // The Config struct is used to store the configuration of the application.
@@ -120,10 +122,12 @@ type Config struct {
 			CacheTTL int64 `key:"cacheTTL" validate:"required,min=0"`
 		} `key:"users" validate:"required"`
 		Profiles struct {
-			PageSize int `key:"pageSize" validate:"required,min=2"`
+			PageSize int   `key:"pageSize" validate:"required,min=2"`
+			CacheTTL int64 `key:"cacheTTL" validate:"required,min=0"`
 		} `key:"profiles" validate:"required"`
 		Checks struct {
-			PageSize int `key:"pageSize" validate:"required,min=2"`
+			PageSize int   `key:"pageSize" validate:"required,min=2"`
+			CacheTTL int64 `key:"cacheTTL" validate:"required,min=0"`
 		} `key:"checks" validate:"required"`
 	} `key:"services" validate:"required"`
 	Development struct {

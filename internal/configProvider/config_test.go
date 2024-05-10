@@ -1,17 +1,19 @@
 package configProvider
 
 import (
-	"github.com/madsrc/sophrosyne/internal/validator"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/madsrc/sophrosyne/internal/validator"
+
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/v2"
-	"github.com/madsrc/sophrosyne"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/madsrc/sophrosyne"
 )
 
 var testYamlFilePath = "testdata/config.yaml"

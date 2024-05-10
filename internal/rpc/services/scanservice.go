@@ -2,13 +2,16 @@ package services
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
 	"github.com/madsrc/sophrosyne"
 	"github.com/madsrc/sophrosyne/internal/grpc/checks"
 	"github.com/madsrc/sophrosyne/internal/rpc"
 	"github.com/madsrc/sophrosyne/internal/rpc/internal/jsonrpc"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"log/slog"
 )
 
 type ScanService struct {
@@ -90,43 +93,18 @@ func (p performScan) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 		}
 	}
 
-	type checkResult struct {
-		Status bool   `json:"status"`
-		Detail string `json:"detail"`
-	}
-
 	checkResults := make(map[string]checkResult)
 	var success bool
 
 	for _, check := range profile.Checks {
 		p.service.logger.DebugContext(ctx, "running check from profile", "profile", profile.Name, "check", check.Name)
-		if len(check.UpstreamServices) == 0 {
-			p.service.logger.ErrorContext(ctx, "no upstream services for profile", "profile", profile.Name, "check", check.Name)
+		res, err := doCheck(ctx, p.service.logger, check)
+		if err != nil {
+			p.service.logger.ErrorContext(ctx, "error running check", "check", check.Name, "error", err)
 			return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 		}
-		var opts []grpc.DialOption
-		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		conn, err := grpc.NewClient(check.UpstreamServices[0].Host, opts...)
-		if err != nil {
-			p.service.logger.ErrorContext(ctx, "error connecting to check", "check", check.Name, "error", err)
-			return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
-		}
-		defer func() { // Is this a resource leak? Defer in for-loop
-			err := conn.Close()
-			if err != nil {
-				p.service.logger.ErrorContext(ctx, "error closing grpc connection", "check", check.Name, "error", err)
-			}
-		}()
-		client := checks.NewCheckServiceClient(conn)
-		resp, err := client.Check(ctx, &checks.CheckRequest{Check: &checks.CheckRequest_Text{Text: "something"}})
-		if err != nil {
-			p.service.logger.ErrorContext(ctx, "error calling check", "check", check.Name, "error", err)
-		}
-		checkResults[check.Name] = checkResult{
-			Status: resp.Result,
-			Detail: resp.Details,
-		}
-		if resp.Result {
+		checkResults[check.Name] = res
+		if res.Status {
 			success = true
 		} else {
 			success = false
@@ -142,4 +120,39 @@ func (p performScan) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 	}
 
 	return rpc.ResponseToRequest(&req, resp)
+}
+
+type checkResult struct {
+	Status bool   `json:"status"`
+	Detail string `json:"detail"`
+}
+
+func doCheck(ctx context.Context, logger *slog.Logger, check sophrosyne.Check) (checkResult, error) {
+	if len(check.UpstreamServices) == 0 {
+		logger.ErrorContext(ctx, "no upstream services for check", "check", check.Name)
+		return checkResult{}, fmt.Errorf("missing upstream services")
+	}
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(check.UpstreamServices[0].Host, opts...)
+	if err != nil {
+		logger.ErrorContext(ctx, "error connecting to check", "check", check.Name, "error", err)
+		return checkResult{}, err
+	}
+	defer func() {
+		err := conn.Close()
+		if err != nil {
+			logger.ErrorContext(ctx, "error closing grpc connection", "check", check.Name, "error", err)
+		}
+	}()
+	client := checks.NewCheckServiceClient(conn)
+	resp, err := client.Check(ctx, &checks.CheckRequest{Check: &checks.CheckRequest_Text{Text: "something"}})
+	if err != nil {
+		logger.ErrorContext(ctx, "error calling check", "check", check.Name, "error", err)
+		return checkResult{}, err
+	}
+	return checkResult{
+		Status: resp.Result,
+		Detail: resp.Details,
+	}, nil
 }

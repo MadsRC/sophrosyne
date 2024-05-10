@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/madsrc/sophrosyne"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -21,6 +20,8 @@ import (
 	sdkTrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
+
+	"github.com/madsrc/sophrosyne"
 )
 
 // SetupOTelSDK bootstraps the OpenTelemetry pipeline.

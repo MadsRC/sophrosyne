@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/base64"
 	"github.com/madsrc/sophrosyne"
-	ownHttp "github.com/madsrc/sophrosyne/internal/http"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
+
+	ownHttp "github.com/madsrc/sophrosyne/internal/http"
 )
 
 // Middleware to catch panics.

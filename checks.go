@@ -96,3 +96,104 @@ type UpdateCheckResponse struct {
 type DeleteCheckRequest struct {
 	Name string `json:"name" validate:"required"`
 }
+
+type CheckServiceCache struct {
+	cache          *Cache
+	checkService   CheckService
+	tracingService TracingService
+}
+
+func NewCheckServiceCache(config *Config, checkService CheckService, tracingService TracingService) *CheckServiceCache {
+	return &CheckServiceCache{
+		cache:          NewCache(config.Services.Profiles.CacheTTL),
+		checkService:   checkService,
+		tracingService: tracingService,
+	}
+}
+
+func (c CheckServiceCache) GetCheck(ctx context.Context, id string) (Check, error) {
+	ctx, span := c.tracingService.StartSpan(ctx, "CheckServiceCache.GetCheck")
+	v, ok := c.cache.Get(id)
+	if ok {
+		span.End()
+		return v.(Check), nil
+	}
+
+	profile, err := c.checkService.GetCheck(ctx, id)
+	if err != nil {
+		span.End()
+		return Check{}, err
+	}
+
+	c.cache.Set(id, profile)
+	span.End()
+	return profile, nil
+}
+
+func (c CheckServiceCache) GetCheckByName(ctx context.Context, name string) (Check, error) {
+	ctx, span := c.tracingService.StartSpan(ctx, "CheckServiceCache.GetCheckByName")
+	profile, err := c.checkService.GetCheckByName(ctx, name)
+	if err != nil {
+		span.End()
+		return Check{}, err
+	}
+
+	c.cache.Set(profile.ID, profile)
+	span.End()
+	return profile, nil
+}
+
+func (c CheckServiceCache) GetChecks(ctx context.Context, cursor *DatabaseCursor) ([]Check, error) {
+	ctx, span := c.tracingService.StartSpan(ctx, "CheckServiceCache.GetChecks")
+	profiles, err := c.checkService.GetChecks(ctx, cursor)
+	if err != nil {
+		span.End()
+		return nil, err
+	}
+
+	for _, user := range profiles {
+		c.cache.Set(user.ID, user)
+	}
+
+	span.End()
+	return profiles, nil
+}
+
+func (c CheckServiceCache) CreateCheck(ctx context.Context, check CreateCheckRequest) (Check, error) {
+	ctx, span := c.tracingService.StartSpan(ctx, "CheckServiceCache.CreateCheck")
+	createProfile, err := c.checkService.CreateCheck(ctx, check)
+	if err != nil {
+		span.End()
+		return Check{}, err
+	}
+
+	c.cache.Set(createProfile.ID, createProfile)
+	span.End()
+	return createProfile, nil
+}
+
+func (c CheckServiceCache) UpdateCheck(ctx context.Context, check UpdateCheckRequest) (Check, error) {
+	ctx, span := c.tracingService.StartSpan(ctx, "CheckServiceCache.UpdateCheck")
+	updateProfile, err := c.checkService.UpdateCheck(ctx, check)
+	if err != nil {
+		span.End()
+		return Check{}, err
+	}
+
+	c.cache.Set(updateProfile.ID, updateProfile)
+	span.End()
+	return updateProfile, nil
+}
+
+func (c CheckServiceCache) DeleteCheck(ctx context.Context, id string) error {
+	ctx, span := c.tracingService.StartSpan(ctx, "CheckServiceCache.DeleteCheck")
+	err := c.checkService.DeleteCheck(ctx, id)
+	if err != nil {
+		span.End()
+		return err
+	}
+
+	c.cache.Delete(id)
+	span.End()
+	return nil
+}

@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# mise outputs=["build/report.xml"]
+
+nofail=1
+fix=1
+
+fixflag=""
+
+handle_argument() {
+  echo "Argument '$1' not supported" >&2; exit 1
+}
+
+while test "$#" -gt 0; do
+  case "$1" in
+    --no-fail) nofail=0; shift 1;;
+    --fix) fix=0; shift 1;;
+
+    -*) echo "unknown option: $1" >&2; exit 1;;
+    *) handle_argument "$1"; shift 1;;
+  esac
+done
+
+if test "$fix" = 0; then
+  fixflags="--fix"
+fi
+
+golangci-lint run --issues-exit-code="$nofail" $fixflags

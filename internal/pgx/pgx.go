@@ -5,15 +5,17 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5/pgtype"
 	"io"
 	"log/slog"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+
 	"github.com/madsrc/sophrosyne"
 )
 
