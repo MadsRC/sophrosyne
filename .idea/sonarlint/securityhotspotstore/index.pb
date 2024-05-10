@@ -94,3 +94,5 @@ M
 .github/workflows/semgrep.yml,d/e/de3722248349a718ab259ea53790cf96abb5556c
 Q
 !.github/workflows/sonarcloud.yaml,9/f/9ff3194bde8e6b85ebab5d28a2d371e662e68f4a
+G
+.pre-commit-config.yaml,e/7/e7d14d429f898757a423156de0e8c49d75240694

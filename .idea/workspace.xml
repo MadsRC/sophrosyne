@@ -5,25 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a9152082-80d9-4d6c-886a-c2713d5de713" name="Changes" comment="added basic healthcheck">
-      <change afterPath="$PROJECT_DIR$/.mise/tasks/dev/format" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/workflows/sonarcloud.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/sonarcloud.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.golangci.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.golangci.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/0/6/0607f785dfa3c3861b3239f6723eb276d8056461" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sonarlint/issuestore/0/6/0607f785dfa3c3861b3239f6723eb276d8056461" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/0/e/0e2a1047ac2623da220e846e51290b8a5e98ef33" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sonarlint/issuestore/0/e/0e2a1047ac2623da220e846e51290b8a5e98ef33" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/5/a/5add1b8edace9ddb13c89b95cd8a5d238411cf9b" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sonarlint/issuestore/5/a/5add1b8edace9ddb13c89b95cd8a5d238411cf9b" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/b/4/b4fcccd110c768368c7c09e83d4dee0d9b3c16fe" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sonarlint/issuestore/b/4/b4fcccd110c768368c7c09e83d4dee0d9b3c16fe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/d/9/d9e5f9cdef2248a814493a8c331fa5f33ba857e8" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sonarlint/issuestore/d/9/d9e5f9cdef2248a814493a8c331fa5f33ba857e8" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/f/5/f59491f7105d5a37b8769a1fe58d170b7574260f" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sonarlint/issuestore/f/5/f59491f7105d5a37b8769a1fe58d170b7574260f" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/index.pb" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sonarlint/issuestore/index.pb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/sonarlint/securityhotspotstore/index.pb" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sonarlint/securityhotspotstore/index.pb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mise.toml" beforeDir="false" afterPath="$PROJECT_DIR$/.mise.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mise/tasks/dev/lint" beforeDir="false" afterPath="$PROJECT_DIR$/.mise/tasks/dev/lint" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/sophrosyne/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/sophrosyne/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/grpc/checks/checks.pb.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/grpc/checks/checks.pb.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/grpc/checks/checks_grpc.pb.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/grpc/checks/checks_grpc.pb.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/http/http.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/http/http.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/http/middleware/middleware.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/http/middleware/middleware.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.pre-commit-config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.pre-commit-config.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,39 +33,39 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultGoTemplateProperty": "Go File",
-    "Docker.Dockerfile.executor": "Run",
-    "Go Test.TestSomething in github.com/madsrc/sophrosyne.executor": "Run",
-    "Go Test.TestStartup in github.com/madsrc/sophrosyne/tests/integration.executor": "Run",
-    "Go Test.TestStartup/API_not_served_via_plaintext in github.com/madsrc/sophrosyne/tests/integration.executor": "Run",
-    "Go Test.TestStartup/API_served_via_TLS#01 in github.com/madsrc/sophrosyne/tests/integration.executor": "Run",
-    "Go Test.TestWithRedis in github.com/madsrc/sophrosyne/tests/integration.executor": "Run",
-    "Makefile Target.dist/sophrosyne.executor": "Run",
-    "Makefile Target.dist/sophrosyne.tar.executor": "Run",
-    "Makefile Target.test/integration.executor": "Run",
-    "Makefile Target.test/integration/%.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.go.formatter.settings.were.checked": "true",
-    "RunOnceActivity.go.migrated.go.modules.settings": "true",
-    "RunOnceActivity.go.modules.automatic.dependencies.download": "true",
-    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
-    "git-widget-placeholder": "goRewrite",
-    "go.import.settings.migrated": "true",
-    "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "/Users/user/projects/sophrosyne/.mise/tasks/dev",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "go.autoimport"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
+    &quot;Docker.Dockerfile.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestSomething in github.com/madsrc/sophrosyne.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestStartup in github.com/madsrc/sophrosyne/tests/integration.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestStartup/API_not_served_via_plaintext in github.com/madsrc/sophrosyne/tests/integration.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestStartup/API_served_via_TLS#01 in github.com/madsrc/sophrosyne/tests/integration.executor&quot;: &quot;Run&quot;,
+    &quot;Go Test.TestWithRedis in github.com/madsrc/sophrosyne/tests/integration.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.dist/sophrosyne.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.dist/sophrosyne.tar.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.test/integration.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.test/integration/%.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.automatic.dependencies.download&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;goRewrite&quot;,
+    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
+    &quot;go.sdk.automatically.set&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/user/projects/sophrosyne/.mise/tasks/dev&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;go.autoimport&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "postgresql"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;postgresql&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/.mise/tasks/dev" />
