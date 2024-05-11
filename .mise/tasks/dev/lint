@@ -25,4 +25,8 @@ if test "$fix" = 0; then
   fixflags="--fix"
 fi
 
-golangci-lint run --issues-exit-code="$nofail" $fixflags
+golangci-lint run \
+--issues-exit-code="$nofail" \
+--max-issues-per-linter 0 \
+--max-same-issues 0 \
+$fixflags
