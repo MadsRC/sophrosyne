@@ -10,13 +10,17 @@ repos:
       - id: check-added-large-files
         args: ['--maxkb=4000']
       - id: end-of-file-fixer
-        exclude: "snapshots|docs/api.md"
       - id: trailing-whitespace
-        exclude: "snapshots|docs/api.md"
+        args: ['--markdown-linebreak-ext=md']
       - id: check-merge-conflict
       - id: check-json
       - id: check-yaml
+      - id: check-toml
+      - id: check-xml
+      - id: check-symlinks
+      - id: destroyed-symlinks
       - id: check-case-conflict
       - id: mixed-line-ending
       - id: detect-private-key
-      - id: check-executables-have-shebangs
+      - id: pretty-format-json
+        args: ['--autofix']

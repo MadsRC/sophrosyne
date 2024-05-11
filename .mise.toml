@@ -4,6 +4,7 @@ watchexec = "latest"
 "go:github.com/golangci/golangci-lint/cmd/golangci-lint" = "1.58.1"
 "go:golang.org/x/tools/cmd/goimports" = "latest"
 "go:github.com/google/osv-scanner/cmd/osv-scanner" = "v1"
+"pipx:pre-commit" = "latest"
 
 [settings]
 experimental = true
