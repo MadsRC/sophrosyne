@@ -146,13 +146,15 @@ func (c *DatabaseCursor) LogValue() slog.Value {
 	return slog.GroupValue(slog.String("owner_id", c.OwnerID), slog.String("last_read", c.Position))
 }
 
+var errInvalidCursor = errors.New("invalid cursor")
+
 func DecodeDatabaseCursorWithOwner(s string, ownerID string) (*DatabaseCursor, error) {
 	cursor, err := DecodeDatabaseCursor(s)
 	if err != nil {
 		return nil, err
 	}
 	if cursor.OwnerID != ownerID {
-		return nil, errors.New("invalid cursor")
+		return nil, errInvalidCursor
 	}
 	return cursor, nil
 }
@@ -164,11 +166,11 @@ func DecodeDatabaseCursor(s string) (*DatabaseCursor, error) {
 	}
 	parts := strings.Split(string(b), DatabaseCursorSeparator)
 	if len(parts) != 2 {
-		return nil, errors.New("invalid cursor")
+		return nil, errInvalidCursor
 	}
 
 	if !IsValidXID(parts[0]) || !IsValidXID(parts[1]) {
-		return nil, errors.New("invalid cursor")
+		return nil, errInvalidCursor
 	}
 
 	return &DatabaseCursor{
