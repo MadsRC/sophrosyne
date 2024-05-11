@@ -859,10 +859,10 @@ func ValidateErrorCode(field reflect.Value) interface{} {
 		return "error code must be an integer"
 	}
 
-	switch RPCErrorCode(field.Int()) {
-	case ParseError, InvalidRequest, MethodNotFound, InvalidParams, InternalError:
-		// These codes are reserved, but has their purpose defined in the JSON-RPC 2.0 specification.
-		return nil
+	for _, code := range []RPCErrorCode{ParseError, InvalidRequest, MethodNotFound, InvalidParams, InternalError} {
+		if RPCErrorCode(field.Int()) == code {
+			return nil
+		}
 	}
 
 	if field.Int() <= -32000 && field.Int() >= -32768 {
