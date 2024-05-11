@@ -227,11 +227,14 @@ func NewTLSServerConfig(config *sophrosyne.Config, randSource io.Reader) (*tls.C
 
 	return &tls.Config{
 		Certificates: []tls.Certificate{cert},
+		MinVersion:   tls.VersionTLS13,
 	}, nil
 }
 
 func NewTLSClientConfig(config *sophrosyne.Config) (*tls.Config, error) {
-	c := &tls.Config{}
+	c := &tls.Config{
+		MinVersion: tls.VersionTLS13,
+	}
 	if config.Security.TLS.InsecureSkipVerify {
 		c.InsecureSkipVerify = true
 	}
