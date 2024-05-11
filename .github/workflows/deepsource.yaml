@@ -10,7 +10,7 @@ on:
       - main
   pull_request:
       types: [opened, synchronize, reopened]
-name: SonarCloud analysis
+name: DeepSource analysis
 jobs:
   sonarcloud:
     runs-on: ubuntu-latest
