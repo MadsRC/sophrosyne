@@ -84,7 +84,7 @@ func (u getProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 	var params sophrosyne.GetProfileRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -109,13 +109,15 @@ func (u getProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 	Profile, err := u.service.profileService.GetProfile(ctx, params.ID)
 	if err != nil {
 		u.service.logger.ErrorContext(ctx, "unable to get Profile", "error", err)
-		return rpc.ErrorFromRequest(&req, 12346, "Profile not found")
+		return rpc.ErrorFromRequest(&req, 12346, profileNotFoundError)
 	}
 
 	resp := sophrosyne.GetProfileResponse{}
 
 	return rpc.ResponseToRequest(&req, resp.FromProfile(Profile))
 }
+
+const profileNotFoundError = "profile not found"
 
 type getProfiles struct {
 	service *ProfileService
@@ -137,10 +139,10 @@ func (u getProfiles) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 	var params sophrosyne.GetProfilesRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		if errors.Is(err, rpc.NoParamsError) {
+		if errors.Is(err, rpc.ErrNoParams) {
 			params = sophrosyne.GetProfilesRequest{}
 		} else {
-			u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+			u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 			return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 		}
 	}
@@ -208,7 +210,7 @@ func (u createProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte,
 	var params sophrosyne.CreateProfileRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -256,7 +258,7 @@ func (u updateProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte,
 	var params sophrosyne.UpdateProfileRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -267,7 +269,7 @@ func (u updateProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte,
 
 	ProfileToUpdate, err := u.service.profileService.GetProfileByName(ctx, params.Name)
 	if err != nil {
-		return rpc.ErrorFromRequest(&req, 12346, "Profile not found")
+		return rpc.ErrorFromRequest(&req, 12346, profileNotFoundError)
 	}
 
 	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
@@ -310,7 +312,7 @@ func (u deleteProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte,
 	var params sophrosyne.DeleteProfileRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -321,7 +323,7 @@ func (u deleteProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte,
 
 	ProfileToDelete, err := u.service.profileService.GetProfileByName(ctx, params.Name)
 	if err != nil {
-		return rpc.ErrorFromRequest(&req, 12346, "Profile not found")
+		return rpc.ErrorFromRequest(&req, 12346, profileNotFoundError)
 	}
 
 	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{

@@ -52,6 +52,9 @@ func NewCheckService(checkService sophrosyne.CheckService, authz sophrosyne.Auth
 	return u, nil
 }
 
+const paramExtractError = "error extracting params from request"
+const checkNotFoundError = "check not found"
+
 func (u CheckService) EntityType() string {
 	return "Service"
 }
@@ -84,7 +87,7 @@ func (u getCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, erro
 	var params sophrosyne.GetCheckRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -109,7 +112,7 @@ func (u getCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, erro
 	check, err := u.service.checkService.GetCheck(ctx, params.ID)
 	if err != nil {
 		u.service.logger.ErrorContext(ctx, "unable to get check", "error", err)
-		return rpc.ErrorFromRequest(&req, 12346, "check not found")
+		return rpc.ErrorFromRequest(&req, 12346, checkNotFoundError)
 	}
 
 	resp := sophrosyne.GetCheckResponse{}
@@ -137,10 +140,10 @@ func (u getChecks) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, err
 	var params sophrosyne.GetChecksRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		if errors.Is(err, rpc.NoParamsError) {
+		if errors.Is(err, rpc.ErrNoParams) {
 			params = sophrosyne.GetChecksRequest{}
 		} else {
-			u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+			u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 			return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 		}
 	}
@@ -208,7 +211,7 @@ func (u createCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 	var params sophrosyne.CreateCheckRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -256,7 +259,7 @@ func (u updateCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 	var params sophrosyne.UpdateCheckRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -267,7 +270,7 @@ func (u updateCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 
 	checkToUpdate, err := u.service.checkService.GetCheckByName(ctx, params.Name)
 	if err != nil {
-		return rpc.ErrorFromRequest(&req, 12346, "check not found")
+		return rpc.ErrorFromRequest(&req, 12346, checkNotFoundError)
 	}
 
 	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
@@ -310,7 +313,7 @@ func (u deleteCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 	var params sophrosyne.DeleteCheckRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -321,7 +324,7 @@ func (u deleteCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 
 	checkToDelete, err := u.service.checkService.GetCheckByName(ctx, params.Name)
 	if err != nil {
-		return rpc.ErrorFromRequest(&req, 12346, "check not found")
+		return rpc.ErrorFromRequest(&req, 12346, checkNotFoundError)
 	}
 
 	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{

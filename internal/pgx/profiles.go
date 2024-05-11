@@ -127,7 +127,7 @@ func (p *ProfileService) GetProfiles(ctx context.Context, cursor *sophrosyne.Dat
 		cursor = &sophrosyne.DatabaseCursor{}
 	}
 	p.logger.DebugContext(ctx, "getting profiles", "cursor", cursor)
-	rows, err := p.pool.Query(ctx, `SELECT * FROM profiles WHERE id > $1 AND deleted_at IS NULL ORDER BY id ASC LIMIT $2`, cursor.Position, p.config.Services.Profiles.PageSize+1)
+	rows, _ := p.pool.Query(ctx, `SELECT * FROM profiles WHERE id > $1 AND deleted_at IS NULL ORDER BY id ASC LIMIT $2`, cursor.Position, p.config.Services.Profiles.PageSize+1)
 	profiles, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[sophrosyne.Profile])
 	if err != nil {
 		return []sophrosyne.Profile{}, err
@@ -149,7 +149,9 @@ func (p *ProfileService) CreateProfile(ctx context.Context, profile sophrosyne.C
 	if err != nil {
 		return sophrosyne.Profile{}, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
 
 	rows, _ := tx.Query(ctx, `INSERT INTO profiles (name) VALUES ($1) RETURNING *`, profile.Name)
 	retP, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[sophrosyne.Profile])
@@ -190,7 +192,9 @@ func (p *ProfileService) UpdateProfile(ctx context.Context, profile sophrosyne.U
 	if err != nil {
 		return sophrosyne.Profile{}, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
 
 	rows, _ := tx.Query(ctx, `SELECT id FROM profiles WHERE name = $1 AND deleted_at IS NULL`, profile.Name)
 	pp, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[sophrosyne.Profile])

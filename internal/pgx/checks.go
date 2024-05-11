@@ -132,7 +132,7 @@ func (p *CheckService) GetChecks(ctx context.Context, cursor *sophrosyne.Databas
 		cursor = &sophrosyne.DatabaseCursor{}
 	}
 	p.logger.DebugContext(ctx, "getting checks", "cursor", cursor)
-	rows, err := p.pool.Query(ctx, `SELECT * FROM checks WHERE id > $1 AND deleted_at IS NULL ORDER BY id ASC LIMIT $2`, cursor.Position, p.config.Services.Checks.PageSize+1)
+	rows, _ := p.pool.Query(ctx, `SELECT * FROM checks WHERE id > $1 AND deleted_at IS NULL ORDER BY id ASC LIMIT $2`, cursor.Position, p.config.Services.Checks.PageSize+1)
 	checks, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[sophrosyne.Check])
 	if err != nil {
 		return []sophrosyne.Check{}, err
@@ -154,7 +154,9 @@ func (p *CheckService) CreateCheck(ctx context.Context, check sophrosyne.CreateC
 	if err != nil {
 		return sophrosyne.Check{}, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
 
 	rows, _ := tx.Query(ctx, `INSERT INTO checks (name, upstream_services) VALUES ($1, $2) RETURNING *`, check.Name, check.UpstreamServices)
 	retP, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByNameLax[checkDbEntry])
@@ -220,7 +222,9 @@ func (p *CheckService) UpdateCheck(ctx context.Context, check sophrosyne.UpdateC
 	if err != nil {
 		return sophrosyne.Check{}, err
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
 
 	rows, _ := tx.Query(ctx, `SELECT id FROM checks WHERE name = $1 AND deleted_at IS NULL`, check.Name)
 	pp, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[sophrosyne.Check])

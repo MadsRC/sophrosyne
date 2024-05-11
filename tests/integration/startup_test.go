@@ -56,13 +56,13 @@ type testEnv struct {
 func (te testEnv) Close(ctx context.Context) {
 	var err error
 	if te.database != nil {
-		errors.Join(err, te.database.Terminate(ctx))
+		err = errors.Join(err, te.database.Terminate(ctx))
 	}
 	if te.api != nil {
-		errors.Join(err, te.api.Terminate(ctx))
+		err = errors.Join(err, te.api.Terminate(ctx))
 	}
 	if te.network != nil {
-		errors.Join(err, te.network.Remove(ctx))
+		err = errors.Join(err, te.network.Remove(ctx))
 	}
 
 	require.NoError(te.t, err, "could not clean up test environment")

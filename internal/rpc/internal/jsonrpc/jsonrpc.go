@@ -130,7 +130,9 @@ func (p *ParamsObject) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (*ParamsObject) isParams() {}
+func (*ParamsObject) isParams() {
+	// Used to implement the [Params] interface.
+}
 
 // ParamsArray represents a by-position Params array as per the JSON-RPC 2.0 specification section 4.2.
 //
@@ -138,7 +140,9 @@ func (*ParamsObject) isParams() {}
 // or [Notification].
 type ParamsArray []interface{}
 
-func (*ParamsArray) isParams() {}
+func (*ParamsArray) isParams() {
+	// Used to implement the [Params] interface.
+}
 
 // UnmarshalJSON unmarshals a JSON object into a [ParamsArray]. This is necessary because the JSON-RPC 2.0 specification
 // allows for the Params field to be either an object or an array, and the Go JSON unmarshaller cannot unmarshal into an
@@ -544,7 +548,7 @@ func (b *BatchRequest) UnmarshalJSON(data []byte) error {
 		var obj O
 		err = json.Unmarshal(raw, &obj)
 		if err != nil {
-			me = errors.Join(fmt.Errorf("error unmarshalling object at index %d: %v", i, err))
+			me = errors.Join(fmt.Errorf("error unmarshalling object at index %d: %v", i, err)) // nolint:errorlint
 			continue
 		}
 		var req Request
@@ -554,7 +558,7 @@ func (b *BatchRequest) UnmarshalJSON(data []byte) error {
 		}
 		err = json.Unmarshal(raw, &req)
 		if err != nil {
-			me = errors.Join(fmt.Errorf("error unmarshalling object at index %d into Request: %v", i, err))
+			me = errors.Join(fmt.Errorf("error unmarshalling object at index %d into Request: %v", i, err)) // nolint:errorlint
 		} else {
 			*b = append(*b, req)
 		}
@@ -700,6 +704,8 @@ const (
 	ServerError99 RPCErrorCode = -32099
 )
 
+const ServerErrorMessage = "Server error"
+
 // RPCErrorMessage represents an error message as per the JSON-RPC 2.0 specification section 5.1.
 type RPCErrorMessage string
 
@@ -715,106 +721,106 @@ const (
 	// InternalErrorMessage is the message for [InternalError].
 	InternalErrorMessage RPCErrorMessage = "Internal error"
 	// ServerErrorMessage0 to ServerErrorMessage99 are reserved for implementation-defined server-errors.
-	ServerErrorMessage0  RPCErrorMessage = "Server error"
-	ServerErrorMessage1  RPCErrorMessage = "Server error"
-	ServerErrorMessage2  RPCErrorMessage = "Server error"
-	ServerErrorMessage3  RPCErrorMessage = "Server error"
-	ServerErrorMessage4  RPCErrorMessage = "Server error"
-	ServerErrorMessage5  RPCErrorMessage = "Server error"
-	ServerErrorMessage6  RPCErrorMessage = "Server error"
-	ServerErrorMessage7  RPCErrorMessage = "Server error"
-	ServerErrorMessage8  RPCErrorMessage = "Server error"
-	ServerErrorMessage9  RPCErrorMessage = "Server error"
-	ServerErrorMessage10 RPCErrorMessage = "Server error"
-	ServerErrorMessage11 RPCErrorMessage = "Server error"
-	ServerErrorMessage12 RPCErrorMessage = "Server error"
-	ServerErrorMessage13 RPCErrorMessage = "Server error"
-	ServerErrorMessage14 RPCErrorMessage = "Server error"
-	ServerErrorMessage15 RPCErrorMessage = "Server error"
-	ServerErrorMessage16 RPCErrorMessage = "Server error"
-	ServerErrorMessage17 RPCErrorMessage = "Server error"
-	ServerErrorMessage18 RPCErrorMessage = "Server error"
-	ServerErrorMessage19 RPCErrorMessage = "Server error"
-	ServerErrorMessage20 RPCErrorMessage = "Server error"
-	ServerErrorMessage21 RPCErrorMessage = "Server error"
-	ServerErrorMessage22 RPCErrorMessage = "Server error"
-	ServerErrorMessage23 RPCErrorMessage = "Server error"
-	ServerErrorMessage24 RPCErrorMessage = "Server error"
-	ServerErrorMessage25 RPCErrorMessage = "Server error"
-	ServerErrorMessage26 RPCErrorMessage = "Server error"
-	ServerErrorMessage27 RPCErrorMessage = "Server error"
-	ServerErrorMessage28 RPCErrorMessage = "Server error"
-	ServerErrorMessage29 RPCErrorMessage = "Server error"
-	ServerErrorMessage30 RPCErrorMessage = "Server error"
-	ServerErrorMessage31 RPCErrorMessage = "Server error"
-	ServerErrorMessage32 RPCErrorMessage = "Server error"
-	ServerErrorMessage33 RPCErrorMessage = "Server error"
-	ServerErrorMessage34 RPCErrorMessage = "Server error"
-	ServerErrorMessage35 RPCErrorMessage = "Server error"
-	ServerErrorMessage36 RPCErrorMessage = "Server error"
-	ServerErrorMessage37 RPCErrorMessage = "Server error"
-	ServerErrorMessage38 RPCErrorMessage = "Server error"
-	ServerErrorMessage39 RPCErrorMessage = "Server error"
-	ServerErrorMessage40 RPCErrorMessage = "Server error"
-	ServerErrorMessage41 RPCErrorMessage = "Server error"
-	ServerErrorMessage42 RPCErrorMessage = "Server error"
-	ServerErrorMessage43 RPCErrorMessage = "Server error"
-	ServerErrorMessage44 RPCErrorMessage = "Server error"
-	ServerErrorMessage45 RPCErrorMessage = "Server error"
-	ServerErrorMessage46 RPCErrorMessage = "Server error"
-	ServerErrorMessage47 RPCErrorMessage = "Server error"
-	ServerErrorMessage48 RPCErrorMessage = "Server error"
-	ServerErrorMessage49 RPCErrorMessage = "Server error"
-	ServerErrorMessage50 RPCErrorMessage = "Server error"
-	ServerErrorMessage51 RPCErrorMessage = "Server error"
-	ServerErrorMessage52 RPCErrorMessage = "Server error"
-	ServerErrorMessage53 RPCErrorMessage = "Server error"
-	ServerErrorMessage54 RPCErrorMessage = "Server error"
-	ServerErrorMessage55 RPCErrorMessage = "Server error"
-	ServerErrorMessage56 RPCErrorMessage = "Server error"
-	ServerErrorMessage57 RPCErrorMessage = "Server error"
-	ServerErrorMessage58 RPCErrorMessage = "Server error"
-	ServerErrorMessage59 RPCErrorMessage = "Server error"
-	ServerErrorMessage60 RPCErrorMessage = "Server error"
-	ServerErrorMessage61 RPCErrorMessage = "Server error"
-	ServerErrorMessage62 RPCErrorMessage = "Server error"
-	ServerErrorMessage63 RPCErrorMessage = "Server error"
-	ServerErrorMessage64 RPCErrorMessage = "Server error"
-	ServerErrorMessage65 RPCErrorMessage = "Server error"
-	ServerErrorMessage66 RPCErrorMessage = "Server error"
-	ServerErrorMessage67 RPCErrorMessage = "Server error"
-	ServerErrorMessage68 RPCErrorMessage = "Server error"
-	ServerErrorMessage69 RPCErrorMessage = "Server error"
-	ServerErrorMessage70 RPCErrorMessage = "Server error"
-	ServerErrorMessage71 RPCErrorMessage = "Server error"
-	ServerErrorMessage72 RPCErrorMessage = "Server error"
-	ServerErrorMessage73 RPCErrorMessage = "Server error"
-	ServerErrorMessage74 RPCErrorMessage = "Server error"
-	ServerErrorMessage75 RPCErrorMessage = "Server error"
-	ServerErrorMessage76 RPCErrorMessage = "Server error"
-	ServerErrorMessage77 RPCErrorMessage = "Server error"
-	ServerErrorMessage78 RPCErrorMessage = "Server error"
-	ServerErrorMessage79 RPCErrorMessage = "Server error"
-	ServerErrorMessage80 RPCErrorMessage = "Server error"
-	ServerErrorMessage81 RPCErrorMessage = "Server error"
-	ServerErrorMessage82 RPCErrorMessage = "Server error"
-	ServerErrorMessage83 RPCErrorMessage = "Server error"
-	ServerErrorMessage84 RPCErrorMessage = "Server error"
-	ServerErrorMessage85 RPCErrorMessage = "Server error"
-	ServerErrorMessage86 RPCErrorMessage = "Server error"
-	ServerErrorMessage87 RPCErrorMessage = "Server error"
-	ServerErrorMessage88 RPCErrorMessage = "Server error"
-	ServerErrorMessage89 RPCErrorMessage = "Server error"
-	ServerErrorMessage90 RPCErrorMessage = "Server error"
-	ServerErrorMessage91 RPCErrorMessage = "Server error"
-	ServerErrorMessage92 RPCErrorMessage = "Server error"
-	ServerErrorMessage93 RPCErrorMessage = "Server error"
-	ServerErrorMessage94 RPCErrorMessage = "Server error"
-	ServerErrorMessage95 RPCErrorMessage = "Server error"
-	ServerErrorMessage96 RPCErrorMessage = "Server error"
-	ServerErrorMessage97 RPCErrorMessage = "Server error"
-	ServerErrorMessage98 RPCErrorMessage = "Server error"
-	ServerErrorMessage99 RPCErrorMessage = "Server error"
+	ServerErrorMessage0  RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage1  RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage2  RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage3  RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage4  RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage5  RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage6  RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage7  RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage8  RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage9  RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage10 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage11 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage12 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage13 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage14 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage15 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage16 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage17 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage18 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage19 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage20 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage21 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage22 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage23 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage24 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage25 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage26 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage27 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage28 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage29 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage30 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage31 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage32 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage33 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage34 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage35 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage36 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage37 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage38 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage39 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage40 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage41 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage42 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage43 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage44 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage45 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage46 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage47 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage48 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage49 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage50 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage51 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage52 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage53 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage54 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage55 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage56 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage57 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage58 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage59 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage60 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage61 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage62 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage63 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage64 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage65 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage66 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage67 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage68 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage69 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage70 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage71 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage72 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage73 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage74 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage75 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage76 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage77 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage78 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage79 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage80 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage81 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage82 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage83 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage84 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage85 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage86 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage87 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage88 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage89 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage90 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage91 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage92 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage93 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage94 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage95 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage96 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage97 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage98 RPCErrorMessage = ServerErrorMessage
+	ServerErrorMessage99 RPCErrorMessage = ServerErrorMessage
 )
 
 // ValidateMethod validates the method field of a [Request], [Notification], or [Response].
@@ -853,10 +859,10 @@ func ValidateErrorCode(field reflect.Value) interface{} {
 		return "error code must be an integer"
 	}
 
-	switch RPCErrorCode(field.Int()) {
-	case ParseError, InvalidRequest, MethodNotFound, InvalidParams, InternalError:
-		// These codes are reserved, but has their purpose defined in the JSON-RPC 2.0 specification.
-		return nil
+	for _, code := range []RPCErrorCode{ParseError, InvalidRequest, MethodNotFound, InvalidParams, InternalError} {
+		if RPCErrorCode(field.Int()) == code {
+			return nil
+		}
 	}
 
 	if field.Int() <= -32000 && field.Int() >= -32768 {

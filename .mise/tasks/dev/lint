@@ -1,5 +1,5 @@
 #!/bin/sh
-# mise sources=["go.mod", "go.sum", "internal/**/*", "cmd/**/*", "*.go"]
+# mise sources=["go.mod", "go.sum", "internal/**/*", "cmd/**/*", "*.go", ".golangci.yaml]
 # mise outputs=["build/report.xml"]
 
 nofail=1

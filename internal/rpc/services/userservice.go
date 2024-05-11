@@ -65,6 +65,8 @@ func (u UserService) InvokeMethod(ctx context.Context, req jsonrpc.Request) ([]b
 	return invokeMethod(ctx, u.logger, u.methods, req)
 }
 
+const userNotFoundError = "user not found"
+
 type getUser struct {
 	service *UserService
 }
@@ -85,7 +87,7 @@ func (u getUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error
 	var params sophrosyne.GetUserRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -114,7 +116,7 @@ func (u getUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error
 	user, err := u.service.userService.GetUser(ctx, params.ID)
 	if err != nil {
 		u.service.logger.ErrorContext(ctx, "unable to get user", "error", err)
-		return rpc.ErrorFromRequest(&req, 12346, "user not found")
+		return rpc.ErrorFromRequest(&req, 12346, userNotFoundError)
 	}
 
 	resp := sophrosyne.GetUserResponse{}
@@ -142,10 +144,10 @@ func (u getUsers) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, erro
 	var params sophrosyne.GetUsersRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		if errors.Is(err, rpc.NoParamsError) {
+		if errors.Is(err, rpc.ErrNoParams) {
 			params = sophrosyne.GetUsersRequest{}
 		} else {
-			u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+			u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 			return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 		}
 	}
@@ -213,7 +215,7 @@ func (u createUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 	var params sophrosyne.CreateUserRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -261,7 +263,7 @@ func (u updateUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 	var params sophrosyne.UpdateUserRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -272,7 +274,7 @@ func (u updateUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 
 	userToUpdate, err := u.service.userService.GetUserByName(ctx, params.Name)
 	if err != nil {
-		return rpc.ErrorFromRequest(&req, 12346, "user not found")
+		return rpc.ErrorFromRequest(&req, 12346, userNotFoundError)
 	}
 
 	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
@@ -315,7 +317,7 @@ func (u deleteUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 	var params sophrosyne.DeleteUserRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -326,7 +328,7 @@ func (u deleteUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 
 	userToDelete, err := u.service.userService.GetUserByName(ctx, params.Name)
 	if err != nil {
-		return rpc.ErrorFromRequest(&req, 12346, "user not found")
+		return rpc.ErrorFromRequest(&req, 12346, userNotFoundError)
 	}
 
 	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
@@ -368,7 +370,7 @@ func (u rotateToken) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 	var params sophrosyne.RotateTokenRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -379,7 +381,7 @@ func (u rotateToken) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 
 	userToRotate, err := u.service.userService.GetUserByName(ctx, params.Name)
 	if err != nil {
-		return rpc.ErrorFromRequest(&req, 12346, "user not found")
+		return rpc.ErrorFromRequest(&req, 12346, userNotFoundError)
 	}
 
 	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{

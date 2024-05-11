@@ -77,7 +77,10 @@ var DefaultConfig = map[string]interface{}{
 	"services.profiles.cacheTTL":      100,
 	"services.checks.pageSize":        2,
 	"services.checks.cacheTTL":        100,
+	"server.maxBodySize":              20 * megabyte,
 }
+
+const megabyte int64 = 1048576
 
 // The Config struct is used to store the configuration of the application.
 //
@@ -103,7 +106,8 @@ type Config struct {
 		Name     string `key:"name" validate:"required"`
 	} `key:"database"`
 	Server struct {
-		Port int `key:"port" validate:"required,min=1,max=65535"`
+		Port        int   `key:"port" validate:"required,min=1,max=65535"`
+		MaxBodySize int64 `key:"maxBodySize" validate:"required,min=1"` // in bytes
 	} `key:"server"`
 	Logging struct {
 		Enabled bool      `key:"enabled"`
