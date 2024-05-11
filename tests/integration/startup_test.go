@@ -215,7 +215,7 @@ func newHTTPClient(t *testing.T) *http.Client {
 	return &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
+				InsecureSkipVerify: true, //nolint:gosec
 			},
 		},
 	}
@@ -232,7 +232,7 @@ func TestStartup(t *testing.T) {
 
 	t.Run("API served via TLS", func(t *testing.T) {
 		conf := &tls.Config{
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: true, //nolint:gosec
 		}
 		tlsConn, err := tls.Dial("tcp", te.endpoint, conf)
 		require.NoError(t, err)
@@ -263,7 +263,13 @@ func TestStartup(t *testing.T) {
 	// of the LogConsumer added to setupEnv, if this log cannot be unmarshalled as JSON, it fails. Thus this test
 	// ensures that it is logged as JSON.
 	t.Run("client remote error logged as non-json", func(t *testing.T) {
-		tlsConn, err := tls.Dial("tcp", te.endpoint, &tls.Config{})
+		tlsConn, err := tls.Dial("tcp", te.endpoint, &tls.Config{MinVersion: tls.VersionTLS13})
+		require.Error(t, err)
+		require.Nil(t, tlsConn)
+	})
+
+	t.Run("TLS1.3 or better required", func(t *testing.T) {
+		tlsConn, err := tls.Dial("tcp", te.endpoint, &tls.Config{MinVersion: tls.VersionTLS12, MaxVersion: tls.VersionTLS12}) //nolint:gosec
 		require.Error(t, err)
 		require.Nil(t, tlsConn)
 	})
