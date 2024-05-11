@@ -1,0 +1,39 @@
+#!/bin/sh
+# mise sources=["go.mod", "go.sum", "internal/**/*", "cmd/**/*", "*.go"]
+# mise outputs=["dist/sophrosyne", "dist/sophrosyne_linux_amd64", "dist/sophrosyne_linux_arm64]
+
+goos=""
+goarch=""
+debug=1
+ldflags=""
+
+handle_argument() {
+  echo "Argument '$1' not supported" >&2; exit 1
+}
+
+while test "$#" -gt 0; do
+  case "$1" in
+    -o) goos="$2"; shift 2;;
+    -a) goarch="$2"; shift 2;;
+
+    --goos=*) goos="${1#*=}"; shift 1;;
+    --goarch=*) goarch="${1#*=}"; shift 1;;
+    --goos|--goarch) echo "$1 requires an argument" >&2; exit 1;;
+
+    --debug) debug=0; shift 1;;
+
+    -*) echo "unknown option: $1" >&2; exit 1;;
+    *) handle_argument "$1"; shift 1;;
+  esac
+done
+
+if test "$debug" = 1; then
+  ldflags="-s -w"
+fi
+
+if test "$goarch" = ""; then
+  GOOS="linux" GOARCH="amd64" go build -ldflags="$ldflags" -o dist/sophrosyne_linux_amd64 cmd/sophrosyne/main.go
+  GOOS="linux" GOARCH="arm64" go build -ldflags="$ldflags" -o dist/sophrosyne_linux_arm64 cmd/sophrosyne/main.go
+else
+  GOOS="$goos" GOARCH="$goarch" go build -ldflags="$ldflags" -o dist/sophrosyne cmd/sophrosyne/main.go
+fi
