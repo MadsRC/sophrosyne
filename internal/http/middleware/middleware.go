@@ -84,7 +84,7 @@ func Authentication(exceptions []string, config *sophrosyne.Config, userService 
 		if !strings.HasPrefix(authHeader, "Bearer ") {
 			logger.DebugContext(r.Context(), "unable to extract token from Authorization header", "header", authHeader)
 			logger.InfoContext(r.Context(), "authentication", "result", "failed")
-			ownHttp.WriteResponse(r.Context(), w, http.StatusUnauthorized, "text/plain", nil, logger)
+			ownHttp.WriteResponse(r.Context(), w, http.StatusUnauthorized, ownHttp.PlainTextContentType, nil, logger)
 			return
 		}
 
@@ -93,7 +93,7 @@ func Authentication(exceptions []string, config *sophrosyne.Config, userService 
 		if err != nil {
 			logger.DebugContext(r.Context(), "unable to decode token", "token", token, "error", err)
 			logger.InfoContext(r.Context(), "authentication", "result", "failed")
-			ownHttp.WriteResponse(r.Context(), w, http.StatusUnauthorized, "text/plain", nil, logger)
+			ownHttp.WriteResponse(r.Context(), w, http.StatusUnauthorized, ownHttp.PlainTextContentType, nil, logger)
 			return
 		}
 
@@ -135,8 +135,6 @@ func (w *responseWrapper) WriteHeader(status int) {
 	w.status = status
 	w.ResponseWriter.WriteHeader(status)
 	w.wroteHeader = true
-
-	return
 }
 
 func (w *responseWrapper) Status() int {

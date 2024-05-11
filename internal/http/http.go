@@ -82,6 +82,7 @@ func (s *Server) Handle(path string, handler http.Handler) {
 }
 
 const JSONContentType = "application/json"
+const PlainTextContentType = "text/plain"
 
 func RPCHandler(logger *slog.Logger, rpcService sophrosyne.RPCServer) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
