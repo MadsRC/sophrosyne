@@ -35,11 +35,12 @@ import (
 )
 
 var testYamlFilePath = "testdata/config.yaml"
+var securitySaltFilePath = "testdata/security.salt"
+var securitySiteKeyFilePath = "testdata/security.sitekey"
 var testFilePath = "testdata/test.file"
 var databaseUserKey = "database.user"
 var databasePasswordKey = "database.password"
 var nonExistentYamlFilePath = "testdata/non-existent.yaml"
-var newUserNameString = "new-username"
 var newPasswordString = "new-password 42 c@t"
 var rootConfigYamlPath = "/config.yaml"
 
@@ -227,7 +228,7 @@ func TestNewConfigProvider(t *testing.T) {
 	err := os.WriteFile(tempFile, yamlContent, 0644)
 	require.NoError(t, err)
 
-	c, err := NewConfigProvider(tempFile, nil, []string{testFilePath}, validator.NewValidator())
+	c, err := NewConfigProvider(tempFile, nil, []string{securitySaltFilePath, securitySiteKeyFilePath}, validator.NewValidator())
 	require.NoError(t, err)
 
 	require.Equal(t, initialPw, c.k.String(databasePasswordKey))
@@ -237,7 +238,7 @@ func TestNewConfigProvider(t *testing.T) {
 	err = os.WriteFile(tempFile, newYamlContent, 0644)
 	require.NoError(t, err)
 
-	// sleep for a 100 milliseconds to allow the file watcher to pick up the
+	// sleep for 100 milliseconds to allow the file watcher to pick up the
 	// change and reload the config
 	time.Sleep(100 * time.Millisecond)
 
@@ -269,7 +270,7 @@ func TestNewConfigProviderErrorUpdateFailValidate(t *testing.T) {
 	err = os.WriteFile(tempFile, yamlContent, 0644)
 	require.NoError(t, err)
 
-	c, err := NewConfigProvider(tempFile, nil, []string{testFilePath}, validator.NewValidator())
+	c, err := NewConfigProvider(tempFile, nil, []string{securitySaltFilePath, securitySiteKeyFilePath}, validator.NewValidator())
 	require.NoError(t, err)
 
 	cfg := c.Get()
@@ -311,7 +312,7 @@ func TestConfigProviderGet(t *testing.T) {
 	err = os.WriteFile(tempFile, yamlContent, 0644)
 	require.NoError(t, err)
 
-	c, err := NewConfigProvider(tempFile, nil, []string{testFilePath}, validator.NewValidator())
+	c, err := NewConfigProvider(tempFile, nil, []string{securitySaltFilePath, securitySiteKeyFilePath}, validator.NewValidator())
 	require.NoError(t, err)
 
 	cfg := c.Get()
