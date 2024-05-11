@@ -8,6 +8,7 @@ output:
       path: build/report.xml
     - format: colored-line-number
 linters:
+  disable-all: true
   enable:
     - errcheck
     - gosimple
@@ -16,43 +17,16 @@ linters:
     - staticcheck
     - unused
     - goimports
-    - goheader
     - gosec
     - forbidigo
-    - goconst
     - godot
-issues:
-  exclude-rules:
-    - linters:
-        - goheader
-      path: cache.go # This file already has a header with another license
+    - errname
+    - errorlint
+    - asasalint
+    - asciicheck
+    - bidichk
+    - errchkjson
+    - gochecknoinits
 linters-settings:
   goimports:
     local-prefixes: github.com/madsrc/sophrosyne
-  gofmt:
-    simplify: true
-    rewrite-rules:
-      - pattern: 'interface{}'
-        replacement: 'any'
-      - pattern: 'a[b:len(a)]'
-        replacement: 'a[b:]'
-  goheader:
-    values:
-      const:
-        AUTHOR: 'Mads R. Havmand'
-    template: |-
-      Sophrosyne
-        Copyright (C) {{ YEAR }}  {{ AUTHOR }}
-
-      This program is free software: you can redistribute it and/or modify
-        it under the terms of the GNU Affero General Public License as published by
-        the Free Software Foundation, either version 3 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU Affero General Public License for more details.
-
-        You should have received a copy of the GNU Affero General Public License
-        along with this program.  If not, see <http://www.gnu.org/licenses/>.
