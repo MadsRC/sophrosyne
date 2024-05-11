@@ -32,10 +32,9 @@ import (
 )
 
 type Server struct {
-	appConfig      *sophrosyne.Config   `validate:"required"`
-	mux            *http.ServeMux       `validate:"required"`
-	validator      sophrosyne.Validator `validate:"required"`
-	middleware     []func(http.Handler) http.Handler
+	appConfig      *sophrosyne.Config        `validate:"required"`
+	mux            *http.ServeMux            `validate:"required"`
+	validator      sophrosyne.Validator      `validate:"required"`
 	logger         *slog.Logger              `validate:"required"`
 	http           *http.Server              `validate:"required"`
 	tracingService sophrosyne.TracingService `validate:"required"`
@@ -82,17 +81,24 @@ func (s *Server) Handle(path string, handler http.Handler) {
 	s.mux.Handle(path, handler)
 }
 
+const JSONContentType = "application/json"
+
 func RPCHandler(logger *slog.Logger, rpcService sophrosyne.RPCServer) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		body, err := io.ReadAll(r.Body) // Find a way to implement a limit on the body size
+		if err != nil {
+			logger.ErrorContext(r.Context(), "failed to read request body", "error", err)
+			WriteInternalServerError(r.Context(), w, logger)
+			return
+		}
 		b, err := rpcService.HandleRPCRequest(r.Context(), body)
 		if err != nil {
 			logger.ErrorContext(r.Context(), "error handling rpc request", "error", err)
 			WriteInternalServerError(r.Context(), w, logger)
 			return
 		}
-		WriteResponse(r.Context(), w, http.StatusOK, "application/json", b, logger)
+		WriteResponse(r.Context(), w, http.StatusOK, JSONContentType, b, logger)
 	})
 }
 
@@ -100,12 +106,11 @@ func HealthcheckHandler(logger *slog.Logger, healthcheckService sophrosyne.Healt
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ok := healthcheckService.UnauthenticatedHealthcheck(r.Context())
 		if ok {
-			WriteResponse(r.Context(), w, http.StatusOK, "application/json", nil, logger)
+			WriteResponse(r.Context(), w, http.StatusOK, JSONContentType, nil, logger)
 			return
 		}
 		w.Header().Set("Retry-After", "5")
-		WriteResponse(r.Context(), w, http.StatusServiceUnavailable, "application/json", nil, logger)
-		return
+		WriteResponse(r.Context(), w, http.StatusServiceUnavailable, JSONContentType, nil, logger)
 	})
 }
 
