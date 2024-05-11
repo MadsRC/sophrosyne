@@ -49,22 +49,22 @@ func envExtractor(s string, v string) (string, interface{}) {
 }
 
 func loadConfig(k *koanf.Koanf, defaultConfig map[string]interface{}, yamlFile koanf.Provider, overwrites map[string]interface{}, secretFiles []string) error {
-	k.Load(confmap.Provider(defaultConfig, sophrosyne.ConfigDelimiter), nil)
+	_ = k.Load(confmap.Provider(defaultConfig, sophrosyne.ConfigDelimiter), nil)
 
 	if err := loadYamlConfig(k, yamlFile); err != nil {
 		return err
 	}
 
-	k.Load(env.ProviderWithValue(sophrosyne.ConfigEnvironmentPrefix, sophrosyne.ConfigDelimiter, envExtractor), nil)
+	_ = k.Load(env.ProviderWithValue(sophrosyne.ConfigEnvironmentPrefix, sophrosyne.ConfigDelimiter, envExtractor), nil)
 
-	k.Load(confmap.Provider(overwrites, sophrosyne.ConfigDelimiter), nil)
+	_ = k.Load(confmap.Provider(overwrites, sophrosyne.ConfigDelimiter), nil)
 
 	for _, secretFile := range secretFiles {
 		secret, err := secretFromFile(secretFile)
 		if err != nil {
 			return err
 		}
-		k.Load(confmap.Provider(secret, sophrosyne.ConfigDelimiter), nil)
+		_ = k.Load(confmap.Provider(secret, sophrosyne.ConfigDelimiter), nil)
 	}
 
 	return nil
@@ -97,7 +97,7 @@ func NewConfigProvider(yamlFilePath string, overwrites map[string]interface{}, s
 		return nil, err
 	}
 
-	yamlFile.Watch(func(event interface{}, err error) {
+	_ = yamlFile.Watch(func(event interface{}, err error) {
 		if err != nil {
 			// Error occurred when watching the file.
 			return
@@ -111,7 +111,7 @@ func NewConfigProvider(yamlFilePath string, overwrites map[string]interface{}, s
 			return
 		}
 		newConf := &sophrosyne.Config{}
-		cfgProv.k.UnmarshalWithConf("", newConf, koanf.UnmarshalConf{Tag: "key"})
+		_ = cfgProv.k.UnmarshalWithConf("", newConf, koanf.UnmarshalConf{Tag: "key"})
 		err = cfgProv.validate.Validate(newConf)
 		if err != nil {
 			// Error occurred when validating the config.
@@ -124,7 +124,7 @@ func NewConfigProvider(yamlFilePath string, overwrites map[string]interface{}, s
 		*cfgProv.config = *newConf
 	})
 
-	cfgProv.k.UnmarshalWithConf("", cfgProv.config, koanf.UnmarshalConf{Tag: "key"})
+	_ = cfgProv.k.UnmarshalWithConf("", cfgProv.config, koanf.UnmarshalConf{Tag: "key"})
 
 	err := cfgProv.validate.Validate(cfgProv.config)
 	if err != nil {

@@ -253,7 +253,7 @@ func (s *UserService) createRootUser(ctx context.Context) error {
 	}
 	defer func() {
 		s.logger.DebugContext(ctx, "rolling back transaction")
-		tx.Rollback(ctx)
+		_ = tx.Rollback(ctx)
 	}()
 	// Check if root user exists and exit early if it does
 	var exists bool

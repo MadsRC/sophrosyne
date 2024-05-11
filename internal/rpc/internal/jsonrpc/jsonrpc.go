@@ -548,7 +548,7 @@ func (b *BatchRequest) UnmarshalJSON(data []byte) error {
 		var obj O
 		err = json.Unmarshal(raw, &obj)
 		if err != nil {
-			me = errors.Join(fmt.Errorf("error unmarshalling object at index %d: %v", i, err))
+			me = errors.Join(fmt.Errorf("error unmarshalling object at index %d: %v", i, err)) // nolint:errorlint
 			continue
 		}
 		var req Request
@@ -558,7 +558,7 @@ func (b *BatchRequest) UnmarshalJSON(data []byte) error {
 		}
 		err = json.Unmarshal(raw, &req)
 		if err != nil {
-			me = errors.Join(fmt.Errorf("error unmarshalling object at index %d into Request: %v", i, err))
+			me = errors.Join(fmt.Errorf("error unmarshalling object at index %d into Request: %v", i, err)) // nolint:errorlint
 		} else {
 			*b = append(*b, req)
 		}

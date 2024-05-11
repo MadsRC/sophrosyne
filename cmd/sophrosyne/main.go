@@ -92,6 +92,9 @@ func main() {
 					validate := validator.NewValidator()
 
 					config, err := getConfig(c.String("config"), nil, c.StringSlice("secretfiles"), validate)
+					if err != nil {
+						return err
+					}
 					migrationService, err := migrate.NewMigrationService(config)
 					if err != nil {
 						return err
@@ -102,7 +105,7 @@ func main() {
 						if !errors.Is(err, migrate.ErrNoChange) {
 							return err
 						} else {
-							_, _ = fmt.Fprintf(c.App.Writer, "No migrations to apply")
+							_, _ = fmt.Fprint(c.App.Writer, "No migrations to apply")
 							return nil
 						}
 					}
@@ -116,7 +119,7 @@ func main() {
 					} else {
 						msg = fmt.Sprintf("%s\n", msg)
 					}
-					_, _ = fmt.Fprintf(c.App.Writer, msg)
+					_, _ = fmt.Fprint(c.App.Writer, msg)
 					return nil
 				},
 			},

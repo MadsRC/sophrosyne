@@ -27,6 +27,9 @@ linters:
     - bidichk
     - errchkjson
     - gochecknoinits
+#    - wrapcheck
+    - sloglint
+    - tenv
 linters-settings:
   goimports:
     local-prefixes: github.com/madsrc/sophrosyne

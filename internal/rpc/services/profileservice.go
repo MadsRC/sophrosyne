@@ -139,7 +139,7 @@ func (u getProfiles) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 	var params sophrosyne.GetProfilesRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		if errors.Is(err, rpc.NoParamsError) {
+		if errors.Is(err, rpc.ErrNoParams) {
 			params = sophrosyne.GetProfilesRequest{}
 		} else {
 			u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)

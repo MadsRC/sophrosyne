@@ -140,7 +140,7 @@ func (u getChecks) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, err
 	var params sophrosyne.GetChecksRequest
 	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
 	if err != nil {
-		if errors.Is(err, rpc.NoParamsError) {
+		if errors.Is(err, rpc.ErrNoParams) {
 			params = sophrosyne.GetChecksRequest{}
 		} else {
 			u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)

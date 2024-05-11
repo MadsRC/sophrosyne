@@ -111,12 +111,12 @@ func GetParams(req *jsonrpc.Request) (*jsonrpc.ParamsObject, *jsonrpc.ParamsArra
 	return po, pa, ook
 }
 
-var NoParamsError = fmt.Errorf("no params found")
+var ErrNoParams = fmt.Errorf("no params found")
 
 func ParamsIntoAny(req *jsonrpc.Request, target any, validate sophrosyne.Validator) error {
 	pa, po, ok := GetParams(req)
 	if !ok {
-		return NoParamsError
+		return ErrNoParams
 	}
 
 	var b []byte
