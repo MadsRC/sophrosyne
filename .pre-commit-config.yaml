@@ -1,4 +1,9 @@
 repos:
+  - repo: https://github.com/google/osv-scanner/
+    rev: 645d5b0bb9c14741b2147a5305b684e4abc039e0 # v1.7.3
+    hooks:
+      - id: osv-scanner
+        args: ["-r", "."]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
