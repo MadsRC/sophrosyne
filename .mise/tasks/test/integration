@@ -3,4 +3,3 @@
 # mise outputs=[]
 
 go test --tags=integration ./...
-

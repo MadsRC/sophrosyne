@@ -1,21 +1,21 @@
 {
-    "[python]": {
-        "editor.formatOnSave": true,
-        "editor.defaultFormatter": "charliermarsh.ruff",
-        "editor.codeActionsOnSave": {
-            "source.organizeImports": "explicit"
-          }
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
     },
-    "python.testing.pytestArgs": [
-        "tests"
-    ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true,
-    "files.exclude": {
-        "**/__pycache__": true
-    },
-    "sonarlint.connectedMode.project": {
-        "connectionId": "madsrc",
-        "projectKey": "MadsRC_sophrosyne"
-    }
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true
+  },
+  "files.exclude": {
+    "**/__pycache__": true
+  },
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "sonarlint.connectedMode.project": {
+    "connectionId": "madsrc",
+    "projectKey": "MadsRC_sophrosyne"
+  }
 }

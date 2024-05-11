@@ -1,17 +1,29 @@
 repos:
+  - repo: https://github.com/google/osv-scanner/
+    rev: 645d5b0bb9c14741b2147a5305b684e4abc039e0 # v1.7.3
+    hooks:
+      - id: osv-scanner
+        args: ["-r", "."]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
       - id: check-added-large-files
         args: ['--maxkb=4000']
       - id: end-of-file-fixer
-        exclude: "snapshots|docs/api.md"
       - id: trailing-whitespace
-        exclude: "snapshots|docs/api.md"
+        args: ['--markdown-linebreak-ext=md']
       - id: check-merge-conflict
       - id: check-json
       - id: check-yaml
+      - id: check-toml
+      - id: check-xml
+      - id: check-symlinks
+      - id: destroyed-symlinks
       - id: check-case-conflict
       - id: mixed-line-ending
       - id: detect-private-key
-      - id: check-executables-have-shebangs
+      - id: pretty-format-json
+        args: ['--autofix']
+ci:
+  skip:
+    - osv-scanner # Handled by a dedicated GitHub Action
