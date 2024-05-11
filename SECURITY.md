@@ -8,6 +8,6 @@
 
 ## Reporting a Vulnerability
 
-Vulnerabilities can be reported by opening an [issue on GitHub](https://github.com/MadsRC/sophrosyne/issues).
-
-Vulnerabilities that have been triaged and verified will carry the `vulnerability` label.
+Vulnerabilities can be reported privately via
+[GitHub's advisory form](https://github.com/MadsRC/sophrosyne/security/advisories/new) (preferred) or via email to
+[mads@v42.dk](mailto:mads@v42.dk).
