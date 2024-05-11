@@ -24,3 +24,6 @@ repos:
       - id: detect-private-key
       - id: pretty-format-json
         args: ['--autofix']
+ci:
+  skip:
+    - osv-scanner # Handled by a dedicated GitHub Action
