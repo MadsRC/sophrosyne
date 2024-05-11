@@ -1,0 +1,6 @@
+#!/bin/sh
+# mise sources=["go.mod", "go.sum", "internal/**/*", "cmd/**/*", "*.go"]
+# mise outputs=[]
+
+go test --tags=integration ./...
+
