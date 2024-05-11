@@ -1,0 +1,40 @@
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  # Trigger analysis when pushing in master or pull requests, and when creating
+  # a pull request.
+  push:
+    branches:
+      - main
+  pull_request:
+      types: [opened, synchronize, reopened]
+name: DeepSource analysis
+jobs:
+  sonarcloud:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+        # See https://docs.deepsource.com/docs/analyzers-test-coverage#with-github-actions
+        ref: ${{ github.event.pull_request.head.sha }}
+    - uses: jdx/mise-action@0c39a522dfbced3ed83924152c45804a71ce216f # v2.0.4
+      with:
+        experimental: true
+    - run: mise run dev:lint --no-fail
+    - run: mise run test:unit
+    - name: Report results to DeepSource
+      run: |
+        # Tests have finished and a test coverage report is available
+
+        # Install deepsource CLI
+             curl https://deepsource.io/cli | sh
+
+        # From the root directory, run the report coverage command
+             ./bin/deepsource report --analyzer test-coverage --key go --value-file build/unit_coverage.out
+
+      env:
+        DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
