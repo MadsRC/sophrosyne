@@ -84,10 +84,10 @@ func (s *Server) Handle(path string, handler http.Handler) {
 const JSONContentType = "application/json"
 const PlainTextContentType = "text/plain"
 
-func RPCHandler(logger *slog.Logger, rpcService sophrosyne.RPCServer) http.Handler {
+func RPCHandler(logger *slog.Logger, rpcService sophrosyne.RPCServer, config *sophrosyne.Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		body, err := io.ReadAll(r.Body) // Find a way to implement a limit on the body size
+		body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, config.Server.MaxBodySize))
 		if err != nil {
 			logger.ErrorContext(r.Context(), "failed to read request body", "error", err)
 			WriteInternalServerError(r.Context(), w, logger)

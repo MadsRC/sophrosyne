@@ -345,7 +345,7 @@ func run(c *cli.Context) error {
 						config,
 						userService,
 						logger,
-						http.RPCHandler(logger, rpcServer),
+						http.RPCHandler(logger, rpcServer, config),
 					),
 				),
 			),
