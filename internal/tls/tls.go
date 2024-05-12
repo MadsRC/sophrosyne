@@ -27,10 +27,9 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"flag"
+	"errors"
 	"fmt"
 	"io"
-	"log"
 	"math/big"
 	"net"
 	"os"
@@ -38,13 +37,6 @@ import (
 	"time"
 
 	"github.com/madsrc/sophrosyne"
-)
-
-var (
-	host      = flag.String("host", "", "Comma-separated hostnames and IPs to generate a certificate for")
-	validFrom = flag.String("start-date", "", "Creation date formatted as Jan 1 15:04:05 2011")
-	validFor  = flag.Duration("duration", 365*24*time.Hour, "Duration that certificate is valid for")
-	isCA      = flag.Bool("ca", false, "whether this cert should be its own Certificate Authority")
 )
 
 type KeyType string
@@ -58,7 +50,7 @@ const (
 	KeyTypeED25519 KeyType = "ED25519"
 )
 
-func publicKey(priv interface{}) interface{} {
+func publicKey(priv any) any {
 	switch k := priv.(type) {
 	case *rsa.PrivateKey:
 		return &k.PublicKey
@@ -71,8 +63,9 @@ func publicKey(priv interface{}) interface{} {
 	}
 }
 
-func generateKey(keytype KeyType, randSource io.Reader) (interface{}, error) {
-	var priv interface{}
+func generateKey(keytype KeyType, randSource io.Reader) (any, error) {
+	randSource = ensureRand(randSource)
+	var priv any
 	var err error
 	switch keytype {
 	case KeyTypeRSA4096:
@@ -98,31 +91,42 @@ func generateKey(keytype KeyType, randSource io.Reader) (interface{}, error) {
 	return priv, nil
 }
 
-func generateCert(priv interface{}, randSource io.Reader) ([]byte, error) {
+func ensureRand(randSource io.Reader) io.Reader {
+	if randSource == nil {
+		randSource = rand.Reader
+	}
+	return randSource
+}
+
+const defaultValidity = 365 * 24 * time.Hour
+
+func generateCert(priv interface{}, hosts []string, validFrom time.Time, validFor time.Duration, isCA bool, randSource io.Reader) ([]byte, error) {
+	randSource = ensureRand(randSource)
 	var err error
 	keyUsage := x509.KeyUsageDigitalSignature
 	if _, isRSA := priv.(*rsa.PrivateKey); isRSA {
 		keyUsage |= x509.KeyUsageKeyEncipherment
 	}
 	var notBefore time.Time
-	if len(*validFrom) == 0 {
+	if validFrom.IsZero() {
 		notBefore = time.Now()
 	} else {
-		notBefore, err = time.Parse("Jan 2 15:04:05 2006", *validFrom)
-		if err != nil {
-			log.Fatalf("Failed to parse creation date: %v", err)
-		}
+		notBefore = validFrom
 	}
-	notAfter := notBefore.Add(*validFor)
+	if validFor == 0 {
+		validFor = defaultValidity
+	}
+	notAfter := notBefore.Add(validFor)
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(randSource, serialNumberLimit)
 	if err != nil {
-		log.Fatalf("Failed to generate serial number: %v", err)
+		return nil, fmt.Errorf("failed to generate serial number: %v", err)
 	}
 	template := x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
-			Organization: []string{"Acme Co"},
+			Organization: []string{"Sophrosyne"},
+			CommonName:   hosts[0],
 		},
 		NotBefore:             notBefore,
 		NotAfter:              notAfter,
@@ -130,7 +134,6 @@ func generateCert(priv interface{}, randSource io.Reader) ([]byte, error) {
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
 	}
-	hosts := strings.Split(*host, ",")
 	for _, h := range hosts {
 		if ip := net.ParseIP(h); ip != nil {
 			template.IPAddresses = append(template.IPAddresses, ip)
@@ -138,13 +141,17 @@ func generateCert(priv interface{}, randSource io.Reader) ([]byte, error) {
 			template.DNSNames = append(template.DNSNames, h)
 		}
 	}
-	if *isCA {
+	if isCA {
 		template.IsCA = true
 		template.KeyUsage |= x509.KeyUsageCertSign
 	}
-	derBytes, err := x509.CreateCertificate(randSource, &template, &template, publicKey(priv), priv)
+	return signCert(&template, &template, publicKey(priv), priv)
+}
+
+func signCert(template *x509.Certificate, parent *x509.Certificate, pub any, priv any) ([]byte, error) {
+	derBytes, err := x509.CreateCertificate(rand.Reader, template, parent, pub, priv)
 	if err != nil {
-		log.Fatalf("Failed to create certificate: %v", err)
+		return nil, fmt.Errorf("failed to create certificate: %v", err)
 	}
 	return derBytes, nil
 }
@@ -159,14 +166,14 @@ func readPEMFile(path string) (*pem.Block, error) {
 	}()
 
 	pemfileinfo, _ := file.Stat()
-	var size int64 = pemfileinfo.Size()
+	var size = pemfileinfo.Size()
 	pembytes := make([]byte, size)
 	buffer := bufio.NewReader(file)
 	_, err = buffer.Read(pembytes)
 	if err != nil {
 		return nil, err
 	}
-	data, _ := pem.Decode([]byte(pembytes))
+	data, _ := pem.Decode(pembytes)
 
 	return data, nil
 }
@@ -185,7 +192,7 @@ func readCertificate(path string) ([]byte, error) {
 }
 
 // Has to be PKCS8.
-func readPrivateKeyPath(path string) (interface{}, error) {
+func readPrivateKeyPath(path string) (any, error) {
 	data, err := readPEMFile(path)
 	if err != nil {
 		return nil, err
@@ -195,11 +202,52 @@ func readPrivateKeyPath(path string) (interface{}, error) {
 		return nil, fmt.Errorf("decoded PEM file not as expected. Type is %s", data.Type)
 	}
 
-	return x509.ParsePKCS8PrivateKey(data.Bytes)
+	var me error
+	var ret any
+	var ecErr error
+	var pkcs8err error
+	ret, ecErr = x509.ParseECPrivateKey(data.Bytes)
+	if ecErr != nil {
+		me = errors.Join(me, ecErr)
+		ret, pkcs8err = x509.ParsePKCS8PrivateKey(data.Bytes)
+		if pkcs8err != nil {
+			me = errors.Join(me, pkcs8err)
+			return nil, me
+		}
+	}
+
+	return ret, nil
 }
 
+// Create a new [tls.Config] for server use.
+//
+// The provided config is referenced to determine which settings to set in the returned
+// config. If config is nil, a default [tls.Config] is provided.
+//
+// If the provided randSource is nil, [rand.Reader] will be used.
+//
+// The following attributes of the provided config are referenced:
+//
+// Security.TLS.InsecureSkipVerify - if set, the TLS config will be
+// configured to no verify certificates.
+//
+// Security.TLS.KeyPath - Path to an existing TLS key in the filesystem.
+// Can be empty, in which case a new private key will be created.
+//
+// Security.TLS.KeyType - Used to determine what kind of key to generate.
+//
+// Security.TLS.CertificatePath - Path to an existing X.509 certificate in
+// the filesystem. Can be empty, in which case a new certificate will be
+// generated.
+//
+// Server.AdvertisedHost - The value will be used as the common name and first Subject
+// Alternative Name of the certificate.
 func NewTLSServerConfig(config *sophrosyne.Config, randSource io.Reader) (*tls.Config, error) {
-	var priv interface{}
+	randSource = ensureRand(randSource)
+	if config == nil {
+		return newDefaultTLSConfig(), nil
+	}
+	var priv any
 	var err error
 	var certBytes []byte
 	if config.Security.TLS.KeyPath == "" {
@@ -212,7 +260,7 @@ func NewTLSServerConfig(config *sophrosyne.Config, randSource io.Reader) (*tls.C
 	}
 
 	if config.Security.TLS.CertificatePath == "" {
-		certBytes, err = generateCert(priv, randSource)
+		certBytes, err = generateCert(priv, []string{config.Server.AdvertisedHost}, time.Time{}, 0, false, randSource)
 	} else {
 		certBytes, err = readCertificate(config.Security.TLS.CertificatePath)
 	}
@@ -225,19 +273,34 @@ func NewTLSServerConfig(config *sophrosyne.Config, randSource io.Reader) (*tls.C
 		PrivateKey:  priv,
 	}
 
-	return &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		MinVersion:   tls.VersionTLS13,
-	}, nil
+	c := newDefaultTLSConfig()
+	c.Certificates = []tls.Certificate{cert}
+	return c, nil
 }
 
+// Create a new [tls.Config] for client use, such as with HTTP calls.
+//
+// It takes a [sophrosyne.Config] and references it as the source of configuration when
+// determining which settings to use in the returned [tls.Config].
+//
+// If the provided config is nil, a default [tls.Config] is returned.
+//
+// The following attributes of the provided config are referenced:
+//
+// Security.TLS.InsecureSkipVerify - if set, the TLS config will be
+// configured to not verify certificates.
 func NewTLSClientConfig(config *sophrosyne.Config) (*tls.Config, error) {
-	c := &tls.Config{
-		MinVersion: tls.VersionTLS13,
+	c := newDefaultTLSConfig()
+	if config == nil {
+		return c, nil
 	}
-	if config.Security.TLS.InsecureSkipVerify {
-		c.InsecureSkipVerify = true
-	}
+	c.InsecureSkipVerify = config.Security.TLS.InsecureSkipVerify
 
 	return c, nil
+}
+
+func newDefaultTLSConfig() *tls.Config {
+	return &tls.Config{
+		MinVersion: tls.VersionTLS13,
+	}
 }
