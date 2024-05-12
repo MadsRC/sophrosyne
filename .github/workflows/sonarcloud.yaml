@@ -10,6 +10,10 @@ on:
       - main
   pull_request:
       types: [opened, synchronize, reopened]
+
+# Declare default permissions as read only.
+permissions: read-all
+
 name: SonarCloud analysis
 jobs:
   sonarcloud:
