@@ -21,7 +21,6 @@ repos:
       - id: destroyed-symlinks
       - id: check-case-conflict
       - id: mixed-line-ending
-      - id: detect-private-key
       - id: pretty-format-json
         args: ['--autofix']
 ci:

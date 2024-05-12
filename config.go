@@ -78,6 +78,7 @@ var DefaultConfig = map[string]interface{}{
 	"services.checks.pageSize":        2,
 	"services.checks.cacheTTL":        100,
 	"server.maxBodySize":              20 * megabyte,
+	"server.advertizedHost":           "localhost",
 }
 
 const megabyte int64 = 1048576
@@ -105,10 +106,7 @@ type Config struct {
 		Port     int    `key:"port" validate:"required,min=1,max=65535"`
 		Name     string `key:"name" validate:"required"`
 	} `key:"database"`
-	Server struct {
-		Port        int   `key:"port" validate:"required,min=1,max=65535"`
-		MaxBodySize int64 `key:"maxBodySize" validate:"required,min=1"` // in bytes
-	} `key:"server"`
+	Server  ServerConfig `key:"server"`
 	Logging struct {
 		Enabled bool      `key:"enabled"`
 		Level   LogLevel  `key:"level" validate:"required,oneof=debug info"`
@@ -126,16 +124,7 @@ type Config struct {
 		Interval int        `key:"interval"`
 		Output   OtelOutput `key:"output" validate:"required,oneof=stdout http"`
 	} `key:"metrics"`
-	Security struct {
-		SiteKey []byte `key:"siteKey" validate:"required,min=64,max=64"`
-		Salt    []byte `key:"salt" validate:"required,min=32,max=32"`
-		TLS     struct {
-			KeyType            string `key:"keyType" validate:"required,oneof=RSA-4096 EC-P224 EC-P256 EC-P384 EC-P521 ED25519"`
-			CertificatePath    string `key:"certificatePath"`
-			KeyPath            string `key:"keyPath"`
-			InsecureSkipVerify bool   `key:"insecureSkipVerify"`
-		} `key:"tls" validate:"required"`
-	} `key:"security" validate:"required"`
+	Security SecurityConfig `key:"security" validate:"required"`
 	Services struct {
 		Users struct {
 			PageSize int   `key:"pageSize" validate:"required,min=2"`
@@ -153,6 +142,25 @@ type Config struct {
 	Development struct {
 		StaticRootToken string `key:"staticRootToken"`
 	} `key:"development"`
+}
+
+type TLSConfig struct {
+	KeyType            string `key:"keyType" validate:"required,oneof=RSA-4096 EC-P224 EC-P256 EC-P384 EC-P521 ED25519"`
+	CertificatePath    string `key:"certificatePath"`
+	KeyPath            string `key:"keyPath"`
+	InsecureSkipVerify bool   `key:"insecureSkipVerify"`
+}
+
+type SecurityConfig struct {
+	SiteKey []byte    `key:"siteKey" validate:"required,min=64,max=64"`
+	Salt    []byte    `key:"salt" validate:"required,min=32,max=32"`
+	TLS     TLSConfig `key:"tls" validate:"required"`
+}
+
+type ServerConfig struct {
+	Port           int    `key:"port" validate:"required,min=1,max=65535"`
+	MaxBodySize    int64  `key:"maxBodySize" validate:"required,min=1"` // in bytes
+	AdvertisedHost string `key:"advertisedHost" validate:"required"`
 }
 
 // ConfigEnvironmentPrefix is the prefix used to identify the environment
