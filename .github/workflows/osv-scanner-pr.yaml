@@ -6,12 +6,14 @@ on:
   merge_group:
     branches: [main]
 
-permissions:
-  # Require writing security events to upload SARIF file to security tab
-  security-events: write
-  # Only need to read contents
-  contents: read
+# Declare default permissions as read only.
+permissions: read-all
 
 jobs:
   scan-pr:
     uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@75532bf0bf75464b047d80414dbce04449498365" # v1.7.3
+    permissions:
+      # Require writing security events to upload SARIF file to security tab
+      security-events: write
+      # Only need to read contents
+      contents: read

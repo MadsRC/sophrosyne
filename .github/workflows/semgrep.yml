@@ -13,6 +13,10 @@ on:
   schedule:
   # random HH:MM to avoid a load spike on GitHub Actions at 00:00
   - cron: 55 8 * * *
+
+# Declare default permissions as read only.
+permissions: read-all
+
 name: Semgrep
 jobs:
   semgrep:
