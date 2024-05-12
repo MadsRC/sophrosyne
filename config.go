@@ -78,7 +78,7 @@ var DefaultConfig = map[string]interface{}{
 	"services.checks.pageSize":        2,
 	"services.checks.cacheTTL":        100,
 	"server.maxBodySize":              20 * megabyte,
-	"server.advertizedHost":           "localhost",
+	"server.advertisedHost":           "localhost",
 }
 
 const megabyte int64 = 1048576
