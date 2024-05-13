@@ -1,10 +1,10 @@
 repos:
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.16.1
+    rev: v8.18.2
     hooks:
       - id: gitleaks
   - repo: https://github.com/google/osv-scanner/
-    rev: 645d5b0bb9c14741b2147a5305b684e4abc039e0 # v1.7.3
+    rev: v1.7.3 # v1.7.3
     hooks:
       - id: osv-scanner
         args: ["-r", "."]
