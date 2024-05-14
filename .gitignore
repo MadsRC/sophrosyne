@@ -64,4 +64,7 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
+# Cody code completion
+.idea/cody_history.xml
+
 .DS_Store

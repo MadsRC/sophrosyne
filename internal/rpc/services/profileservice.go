@@ -19,15 +19,15 @@ package services
 import (
 	"context"
 	"errors"
+	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 	"log/slog"
+	"strings"
 
 	"github.com/madsrc/sophrosyne"
 	"github.com/madsrc/sophrosyne/internal/rpc"
-	"github.com/madsrc/sophrosyne/internal/rpc/internal/jsonrpc"
 )
 
 type ProfileService struct {
-	methods        map[jsonrpc.Method]rpc.Method
 	profileService sophrosyne.ProfileService
 	authz          sophrosyne.AuthorizationProvider
 	logger         *slog.Logger
@@ -36,18 +36,11 @@ type ProfileService struct {
 
 func NewProfileService(profileService sophrosyne.ProfileService, authz sophrosyne.AuthorizationProvider, logger *slog.Logger, validator sophrosyne.Validator) (*ProfileService, error) {
 	u := &ProfileService{
-		methods:        make(map[jsonrpc.Method]rpc.Method),
 		profileService: profileService,
 		authz:          authz,
 		logger:         logger,
 		validator:      validator,
 	}
-
-	u.methods["Profiles::GetProfile"] = getProfile{service: u}
-	u.methods["Profiles::GetProfiles"] = getProfiles{service: u}
-	u.methods["Profiles::CreateProfile"] = createProfile{service: u}
-	u.methods["Profiles::UpdateProfile"] = updateProfile{service: u}
-	u.methods["Profiles::DeleteProfile"] = deleteProfile{service: u}
 
 	return u, nil
 }
@@ -61,35 +54,38 @@ func (u ProfileService) EntityID() string {
 }
 
 func (u ProfileService) InvokeMethod(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
-	return invokeMethod(ctx, u.logger, u.methods, req)
+	m := strings.Split(string(req.Method), "::")
+	if len(m) != 2 {
+		u.logger.ErrorContext(ctx, "unreachable", "error", sophrosyne.NewUnreachableCodeError())
+		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
+	}
+	switch m[1] {
+	case "GetProfile":
+		return u.GetProfile(ctx, req)
+	case "GetProfiles":
+		return u.GetProfiles(ctx, req)
+	case "CreateProfile":
+		return u.CreateProfile(ctx, req)
+	case "UpdateProfile":
+		return u.UpdateProfile(ctx, req)
+	case "DeleteProfile":
+		return u.DeleteProfile(ctx, req)
+	default:
+		u.logger.DebugContext(ctx, "cannot invoke method", "method", req.Method)
+		return rpc.ErrorFromRequest(&req, jsonrpc.MethodNotFound, string(jsonrpc.MethodNotFoundMessage))
+	}
 }
 
-type getProfile struct {
-	service *ProfileService
-}
-
-func (u getProfile) GetService() rpc.Service {
-	return u.service
-}
-
-func (u getProfile) EntityType() string {
-	return "Profiles"
-}
-
-func (u getProfile) EntityID() string {
-	return "GetProfile"
-}
-
-func (u getProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u ProfileService) GetProfile(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.GetProfileRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+		u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
 	if params.Name != "" {
-		u, _ := u.service.profileService.GetProfileByName(ctx, params.Name)
+		u, _ := u.profileService.GetProfileByName(ctx, params.Name)
 		params.ID = u.ID
 	}
 
@@ -98,17 +94,17 @@ func (u getProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	if !u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+	if !u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 		Principal: curUser,
-		Action:    u,
+		Action:    sophrosyne.AuthorizationAction("GetProfile"),
 		Resource:  sophrosyne.Profile{ID: params.ID},
 	}) {
 		return rpc.ErrorFromRequest(&req, 12345, "unauthorized")
 	}
 
-	Profile, err := u.service.profileService.GetProfile(ctx, params.ID)
+	Profile, err := u.profileService.GetProfile(ctx, params.ID)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to get Profile", "error", err)
+		u.logger.ErrorContext(ctx, "unable to get Profile", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, profileNotFoundError)
 	}
 
@@ -119,30 +115,14 @@ func (u getProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 
 const profileNotFoundError = "profile not found"
 
-type getProfiles struct {
-	service *ProfileService
-}
-
-func (u getProfiles) GetService() rpc.Service {
-	return u.service
-}
-
-func (u getProfiles) EntityType() string {
-	return "Profiles"
-}
-
-func (u getProfiles) EntityID() string {
-	return "GetProfiles"
-}
-
-func (u getProfiles) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u ProfileService) GetProfiles(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.GetProfilesRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
 		if errors.Is(err, rpc.ErrNoParams) {
 			params = sophrosyne.GetProfilesRequest{}
 		} else {
-			u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+			u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 			return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 		}
 	}
@@ -156,24 +136,24 @@ func (u getProfiles) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 	if params.Cursor != "" {
 		cursor, err = sophrosyne.DecodeDatabaseCursorWithOwner(params.Cursor, curProfile.ID)
 		if err != nil {
-			u.service.logger.ErrorContext(ctx, "unable to decode cursor", "error", err)
+			u.logger.ErrorContext(ctx, "unable to decode cursor", "error", err)
 			return rpc.ErrorFromRequest(&req, 12347, "invalid cursor")
 		}
 	} else {
 		cursor = sophrosyne.NewDatabaseCursor(curProfile.ID, "")
 	}
 
-	Profiles, err := u.service.profileService.GetProfiles(ctx, cursor)
+	Profiles, err := u.profileService.GetProfiles(ctx, cursor)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to get Profiles", "error", err)
+		u.logger.ErrorContext(ctx, "unable to get Profiles", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, "Profiles not found")
 	}
 
 	var ProfilesResponse []sophrosyne.GetProfileResponse
 	for _, uu := range Profiles {
-		ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+		ok := u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 			Principal: curProfile,
-			Action:    u,
+			Action:    sophrosyne.AuthorizationAction("GetProfiles"),
 			Resource:  sophrosyne.Profile{ID: uu.ID},
 		})
 		if ok {
@@ -182,7 +162,7 @@ func (u getProfiles) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 		}
 	}
 
-	u.service.logger.DebugContext(ctx, "returning Profiles", "total", len(ProfilesResponse), "Profiles", ProfilesResponse)
+	u.logger.DebugContext(ctx, "returning Profiles", "total", len(ProfilesResponse), "Profiles", ProfilesResponse)
 	return rpc.ResponseToRequest(&req, sophrosyne.GetProfilesResponse{
 		Profiles: ProfilesResponse,
 		Cursor:   cursor.String(),
@@ -190,27 +170,11 @@ func (u getProfiles) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 	})
 }
 
-type createProfile struct {
-	service *ProfileService
-}
-
-func (u createProfile) GetService() rpc.Service {
-	return u.service
-}
-
-func (u createProfile) EntityType() string {
-	return "Profiles"
-}
-
-func (u createProfile) EntityID() string {
-	return "CreateProfile"
-}
-
-func (u createProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u ProfileService) CreateProfile(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.CreateProfileRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+		u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -219,18 +183,18 @@ func (u createProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte,
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+	ok := u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 		Principal: curProfile,
-		Action:    u,
+		Action:    sophrosyne.AuthorizationAction("CreateProfile"),
 	})
 
 	if !ok {
 		return rpc.ErrorFromRequest(&req, 12345, "unauthorized")
 	}
 
-	Profile, err := u.service.profileService.CreateProfile(ctx, params)
+	Profile, err := u.profileService.CreateProfile(ctx, params)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to create Profile", "error", err)
+		u.logger.ErrorContext(ctx, "unable to create Profile", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, "unable to create Profile")
 	}
 
@@ -238,27 +202,11 @@ func (u createProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte,
 	return rpc.ResponseToRequest(&req, resp.FromProfile(Profile))
 }
 
-type updateProfile struct {
-	service *ProfileService
-}
-
-func (u updateProfile) GetService() rpc.Service {
-	return u.service
-}
-
-func (u updateProfile) EntityType() string {
-	return "Profiles"
-}
-
-func (u updateProfile) EntityID() string {
-	return "CreateProfile"
-}
-
-func (u updateProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u ProfileService) UpdateProfile(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.UpdateProfileRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+		u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -267,14 +215,14 @@ func (u updateProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte,
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	ProfileToUpdate, err := u.service.profileService.GetProfileByName(ctx, params.Name)
+	ProfileToUpdate, err := u.profileService.GetProfileByName(ctx, params.Name)
 	if err != nil {
 		return rpc.ErrorFromRequest(&req, 12346, profileNotFoundError)
 	}
 
-	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+	ok := u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 		Principal: curProfile,
-		Action:    u,
+		Action:    sophrosyne.AuthorizationAction("UpdateProfile"),
 		Resource:  sophrosyne.Profile{ID: ProfileToUpdate.ID},
 	})
 
@@ -282,9 +230,9 @@ func (u updateProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte,
 		return rpc.ErrorFromRequest(&req, 12345, "unauthorized")
 	}
 
-	Profile, err := u.service.profileService.UpdateProfile(ctx, params)
+	Profile, err := u.profileService.UpdateProfile(ctx, params)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to update Profile", "error", err)
+		u.logger.ErrorContext(ctx, "unable to update Profile", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, "unable to update Profile")
 	}
 
@@ -292,27 +240,11 @@ func (u updateProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte,
 	return rpc.ResponseToRequest(&req, resp.FromProfile(Profile))
 }
 
-type deleteProfile struct {
-	service *ProfileService
-}
-
-func (u deleteProfile) GetService() rpc.Service {
-	return u.service
-}
-
-func (u deleteProfile) EntityType() string {
-	return "Profiles"
-}
-
-func (u deleteProfile) EntityID() string {
-	return "CreateProfile"
-}
-
-func (u deleteProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u ProfileService) DeleteProfile(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.DeleteProfileRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+		u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -321,14 +253,14 @@ func (u deleteProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte,
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	ProfileToDelete, err := u.service.profileService.GetProfileByName(ctx, params.Name)
+	ProfileToDelete, err := u.profileService.GetProfileByName(ctx, params.Name)
 	if err != nil {
 		return rpc.ErrorFromRequest(&req, 12346, profileNotFoundError)
 	}
 
-	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+	ok := u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 		Principal: curProfile,
-		Action:    u,
+		Action:    sophrosyne.AuthorizationAction("DeleteProfile"),
 		Resource:  sophrosyne.Profile{ID: ProfileToDelete.ID},
 	})
 
@@ -336,9 +268,9 @@ func (u deleteProfile) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte,
 		return rpc.ErrorFromRequest(&req, 12345, "unauthorized")
 	}
 
-	err = u.service.profileService.DeleteProfile(ctx, ProfileToDelete.Name)
+	err = u.profileService.DeleteProfile(ctx, ProfileToDelete.Name)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to delete Profile", "error", err)
+		u.logger.ErrorContext(ctx, "unable to delete Profile", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, "unable to delete Profile")
 	}
 

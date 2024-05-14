@@ -19,15 +19,15 @@ package services
 import (
 	"context"
 	"errors"
+	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 	"log/slog"
+	"strings"
 
 	"github.com/madsrc/sophrosyne"
 	"github.com/madsrc/sophrosyne/internal/rpc"
-	"github.com/madsrc/sophrosyne/internal/rpc/internal/jsonrpc"
 )
 
 type CheckService struct {
-	methods      map[jsonrpc.Method]rpc.Method
 	checkService sophrosyne.CheckService
 	authz        sophrosyne.AuthorizationProvider
 	logger       *slog.Logger
@@ -36,18 +36,11 @@ type CheckService struct {
 
 func NewCheckService(checkService sophrosyne.CheckService, authz sophrosyne.AuthorizationProvider, logger *slog.Logger, validator sophrosyne.Validator) (*CheckService, error) {
 	u := &CheckService{
-		methods:      make(map[jsonrpc.Method]rpc.Method),
 		checkService: checkService,
 		authz:        authz,
 		logger:       logger,
 		validator:    validator,
 	}
-
-	u.methods["Checks::GetCheck"] = getCheck{service: u}
-	u.methods["Checks::GetChecks"] = getChecks{service: u}
-	u.methods["Checks::CreateCheck"] = createCheck{service: u}
-	u.methods["Checks::UpdateCheck"] = updateCheck{service: u}
-	u.methods["Checks::DeleteCheck"] = deleteCheck{service: u}
 
 	return u, nil
 }
@@ -64,35 +57,38 @@ func (u CheckService) EntityID() string {
 }
 
 func (u CheckService) InvokeMethod(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
-	return invokeMethod(ctx, u.logger, u.methods, req)
+	m := strings.Split(string(req.Method), "::")
+	if len(m) != 2 {
+		u.logger.ErrorContext(ctx, "unreachable", "error", sophrosyne.NewUnreachableCodeError())
+		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
+	}
+	switch m[1] {
+	case "Getcheck":
+		return u.GetCheck(ctx, req)
+	case "GetChecks":
+		return u.GetChecks(ctx, req)
+	case "CreateCheck":
+		return u.CreateCheck(ctx, req)
+	case "UpdateCheck":
+		return u.UpdateCheck(ctx, req)
+	case "DeleteCheck":
+		return u.DeleteCheck(ctx, req)
+	default:
+		u.logger.DebugContext(ctx, "cannot invoke method", "method", req.Method)
+		return rpc.ErrorFromRequest(&req, jsonrpc.MethodNotFound, string(jsonrpc.MethodNotFoundMessage))
+	}
 }
 
-type getCheck struct {
-	service *CheckService
-}
-
-func (u getCheck) GetService() rpc.Service {
-	return u.service
-}
-
-func (u getCheck) EntityType() string {
-	return "Checks"
-}
-
-func (u getCheck) EntityID() string {
-	return "GetCheck"
-}
-
-func (u getCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u CheckService) GetCheck(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.GetCheckRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+		u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
 	if params.Name != "" {
-		u, _ := u.service.checkService.GetCheckByName(ctx, params.Name)
+		u, _ := u.checkService.GetCheckByName(ctx, params.Name)
 		params.ID = u.ID
 	}
 
@@ -101,17 +97,17 @@ func (u getCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, erro
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	if !u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+	if !u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 		Principal: curCheck,
-		Action:    u,
+		Action:    sophrosyne.AuthorizationAction("GetCheck"),
 		Resource:  sophrosyne.Check{ID: params.ID},
 	}) {
 		return rpc.ErrorFromRequest(&req, 12345, "unauthorized")
 	}
 
-	check, err := u.service.checkService.GetCheck(ctx, params.ID)
+	check, err := u.checkService.GetCheck(ctx, params.ID)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to get check", "error", err)
+		u.logger.ErrorContext(ctx, "unable to get check", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, checkNotFoundError)
 	}
 
@@ -120,30 +116,14 @@ func (u getCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, erro
 	return rpc.ResponseToRequest(&req, resp.FromCheck(check))
 }
 
-type getChecks struct {
-	service *CheckService
-}
-
-func (u getChecks) GetService() rpc.Service {
-	return u.service
-}
-
-func (u getChecks) EntityType() string {
-	return "Checks"
-}
-
-func (u getChecks) EntityID() string {
-	return "GetChecks"
-}
-
-func (u getChecks) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u CheckService) GetChecks(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.GetChecksRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
 		if errors.Is(err, rpc.ErrNoParams) {
 			params = sophrosyne.GetChecksRequest{}
 		} else {
-			u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+			u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 			return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 		}
 	}
@@ -157,24 +137,24 @@ func (u getChecks) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, err
 	if params.Cursor != "" {
 		cursor, err = sophrosyne.DecodeDatabaseCursorWithOwner(params.Cursor, curCheck.ID)
 		if err != nil {
-			u.service.logger.ErrorContext(ctx, "unable to decode cursor", "error", err)
+			u.logger.ErrorContext(ctx, "unable to decode cursor", "error", err)
 			return rpc.ErrorFromRequest(&req, 12347, "invalid cursor")
 		}
 	} else {
 		cursor = sophrosyne.NewDatabaseCursor(curCheck.ID, "")
 	}
 
-	checks, err := u.service.checkService.GetChecks(ctx, cursor)
+	checks, err := u.checkService.GetChecks(ctx, cursor)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to get checks", "error", err)
+		u.logger.ErrorContext(ctx, "unable to get checks", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, "checks not found")
 	}
 
 	var checksResponse []sophrosyne.GetCheckResponse
 	for _, uu := range checks {
-		ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+		ok := u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 			Principal: curCheck,
-			Action:    u,
+			Action:    sophrosyne.AuthorizationAction("GetChecks"),
 			Resource:  sophrosyne.Check{ID: uu.ID},
 		})
 		if ok {
@@ -183,7 +163,7 @@ func (u getChecks) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, err
 		}
 	}
 
-	u.service.logger.DebugContext(ctx, "returning checks", "total", len(checksResponse), "checks", checksResponse)
+	u.logger.DebugContext(ctx, "returning checks", "total", len(checksResponse), "checks", checksResponse)
 	return rpc.ResponseToRequest(&req, sophrosyne.GetChecksResponse{
 		Checks: checksResponse,
 		Cursor: cursor.String(),
@@ -191,27 +171,11 @@ func (u getChecks) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, err
 	})
 }
 
-type createCheck struct {
-	service *CheckService
-}
-
-func (u createCheck) GetService() rpc.Service {
-	return u.service
-}
-
-func (u createCheck) EntityType() string {
-	return "Checks"
-}
-
-func (u createCheck) EntityID() string {
-	return "CreateCheck"
-}
-
-func (u createCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u CheckService) CreateCheck(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.CreateCheckRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+		u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -220,18 +184,18 @@ func (u createCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+	ok := u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 		Principal: curCheck,
-		Action:    u,
+		Action:    sophrosyne.AuthorizationAction("CreateCheck"),
 	})
 
 	if !ok {
 		return rpc.ErrorFromRequest(&req, 12345, "unauthorized")
 	}
 
-	check, err := u.service.checkService.CreateCheck(ctx, params)
+	check, err := u.checkService.CreateCheck(ctx, params)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to create check", "error", err)
+		u.logger.ErrorContext(ctx, "unable to create check", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, "unable to create check")
 	}
 
@@ -239,27 +203,11 @@ func (u createCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 	return rpc.ResponseToRequest(&req, resp.FromCheck(check))
 }
 
-type updateCheck struct {
-	service *CheckService
-}
-
-func (u updateCheck) GetService() rpc.Service {
-	return u.service
-}
-
-func (u updateCheck) EntityType() string {
-	return "Checks"
-}
-
-func (u updateCheck) EntityID() string {
-	return "CreateCheck"
-}
-
-func (u updateCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u CheckService) UpdateCheck(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.UpdateCheckRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+		u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -268,14 +216,14 @@ func (u updateCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	checkToUpdate, err := u.service.checkService.GetCheckByName(ctx, params.Name)
+	checkToUpdate, err := u.checkService.GetCheckByName(ctx, params.Name)
 	if err != nil {
 		return rpc.ErrorFromRequest(&req, 12346, checkNotFoundError)
 	}
 
-	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+	ok := u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 		Principal: curCheck,
-		Action:    u,
+		Action:    sophrosyne.AuthorizationAction("UpdateCheck"),
 		Resource:  sophrosyne.Check{ID: checkToUpdate.ID},
 	})
 
@@ -283,9 +231,9 @@ func (u updateCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 		return rpc.ErrorFromRequest(&req, 12345, "unauthorized")
 	}
 
-	check, err := u.service.checkService.UpdateCheck(ctx, params)
+	check, err := u.checkService.UpdateCheck(ctx, params)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to update check", "error", err)
+		u.logger.ErrorContext(ctx, "unable to update check", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, "unable to update check")
 	}
 
@@ -293,27 +241,11 @@ func (u updateCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 	return rpc.ResponseToRequest(&req, resp.FromCheck(check))
 }
 
-type deleteCheck struct {
-	service *CheckService
-}
-
-func (u deleteCheck) GetService() rpc.Service {
-	return u.service
-}
-
-func (u deleteCheck) EntityType() string {
-	return "Checks"
-}
-
-func (u deleteCheck) EntityID() string {
-	return "CreateCheck"
-}
-
-func (u deleteCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u CheckService) DeleteCheck(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.DeleteCheckRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+		u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -322,14 +254,14 @@ func (u deleteCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	checkToDelete, err := u.service.checkService.GetCheckByName(ctx, params.Name)
+	checkToDelete, err := u.checkService.GetCheckByName(ctx, params.Name)
 	if err != nil {
 		return rpc.ErrorFromRequest(&req, 12346, checkNotFoundError)
 	}
 
-	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+	ok := u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 		Principal: curCheck,
-		Action:    u,
+		Action:    sophrosyne.AuthorizationAction("DeleteCheck"),
 		Resource:  sophrosyne.Check{ID: checkToDelete.ID},
 	})
 
@@ -337,9 +269,9 @@ func (u deleteCheck) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 		return rpc.ErrorFromRequest(&req, 12345, "unauthorized")
 	}
 
-	err = u.service.checkService.DeleteCheck(ctx, checkToDelete.Name)
+	err = u.checkService.DeleteCheck(ctx, checkToDelete.Name)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to delete check", "error", err)
+		u.logger.ErrorContext(ctx, "unable to delete check", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, "unable to delete check")
 	}
 

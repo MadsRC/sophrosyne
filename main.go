@@ -188,6 +188,16 @@ type AuthorizationEntity interface {
 	EntityID() string
 }
 
+type AuthorizationAction string
+
+func (a AuthorizationAction) EntityType() string {
+	return "Action"
+}
+
+func (a AuthorizationAction) EntityID() string {
+	return string(a)
+}
+
 type AuthorizationRequest struct {
 	Principal AuthorizationEntity
 	Action    AuthorizationEntity

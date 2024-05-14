@@ -1,0 +1,11 @@
+with-expecter: True
+inpackage: True
+dir: internal/mocks/{{ replaceAll .InterfaceDirRelative "internal" "internal_" }}
+mockname: "{{.InterfaceName}}"
+outpkg: "{{.PackageName}}"
+filename: "{{.InterfaceName}}.go"
+all: True
+packages:
+  github.com/madsrc/sophrosyne:
+    config:
+      recursive: True
