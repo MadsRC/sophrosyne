@@ -20,9 +20,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 	"log/slog"
 	"strings"
+
+	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 
 	"github.com/madsrc/sophrosyne"
 )

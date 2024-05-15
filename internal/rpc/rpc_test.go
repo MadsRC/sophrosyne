@@ -19,8 +19,9 @@
 package rpc
 
 import (
-	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 	"testing"
+
+	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 
 	"github.com/stretchr/testify/require"
 

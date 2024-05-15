@@ -19,9 +19,10 @@ package services
 import (
 	"context"
 	"errors"
-	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 	"log/slog"
 	"strings"
+
+	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 
 	"github.com/madsrc/sophrosyne"
 	"github.com/madsrc/sophrosyne/internal/rpc"

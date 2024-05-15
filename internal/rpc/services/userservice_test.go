@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/madsrc/sophrosyne"
-	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"log/slog"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/madsrc/sophrosyne"
+	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 )
 
 func TestNewUserService(t *testing.T) {
@@ -129,75 +131,13 @@ func TestUserService_DeleteUser(t *testing.T) {
 }
 
 func TestUserService_EntityID(t *testing.T) {
-	type fields struct {
-		userService sophrosyne.UserService
-		authz       sophrosyne.AuthorizationProvider
-		logger      *slog.Logger
-		validator   sophrosyne.Validator
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
-		{
-			"success",
-			fields{
-				nil,
-				nil,
-				nil,
-				nil,
-			},
-			"Users",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			u := UserService{
-				userService: tt.fields.userService,
-				authz:       tt.fields.authz,
-				logger:      tt.fields.logger,
-				validator:   tt.fields.validator,
-			}
-			assert.Equalf(t, tt.want, u.EntityID(), "EntityID()")
-		})
-	}
+	us := &UserService{}
+	require.Equal(t, "Users", us.EntityID())
 }
 
 func TestUserService_EntityType(t *testing.T) {
-	type fields struct {
-		userService sophrosyne.UserService
-		authz       sophrosyne.AuthorizationProvider
-		logger      *slog.Logger
-		validator   sophrosyne.Validator
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
-		{
-			"success",
-			fields{
-				nil,
-				nil,
-				nil,
-				nil,
-			},
-			"Service",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			u := UserService{
-				userService: tt.fields.userService,
-				authz:       tt.fields.authz,
-				logger:      tt.fields.logger,
-				validator:   tt.fields.validator,
-			}
-			assert.Equalf(t, tt.want, u.EntityType(), "EntityType()")
-		})
-	}
+	us := &UserService{}
+	require.Equal(t, "Service", us.EntityType())
 }
 
 func TestUserService_GetUser(t *testing.T) {
@@ -309,14 +249,10 @@ func TestUserService_InvokeMethod(t *testing.T) {
 		{
 			name: "method without separator",
 			fields: fields{
-				nil,
-				nil,
-				slog.Default(),
-				nil,
+				logger: slog.Default(),
 			},
 			args: args{
-				context.Background(),
-				jsonrpc.Request{
+				req: jsonrpc.Request{
 					Method: "test",
 				},
 			},
@@ -329,14 +265,10 @@ func TestUserService_InvokeMethod(t *testing.T) {
 		{
 			name: "Successfull call to Users::GetUser",
 			fields: fields{
-				nil,
-				nil,
-				slog.Default(),
-				nil,
+				logger: slog.Default(),
 			},
 			args: args{
-				context.Background(),
-				jsonrpc.Request{
+				req: jsonrpc.Request{
 					ID:     "123",
 					Method: "Users::GetUser",
 				},
@@ -350,14 +282,11 @@ func TestUserService_InvokeMethod(t *testing.T) {
 		{
 			name: "Successfull call to Users::GetUsers",
 			fields: fields{
-				nil,
-				nil,
-				slog.Default(),
-				nil,
+				logger: slog.Default(),
 			},
 			args: args{
-				context.Background(),
-				jsonrpc.Request{
+				ctx: context.Background(),
+				req: jsonrpc.Request{
 					ID:     "sadlk;fghj",
 					Method: "Users::GetUsers",
 				},
@@ -365,6 +294,77 @@ func TestUserService_InvokeMethod(t *testing.T) {
 			want:       []byte(`{"jsonrpc":"2.0","error":{"code":-32603,"message":"Internal error"},"id":"sadlk;fghj"}`),
 			wantErr:    assert.NoError,
 			assertLogs: []string{""},
+		},
+		{
+			name: "Successfull call to Users::CreateUser",
+			fields: fields{
+				logger: slog.Default(),
+			},
+			args: args{
+				req: jsonrpc.Request{
+					Method: "Users::CreateUser",
+				},
+			},
+			want:       []byte(`{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid Params"},"id":""}`),
+			wantErr:    assert.NoError,
+			assertLogs: []string{"{\"level\":\"ERROR\",\"msg\":\"error extracting params from request\",\"error\":\"no params found\"}"},
+		},
+		{
+			name: "Successfull call to Users::UpdateUser",
+			fields: fields{
+				logger: slog.Default(),
+			},
+			args: args{
+				req: jsonrpc.Request{
+					Method: "Users::UpdateUser",
+				},
+			},
+			want:       []byte(`{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid Params"},"id":""}`),
+			wantErr:    assert.NoError,
+			assertLogs: []string{"{\"level\":\"ERROR\",\"msg\":\"error extracting params from request\",\"error\":\"no params found\"}"},
+		},
+		{
+			name: "Successfull call to Users::DeleteUser",
+			fields: fields{
+				logger: slog.Default(),
+			},
+			args: args{
+				req: jsonrpc.Request{
+					Method: "Users::DeleteUser",
+				},
+			},
+			want:       []byte(`{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid Params"},"id":""}`),
+			wantErr:    assert.NoError,
+			assertLogs: []string{"{\"level\":\"ERROR\",\"msg\":\"error extracting params from request\",\"error\":\"no params found\"}"},
+		},
+		{
+			name: "Successfull call to Users::RotateToken",
+			fields: fields{
+				logger: slog.Default(),
+			},
+			args: args{
+				req: jsonrpc.Request{
+					Method: "Users::RotateToken",
+				},
+			},
+			want:       []byte(`{"jsonrpc":"2.0","error":{"code":-32602,"message":"Invalid Params"},"id":""}`),
+			wantErr:    assert.NoError,
+			assertLogs: []string{"{\"level\":\"ERROR\",\"msg\":\"error extracting params from request\",\"error\":\"no params found\"}"},
+		},
+		{
+			name: "Call to unknown method",
+			fields: fields{
+				logger: slog.Default(),
+			},
+			args: args{
+				req: jsonrpc.Request{
+					ID:     "42",
+					Method: "Users::badMethod",
+				},
+			},
+			want:       []byte(`{"jsonrpc":"2.0","error":{"code":-32601,"message":"Method not found"},"id":"42"}`),
+			wantErr:    assert.NoError,
+			assertLogs: []string{"{\"level\":\"DEBUG\", \"method\":\"Users::badMethod\", \"msg\":\"cannot invoke method\"}"},
 		},
 	}
 	for _, tt := range tests {

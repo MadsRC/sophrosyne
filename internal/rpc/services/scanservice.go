@@ -19,9 +19,10 @@ package services
 import (
 	"context"
 	"fmt"
-	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 	"log/slog"
 	"strings"
+
+	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

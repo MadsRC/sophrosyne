@@ -1,10 +1,6 @@
-with-expecter: True
-inpackage: True
-dir: internal/mocks/{{ replaceAll .InterfaceDirRelative "internal" "internal_" }}
-mockname: "{{.InterfaceName}}"
-outpkg: "{{.PackageName}}"
-filename: "{{.InterfaceName}}.go"
 all: True
+dir: internal/mocks/{{ replaceAll .InterfaceDirRelative "internal" "internal_" }}
+filename: "{{.InterfaceName}}.go"
 packages:
   github.com/madsrc/sophrosyne:
     config:
