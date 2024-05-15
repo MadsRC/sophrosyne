@@ -1,0 +1,36 @@
+#!/bin/sh
+# mise sources=[".mockery.yaml", "go.mod", "go.sum", "internal/**/*", "cmd/**/*", "*.go"]
+# mise outputs=["build/.mocksentinel"]
+
+set -e
+
+mkdir -p build
+
+check=1
+
+handle_argument() {
+  echo "Argument '$1' not supported" >&2; exit 1
+}
+
+while test "$#" -gt 0; do
+  case "$1" in
+    --check) check=0; shift 1;;
+
+    -*) echo "unknown option: $1" >&2; exit 1;;
+    *) handle_argument "$1"; shift 1;;
+  esac
+done
+
+mockery
+touch build/.mocksentinel
+
+if test "$check" = 0; then
+  echo "\nChecking mocks..."
+  changes=$(git status --porcelain internal/mocks)
+  if test -n "$changes"; then
+    echo "Mocks changed:"
+    git --no-pager diff internal/mocks
+    exit 1
+  fi
+  echo "Mocks have no changes according to git!"
+fi

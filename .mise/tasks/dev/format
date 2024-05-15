@@ -1,6 +1,4 @@
 #!/bin/sh
-# mise sources=["go.mod", "go.sum", "internal/**/*", "cmd/**/*", "*.go"]
-# mise outputs=["build/report.xml"]
 
 check=1
 

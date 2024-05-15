@@ -1,0 +1,33 @@
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  # Trigger analysis when pushing in master or pull requests, and when creating
+  # a pull request.
+  push:
+    branches:
+      - main
+  pull_request:
+      types: [opened, synchronize, reopened]
+
+# Declare default permissions as read only.
+permissions: read-all
+
+name: Code Generation Check
+jobs:
+  check-codegen:
+    strategy:
+      matrix:
+        target: [ mocks, protobuf ]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+    - uses: jdx/mise-action@0c39a522dfbced3ed83924152c45804a71ce216f # v2.0.4
+      with:
+        experimental: true
+    - run: mise run clean
+    - run: mise run generate:${{ matrix.target }} --check

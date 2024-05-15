@@ -1,6 +1,6 @@
 #!/bin/sh
 # mise sources=["go.mod", "go.sum", "internal/**/*", "cmd/**/*", "*.go"]
-# mise outputs=["dist/sophrosyne", "dist/sophrosyne_linux_amd64", "dist/sophrosyne_linux_arm64]
+# mise outputs=["dist/sophrosyne", "dist/sophrosyne_linux_amd64", "dist/sophrosyne_linux_arm64"]
 
 goos=""
 goarch=""

@@ -2,13 +2,12 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v5.26.1
-// source: proto/checks/checks.proto
+// source: checks/checks.proto
 
 package checks
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -102,5 +101,5 @@ var CheckService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/checks/checks.proto",
+	Metadata: "checks/checks.proto",
 }
