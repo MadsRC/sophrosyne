@@ -7,6 +7,7 @@ watchexec = "latest"
 "pipx:pre-commit" = "latest"
 protoc = "latest"
 mockery = "latest"
+protoc-gen-go = "latest"
 
 [settings]
 experimental = true
