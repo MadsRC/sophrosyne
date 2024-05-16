@@ -16,20 +16,12 @@ permissions: read-all
 
 name: Code Generation Check
 jobs:
-  warmup:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: jdx/mise-action@0c39a522dfbced3ed83924152c45804a71ce216f # v2.0.4
-        with:
-          experimental: true
   check-codegen:
     strategy:
       matrix:
         target: [ mocks, protobuf ]
       fail-fast: false # Don't cancel running checks because one fails
     runs-on: ubuntu-latest
-    needs:
-      - warmup
     steps:
     - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
       with:
@@ -38,5 +30,4 @@ jobs:
     - uses: jdx/mise-action@0c39a522dfbced3ed83924152c45804a71ce216f # v2.0.4
       with:
         experimental: true
-    - run: mise run clean
     - run: mise run generate:${{ matrix.target }} --check

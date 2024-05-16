@@ -21,6 +21,11 @@ while test "$#" -gt 0; do
   esac
 done
 
+mkdir -p build/backups
+echo "Backing up mocks to build/backups/mocks..."
+rm -rf build/backups/mocks
+mv internal/mocks build/backups/mocks
+
 mockery
 touch build/.mocksentinel
 

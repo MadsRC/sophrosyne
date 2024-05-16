@@ -22,6 +22,10 @@ while test "$#" -gt 0; do
 done
 
 mkdir -p internal/grpc/checks
+mkdir -p build/backups/grpc
+echo "Backing up GRPC files to build/backups/grpc/checks"
+mv -f internal/grpc/checks build/backups/grpc/checks
+rm -rf internal/grpc/checks
 
 protoc \
 --proto_path=proto \
