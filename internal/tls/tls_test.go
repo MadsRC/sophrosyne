@@ -163,15 +163,15 @@ func checkCert(t *testing.T, cert *x509.Certificate, args generateCertArgs) {
 
 	_, ok := args.priv.(*rsa.PrivateKey)
 	if ok && !args.isCA {
-		require.Equal(t, cert.KeyUsage, x509.KeyUsageDigitalSignature|x509.KeyUsageKeyEncipherment)
+		require.Equal(t, x509.KeyUsageDigitalSignature|x509.KeyUsageKeyEncipherment, cert.KeyUsage)
 	} else if ok && args.isCA {
-		require.Equal(t, cert.KeyUsage, x509.KeyUsageDigitalSignature|x509.KeyUsageKeyEncipherment|x509.KeyUsageCertSign)
+		require.Equal(t, x509.KeyUsageDigitalSignature|x509.KeyUsageKeyEncipherment|x509.KeyUsageCertSign, cert.KeyUsage)
 		require.True(t, cert.IsCA)
 	} else if !ok && args.isCA {
-		require.Equal(t, cert.KeyUsage, x509.KeyUsageDigitalSignature|x509.KeyUsageCertSign)
+		require.Equal(t, x509.KeyUsageDigitalSignature|x509.KeyUsageCertSign, cert.KeyUsage)
 		require.True(t, cert.IsCA)
 	} else {
-		require.Equal(t, cert.KeyUsage, x509.KeyUsageDigitalSignature)
+		require.Equal(t, x509.KeyUsageDigitalSignature, cert.KeyUsage)
 	}
 
 	requirePrivSignedCert(t, args.priv, cert)

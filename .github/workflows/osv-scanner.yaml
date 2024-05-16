@@ -1,0 +1,45 @@
+name: OSV-Scanner
+
+# Declare default permissions as read only.
+permissions: read-all
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  merge_group:
+    branches: [ "main" ]
+  schedule:
+    - cron: '26 17 * * 0'
+  push:
+    branches: [ "main" ]
+
+
+jobs:
+  scan-scheduled:
+    if: ${{ github.event_name == 'push' || github.event_name == 'schedule' }}
+    permissions:
+      # Require writing security events to upload SARIF file to security tab
+      security-events: write
+      # Read commit contents
+      contents: read
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@75532bf0bf75464b047d80414dbce04449498365" # v1.7.3
+    with:
+      # Example of specifying custom arguments
+      scan-args: |-
+        -r
+        --skip-git
+        ./
+  scan-pr:
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    permissions:
+      # Require writing security events to upload SARIF file to security tab
+      security-events: write
+      # Read commit contents
+      contents: read
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@75532bf0bf75464b047d80414dbce04449498365" # v1.7.3
+    with:
+      # Example of specifying custom arguments
+      scan-args: |-
+        -r
+        --skip-git
+        ./

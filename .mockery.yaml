@@ -1,0 +1,7 @@
+all: True
+dir: internal/mocks/{{ replaceAll .InterfaceDirRelative "internal" "internal_" }}
+filename: "{{.InterfaceName}}.go"
+packages:
+  github.com/madsrc/sophrosyne:
+    config:
+      recursive: True

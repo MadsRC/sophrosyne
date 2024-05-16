@@ -23,8 +23,9 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
+
 	"github.com/madsrc/sophrosyne"
-	"github.com/madsrc/sophrosyne/internal/rpc/internal/jsonrpc"
 )
 
 type Server struct {
@@ -69,12 +70,6 @@ func (s *Server) Register(name string, service Service) {
 type Service interface {
 	sophrosyne.AuthorizationEntity
 	InvokeMethod(ctx context.Context, req jsonrpc.Request) ([]byte, error)
-}
-
-type Method interface {
-	sophrosyne.AuthorizationEntity
-	GetService() Service
-	Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error)
 }
 
 func ErrorFromRequest(req *jsonrpc.Request, code jsonrpc.RPCErrorCode, message string) ([]byte, error) {

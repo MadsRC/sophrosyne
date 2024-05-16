@@ -3,15 +3,22 @@
   <component name="GoLinterSettings">
     <option name="enabledLinters">
       <list>
-        <option value="ineffassign" />
         <option value="staticcheck" />
         <option value="govet" />
         <option value="forbidigo" />
-        <option value="goheader" />
-        <option value="gosec" />
-        <option value="goconst" />
+        <option value="errorlint" />
+        <option value="sloglint" />
+        <option value="errchkjson" />
+        <option value="errname" />
         <option value="errcheck" />
+        <option value="gochecknoinits" />
+        <option value="tenv" />
+        <option value="ineffassign" />
+        <option value="asciicheck" />
+        <option value="gosec" />
+        <option value="asasalint" />
         <option value="unused" />
+        <option value="bidichk" />
         <option value="godot" />
         <option value="goimports" />
         <option value="gosimple" />

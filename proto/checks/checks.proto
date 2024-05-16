@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package checks.v1;
 
-option go_package = "github.com/madsrc/sophrosyne/grpc/checks";
+option go_package = "github.com/madsrc/sophrosyne/internal/grpc/checks";
 
 message CheckRequest {
   oneof check {

@@ -1,0 +1,51 @@
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  # Trigger analysis when pushing in master or pull requests, and when creating
+  # a pull request.
+  pull_request:
+      types: [opened, synchronize, reopened]
+
+# Declare default permissions as read only.
+permissions: read-all
+
+name: Code Generation Check
+jobs:
+  check-codegen:
+    permissions:
+      pull-requests: write
+    strategy:
+      matrix:
+        target: [ mocks, protobuf ]
+      fail-fast: false # Don't cancel running checks because one fails
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+    - uses: jdx/mise-action@0c39a522dfbced3ed83924152c45804a71ce216f # v2.0.4
+      with:
+        experimental: true
+    - id: generate
+      run: mise run generate:${{ matrix.target }} --check
+      continue-on-error: true
+    - name: Comment PR - Failure
+      if: steps.generate.outcome == 'failure'
+      uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # v2.5.0
+      with:
+        comment_tag: 'code_gen_${{ matrix.target }}'
+        mode: upsert
+        message: |
+          Generating the ${{ matrix.target }} code failed. This could be an indicator that the code generation is not up to date.
+          Please review the failed action before deciding to merge the PR.
+    - name: Comment PR - Success
+      if: steps.generate.outcome != 'failure'
+      uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # v2.5.0
+      with:
+        comment_tag: 'code_gen_${{ matrix.target }}'
+        mode: upsert
+        message: |
+          It appears that the ${{ matrix.target }} code generation is up to date.

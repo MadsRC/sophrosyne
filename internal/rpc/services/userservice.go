@@ -20,14 +20,15 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"strings"
+
+	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 
 	"github.com/madsrc/sophrosyne"
 	"github.com/madsrc/sophrosyne/internal/rpc"
-	"github.com/madsrc/sophrosyne/internal/rpc/internal/jsonrpc"
 )
 
 type UserService struct {
-	methods     map[jsonrpc.Method]rpc.Method
 	userService sophrosyne.UserService
 	authz       sophrosyne.AuthorizationProvider
 	logger      *slog.Logger
@@ -36,19 +37,11 @@ type UserService struct {
 
 func NewUserService(userService sophrosyne.UserService, authz sophrosyne.AuthorizationProvider, logger *slog.Logger, validator sophrosyne.Validator) (*UserService, error) {
 	u := &UserService{
-		methods:     make(map[jsonrpc.Method]rpc.Method),
 		userService: userService,
 		authz:       authz,
 		logger:      logger,
 		validator:   validator,
 	}
-
-	u.methods["Users::GetUser"] = getUser{service: u}
-	u.methods["Users::GetUsers"] = getUsers{service: u}
-	u.methods["Users::CreateUser"] = createUser{service: u}
-	u.methods["Users::UpdateUser"] = updateUser{service: u}
-	u.methods["Users::DeleteUser"] = deleteUser{service: u}
-	u.methods["Users::RotateToken"] = rotateToken{service: u}
 
 	return u, nil
 }
@@ -62,41 +55,46 @@ func (u UserService) EntityID() string {
 }
 
 func (u UserService) InvokeMethod(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
-	return invokeMethod(ctx, u.logger, u.methods, req)
+	m := strings.Split(string(req.Method), "::")
+	if len(m) != 2 {
+		u.logger.ErrorContext(ctx, "unreachable", "error", sophrosyne.NewUnreachableCodeError())
+		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
+	}
+	switch m[1] {
+	case "GetUser":
+		return u.GetUser(ctx, req)
+	case "GetUsers":
+		return u.GetUsers(ctx, req)
+	case "CreateUser":
+		return u.CreateUser(ctx, req)
+	case "UpdateUser":
+		return u.UpdateUser(ctx, req)
+	case "DeleteUser":
+		return u.DeleteUser(ctx, req)
+	case "RotateToken":
+		return u.RotateToken(ctx, req)
+	default:
+		u.logger.DebugContext(ctx, "cannot invoke method", "method", req.Method)
+		return rpc.ErrorFromRequest(&req, jsonrpc.MethodNotFound, string(jsonrpc.MethodNotFoundMessage))
+	}
 }
 
 const userNotFoundError = "user not found"
 
-type getUser struct {
-	service *UserService
-}
-
-func (u getUser) GetService() rpc.Service {
-	return u.service
-}
-
-func (u getUser) EntityType() string {
-	return "Users"
-}
-
-func (u getUser) EntityID() string {
-	return "GetUser"
-}
-
-func (u getUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u UserService) GetUser(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.GetUserRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+		u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
 	if params.Email != "" {
-		u, _ := u.service.userService.GetUserByEmail(ctx, params.Email)
+		u, _ := u.userService.GetUserByEmail(ctx, params.Email)
 		params.ID = u.ID
 	}
 	if params.Name != "" {
-		u, _ := u.service.userService.GetUserByName(ctx, params.Name)
+		u, _ := u.userService.GetUserByName(ctx, params.Name)
 		params.ID = u.ID
 	}
 
@@ -105,17 +103,17 @@ func (u getUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	if !u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+	if !u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 		Principal: curUser,
-		Action:    u,
+		Action:    sophrosyne.AuthorizationAction("GetUser"),
 		Resource:  sophrosyne.User{ID: params.ID},
 	}) {
 		return rpc.ErrorFromRequest(&req, 12345, "unauthorized")
 	}
 
-	user, err := u.service.userService.GetUser(ctx, params.ID)
+	user, err := u.userService.GetUser(ctx, params.ID)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to get user", "error", err)
+		u.logger.ErrorContext(ctx, "unable to get user", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, userNotFoundError)
 	}
 
@@ -124,30 +122,14 @@ func (u getUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error
 	return rpc.ResponseToRequest(&req, resp.FromUser(user))
 }
 
-type getUsers struct {
-	service *UserService
-}
-
-func (u getUsers) GetService() rpc.Service {
-	return u.service
-}
-
-func (u getUsers) EntityType() string {
-	return "Users"
-}
-
-func (u getUsers) EntityID() string {
-	return "GetUsers"
-}
-
-func (u getUsers) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u UserService) GetUsers(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.GetUsersRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
 		if errors.Is(err, rpc.ErrNoParams) {
 			params = sophrosyne.GetUsersRequest{}
 		} else {
-			u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+			u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 			return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 		}
 	}
@@ -161,24 +143,24 @@ func (u getUsers) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, erro
 	if params.Cursor != "" {
 		cursor, err = sophrosyne.DecodeDatabaseCursorWithOwner(params.Cursor, curUser.ID)
 		if err != nil {
-			u.service.logger.ErrorContext(ctx, "unable to decode cursor", "error", err)
+			u.logger.ErrorContext(ctx, "unable to decode cursor", "error", err)
 			return rpc.ErrorFromRequest(&req, 12347, "invalid cursor")
 		}
 	} else {
 		cursor = sophrosyne.NewDatabaseCursor(curUser.ID, "")
 	}
 
-	users, err := u.service.userService.GetUsers(ctx, cursor)
+	users, err := u.userService.GetUsers(ctx, cursor)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to get users", "error", err)
+		u.logger.ErrorContext(ctx, "unable to get users", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, "users not found")
 	}
 
 	var usersResponse []sophrosyne.GetUserResponse
 	for _, uu := range users {
-		ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+		ok := u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 			Principal: curUser,
-			Action:    u,
+			Action:    sophrosyne.AuthorizationAction("GetUsers"),
 			Resource:  sophrosyne.User{ID: uu.ID},
 		})
 		if ok {
@@ -187,7 +169,7 @@ func (u getUsers) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, erro
 		}
 	}
 
-	u.service.logger.DebugContext(ctx, "returning users", "total", len(usersResponse), "users", usersResponse)
+	u.logger.DebugContext(ctx, "returning users", "total", len(usersResponse), "users", usersResponse)
 	return rpc.ResponseToRequest(&req, sophrosyne.GetUsersResponse{
 		Users:  usersResponse,
 		Cursor: cursor.String(),
@@ -195,27 +177,11 @@ func (u getUsers) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, erro
 	})
 }
 
-type createUser struct {
-	service *UserService
-}
-
-func (u createUser) GetService() rpc.Service {
-	return u.service
-}
-
-func (u createUser) EntityType() string {
-	return "Users"
-}
-
-func (u createUser) EntityID() string {
-	return "CreateUser"
-}
-
-func (u createUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u UserService) CreateUser(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.CreateUserRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+		u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -224,18 +190,18 @@ func (u createUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+	ok := u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 		Principal: curUser,
-		Action:    u,
+		Action:    sophrosyne.AuthorizationAction("CreateUser"),
 	})
 
 	if !ok {
 		return rpc.ErrorFromRequest(&req, 12345, "unauthorized")
 	}
 
-	user, err := u.service.userService.CreateUser(ctx, params)
+	user, err := u.userService.CreateUser(ctx, params)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to create user", "error", err)
+		u.logger.ErrorContext(ctx, "unable to create user", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, "unable to create user")
 	}
 
@@ -243,27 +209,11 @@ func (u createUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 	return rpc.ResponseToRequest(&req, resp.FromUser(user))
 }
 
-type updateUser struct {
-	service *UserService
-}
-
-func (u updateUser) GetService() rpc.Service {
-	return u.service
-}
-
-func (u updateUser) EntityType() string {
-	return "Users"
-}
-
-func (u updateUser) EntityID() string {
-	return "CreateUser"
-}
-
-func (u updateUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u UserService) UpdateUser(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.UpdateUserRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+		u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -272,14 +222,14 @@ func (u updateUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	userToUpdate, err := u.service.userService.GetUserByName(ctx, params.Name)
+	userToUpdate, err := u.userService.GetUserByName(ctx, params.Name)
 	if err != nil {
 		return rpc.ErrorFromRequest(&req, 12346, userNotFoundError)
 	}
 
-	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+	ok := u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 		Principal: curUser,
-		Action:    u,
+		Action:    sophrosyne.AuthorizationAction("UpdateUser"),
 		Resource:  sophrosyne.User{ID: userToUpdate.ID},
 	})
 
@@ -287,9 +237,9 @@ func (u updateUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 		return rpc.ErrorFromRequest(&req, 12345, "unauthorized")
 	}
 
-	user, err := u.service.userService.UpdateUser(ctx, params)
+	user, err := u.userService.UpdateUser(ctx, params)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to update user", "error", err)
+		u.logger.ErrorContext(ctx, "unable to update user", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, "unable to update user")
 	}
 
@@ -297,27 +247,11 @@ func (u updateUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 	return rpc.ResponseToRequest(&req, resp.FromUser(user))
 }
 
-type deleteUser struct {
-	service *UserService
-}
-
-func (u deleteUser) GetService() rpc.Service {
-	return u.service
-}
-
-func (u deleteUser) EntityType() string {
-	return "Users"
-}
-
-func (u deleteUser) EntityID() string {
-	return "CreateUser"
-}
-
-func (u deleteUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u UserService) DeleteUser(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.DeleteUserRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+		u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -326,14 +260,14 @@ func (u deleteUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	userToDelete, err := u.service.userService.GetUserByName(ctx, params.Name)
+	userToDelete, err := u.userService.GetUserByName(ctx, params.Name)
 	if err != nil {
 		return rpc.ErrorFromRequest(&req, 12346, userNotFoundError)
 	}
 
-	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+	ok := u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 		Principal: curUser,
-		Action:    u,
+		Action:    sophrosyne.AuthorizationAction("DeleteUser"),
 		Resource:  sophrosyne.User{ID: userToDelete.ID},
 	})
 
@@ -341,36 +275,20 @@ func (u deleteUser) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, er
 		return rpc.ErrorFromRequest(&req, 12345, "unauthorized")
 	}
 
-	err = u.service.userService.DeleteUser(ctx, userToDelete.Name)
+	err = u.userService.DeleteUser(ctx, userToDelete.Name)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to delete user", "error", err)
+		u.logger.ErrorContext(ctx, "unable to delete user", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, "unable to delete user")
 	}
 
 	return rpc.ResponseToRequest(&req, "ok")
 }
 
-type rotateToken struct {
-	service *UserService
-}
-
-func (u rotateToken) GetService() rpc.Service {
-	return u.service
-}
-
-func (u rotateToken) EntityType() string {
-	return "Users"
-}
-
-func (u rotateToken) EntityID() string {
-	return "CreateUser"
-}
-
-func (u rotateToken) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (u UserService) RotateToken(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	var params sophrosyne.RotateTokenRequest
-	err := rpc.ParamsIntoAny(&req, &params, u.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, u.validator)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, paramExtractError, "error", err)
+		u.logger.ErrorContext(ctx, paramExtractError, "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
@@ -379,14 +297,14 @@ func (u rotateToken) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	userToRotate, err := u.service.userService.GetUserByName(ctx, params.Name)
+	userToRotate, err := u.userService.GetUserByName(ctx, params.Name)
 	if err != nil {
 		return rpc.ErrorFromRequest(&req, 12346, userNotFoundError)
 	}
 
-	ok := u.service.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
+	ok := u.authz.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 		Principal: curUser,
-		Action:    u,
+		Action:    sophrosyne.AuthorizationAction("RotateToken"),
 		Resource:  sophrosyne.User{ID: userToRotate.ID},
 	})
 
@@ -394,9 +312,9 @@ func (u rotateToken) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 		return rpc.ErrorFromRequest(&req, 12345, "unauthorized")
 	}
 
-	token, err := u.service.userService.RotateToken(ctx, userToRotate.Name)
+	token, err := u.userService.RotateToken(ctx, userToRotate.Name)
 	if err != nil {
-		u.service.logger.ErrorContext(ctx, "unable to rotate token", "error", err)
+		u.logger.ErrorContext(ctx, "unable to rotate token", "error", err)
 		return rpc.ErrorFromRequest(&req, 12346, "unable to rotate token")
 	}
 

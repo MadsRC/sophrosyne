@@ -21,10 +21,11 @@ package rpc
 import (
 	"testing"
 
+	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
+
 	"github.com/stretchr/testify/require"
 
 	"github.com/madsrc/sophrosyne"
-	"github.com/madsrc/sophrosyne/internal/rpc/internal/jsonrpc"
 	"github.com/madsrc/sophrosyne/internal/validator"
 )
 

@@ -20,6 +20,9 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strings"
+
+	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -27,11 +30,9 @@ import (
 	"github.com/madsrc/sophrosyne"
 	"github.com/madsrc/sophrosyne/internal/grpc/checks"
 	"github.com/madsrc/sophrosyne/internal/rpc"
-	"github.com/madsrc/sophrosyne/internal/rpc/internal/jsonrpc"
 )
 
 type ScanService struct {
-	methods        map[jsonrpc.Method]rpc.Method
 	authz          sophrosyne.AuthorizationProvider
 	logger         *slog.Logger
 	validator      sophrosyne.Validator
@@ -41,15 +42,12 @@ type ScanService struct {
 
 func NewScanService(authz sophrosyne.AuthorizationProvider, logger *slog.Logger, validator sophrosyne.Validator, profileService sophrosyne.ProfileService, checkService sophrosyne.CheckService) (*ScanService, error) {
 	s := &ScanService{
-		methods:        make(map[jsonrpc.Method]rpc.Method),
 		authz:          authz,
 		logger:         logger,
 		validator:      validator,
 		profileService: profileService,
 		checkService:   checkService,
 	}
-
-	s.methods["Scans::PerformScan"] = performScan{service: s}
 
 	return s, nil
 }
@@ -59,52 +57,53 @@ func (s ScanService) EntityType() string { return "Service" }
 func (s ScanService) EntityID() string { return "Scans" }
 
 func (s ScanService) InvokeMethod(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
-	return invokeMethod(ctx, s.logger, s.methods, req)
+	m := strings.Split(string(req.Method), "::")
+	if len(m) != 2 {
+		s.logger.ErrorContext(ctx, "unreachable", "error", sophrosyne.NewUnreachableCodeError())
+		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
+	}
+	switch m[1] {
+	case "PerformScan":
+		return s.PerformScan(ctx, req)
+	default:
+		s.logger.DebugContext(ctx, "cannot invoke method", "method", req.Method)
+		return rpc.ErrorFromRequest(&req, jsonrpc.MethodNotFound, string(jsonrpc.MethodNotFoundMessage))
+	}
 }
 
-type performScan struct {
-	service *ScanService
-}
-
-func (p performScan) GetService() rpc.Service { return p.service }
-
-func (p performScan) EntityType() string { return "Scans" }
-
-func (p performScan) EntityID() string { return "PerformScan" }
-
-func (p performScan) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
+func (p ScanService) PerformScan(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	curUser := sophrosyne.ExtractUser(ctx)
 	if curUser == nil {
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
 	var params sophrosyne.PerformScanRequest
-	err := rpc.ParamsIntoAny(&req, &params, p.service.validator)
+	err := rpc.ParamsIntoAny(&req, &params, p.validator)
 	if err != nil {
-		p.service.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
+		p.logger.ErrorContext(ctx, "error extracting params from request", "error", err)
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
 	var profile *sophrosyne.Profile
 	if params.Profile != "" {
-		dbp, err := p.service.profileService.GetProfileByName(ctx, params.Profile)
+		dbp, err := p.profileService.GetProfileByName(ctx, params.Profile)
 		if err != nil {
-			p.service.logger.ErrorContext(ctx, "error getting profile by name", "profile", params.Profile, "error", err)
+			p.logger.ErrorContext(ctx, "error getting profile by name", "profile", params.Profile, "error", err)
 			return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 		}
-		p.service.logger.DebugContext(ctx, "using profile from params for scan", "profile", params.Profile)
+		p.logger.DebugContext(ctx, "using profile from params for scan", "profile", params.Profile)
 		profile = &dbp
 	} else {
 		if curUser.DefaultProfile.Name == "" {
-			dbp, err := p.service.profileService.GetProfileByName(ctx, "default")
+			dbp, err := p.profileService.GetProfileByName(ctx, "default")
 			if err != nil {
-				p.service.logger.ErrorContext(ctx, "error getting default profile", "error", err)
+				p.logger.ErrorContext(ctx, "error getting default profile", "error", err)
 				return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 			}
-			p.service.logger.DebugContext(ctx, "using service-wide default profile for scan", "profile", dbp.Name)
+			p.logger.DebugContext(ctx, "using service-wide default profile for scan", "profile", dbp.Name)
 			profile = &dbp
 		} else {
-			p.service.logger.DebugContext(ctx, "using default profile for scan", "profile", curUser.DefaultProfile.Name)
+			p.logger.DebugContext(ctx, "using default profile for scan", "profile", curUser.DefaultProfile.Name)
 			profile = &curUser.DefaultProfile
 		}
 	}
@@ -113,10 +112,10 @@ func (p performScan) Invoke(ctx context.Context, req jsonrpc.Request) ([]byte, e
 	var success bool
 
 	for _, check := range profile.Checks {
-		p.service.logger.DebugContext(ctx, "running check from profile", "profile", profile.Name, "check", check.Name)
-		res, err := doCheck(ctx, p.service.logger, check)
+		p.logger.DebugContext(ctx, "running check from profile", "profile", profile.Name, "check", check.Name)
+		res, err := doCheck(ctx, p.logger, check)
 		if err != nil {
-			p.service.logger.ErrorContext(ctx, "error running check", "check", check.Name, "error", err)
+			p.logger.ErrorContext(ctx, "error running check", "check", check.Name, "error", err)
 			return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 		}
 		checkResults[check.Name] = res
