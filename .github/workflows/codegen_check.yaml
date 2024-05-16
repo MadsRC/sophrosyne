@@ -37,7 +37,7 @@ jobs:
       uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # v2.5.0
       with:
         comment_tag: 'code_gen_${{ matrix.target }}'
-        mode: recreate
+        mode: upsert
         message: |
           Generating the ${{ matrix.target }} code failed. This could be an indicator that the code generation is not up to date.
           Please review the failed action before deciding to merge the PR.
@@ -46,6 +46,6 @@ jobs:
       uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # v2.5.0
       with:
         comment_tag: 'code_gen_${{ matrix.target }}'
-        mode: recreate
+        mode: upsert
         message: |
           It appears that the ${{ matrix.target }} code generation is up to date.
