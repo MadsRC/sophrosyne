@@ -39,8 +39,8 @@ jobs:
         comment_tag: 'code_gen_${{ matrix.target }}'
         mode: recreate
         message: |
-          Generating the ${{ matrix.target }} code failed. This could be an indicator that the code generation is not
-          up to date. Please review the failed action before deciding to merge the PR.
+          Generating the ${{ matrix.target }} code failed. This could be an indicator that the code generation is not up to date.
+          Please review the failed action before deciding to merge the PR.
     - name: Comment PR - Success
       if: steps.generate.outcome != 'failure'
       uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # v2.5.0
