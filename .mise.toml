@@ -8,6 +8,7 @@ watchexec = "latest"
 protoc = "latest"
 mockery = "latest"
 protoc-gen-go = "latest"
+protoc-gen-go-grpc = "latest"
 
 [settings]
 experimental = true

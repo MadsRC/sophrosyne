@@ -5,11 +5,10 @@ concurrency:
 on:
   # Trigger analysis when pushing in master or pull requests, and when creating
   # a pull request.
-  push:
-    branches:
-      - main
   pull_request:
       types: [opened, synchronize, reopened]
+      branches:
+        - main
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -30,4 +29,13 @@ jobs:
     - uses: jdx/mise-action@0c39a522dfbced3ed83924152c45804a71ce216f # v2.0.4
       with:
         experimental: true
-    - run: mise run generate:${{ matrix.target }} --check
+    - id: generate
+      run: mise run generate:${{ matrix.target }} --check
+      continue-on-error: true
+    - name: Comment PR
+      if: steps.generate.outcome == 'failure'
+      uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # v2.5.0
+      with:
+        message: |
+          Generating the ${{ matrix.target }} code failed. This could be an indicator that the code generation is not
+          up to date. Please review the failed action before deciding to merge the PR.
