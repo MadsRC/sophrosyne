@@ -6,8 +6,8 @@ on:
   # Trigger analysis when pushing in master or pull requests, and when creating
   # a pull request.
   push:
-    branches:
-      - development
+    tags:
+      - 'v*'
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -24,7 +24,11 @@ jobs:
       with:
         # Disabling shallow clone is recommended for improving relevancy of reporting
         fetch-depth: 0
-    - uses: jdx/mise-action@0c39a522dfbced3ed83924152c45804a71ce216f # v2.0.4
+    - name: Set up Go
+      uses: actions/setup-go@v5
+    - name: Run GoReleaser
+      uses: goreleaser/goreleaser-action@v5
       with:
-        experimental: true
-    - run: mise run build:release
+        args: release --clean
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
