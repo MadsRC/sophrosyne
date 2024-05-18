@@ -24,7 +24,7 @@ import (
 	"strings"
 )
 
-// optional is a generic type that represents an optional value in JSON. It is used to represent fields that are
+// optional is a generic type that represents an optional Value in JSON. It is used to represent fields that are
 // optional in the JSON-RPC 2.0 specification, such as the "id" field of a [Request].
 //
 // Implementation is from https://stackoverflow.com/questions/36601367/json-field-set-to-null-vs-field-not-there
@@ -34,7 +34,7 @@ type optional[T any] struct {
 }
 
 // UnmarshalJSON is implemented by deferring to the wrapped type (T).
-// It will be called only if the value is defined in the JSON payload.
+// It will be called only if the Value is defined in the JSON payload.
 func (o *optional[T]) UnmarshalJSON(data []byte) error {
 	o.Defined = true
 	return json.Unmarshal(data, &o.Value)
@@ -178,23 +178,30 @@ func (p *ParamsArray) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// ID represents the id field of a [Request] or [Response] as per the JSON-RPC 2.0 specification.
+// NewID represent the ID field of a [Request] or [Response] as per the JSON-RPC 2.0 specification.
 //
 // The specification mandates that the id field MUST contain a String, Number, or Null value.  The use of a Null is
 // discouraged, as it is used for Responses with an unknown id and thus can cause confusion. Number should not contain
 // fractions to avoid issues with binary fractions.
-//
-// To simplify the implementation, this library uses a string type for the id field. When marshalling, the value is
-// always marshalled into a string.
-type ID string
+type ID struct {
+	isNull bool
+	value  string
+}
 
-// UnmarshalJSON unmarshals a JSON object into an [ID]. If the value is "null", it is unmarshalled into an empty string.
-// If the value is a number, it is unmarshalled into a string.
+func (id ID) MarshalJSON() ([]byte, error) {
+	if id.isNull {
+		return []byte(`null`), nil
+	}
+	return []byte(fmt.Sprintf(`"%s"`, id.value)), nil
+}
+
 func (id *ID) UnmarshalJSON(data []byte) error {
 	if string(data) == "null" {
-		*id = ""
+		id.isNull = true
+		id.value = ""
 		return nil
 	}
+	id.isNull = false
 
 	var value string
 	err := json.Unmarshal(data, &value)
@@ -207,11 +214,11 @@ func (id *ID) UnmarshalJSON(data []byte) error {
 			}
 		}
 
-		*id = ID(fmt.Sprintf("%v", int(number)))
+		id.value = fmt.Sprintf("%v", int(number))
 		return nil
 	}
 
-	*id = ID(value)
+	id.value = value
 	return nil
 }
 
@@ -457,7 +464,10 @@ func (r *Response) UnmarshalJSON(data []byte) error {
 
 	if tmp.ID.Defined {
 		if tmp.ID.Value == nil {
-			r.ID = ""
+			r.ID = ID{
+				isNull: true,
+				value:  "",
+			}
 		} else {
 			r.ID = *tmp.ID.Value
 		}
@@ -871,4 +881,17 @@ func ValidateErrorCode(field reflect.Value) interface{} {
 	}
 
 	return nil
+}
+
+func ResponseParseError() Response {
+	return Response{
+		ID: ID{
+			isNull: true,
+			value:  "",
+		},
+		Error: &Error{
+			Code:    ParseError,
+			Message: string(ParseErrorMessage),
+		},
+	}
 }

@@ -9,6 +9,7 @@ protoc = "latest"
 mockery = "latest"
 protoc-gen-go = "latest"
 protoc-gen-go-grpc = "latest"
+node = "latest"
 
 [settings]
 experimental = true

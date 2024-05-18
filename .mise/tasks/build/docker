@@ -1,6 +1,7 @@
 #!/bin/sh
 # mise sources=["dist/sophrosyne_linux_arm64", "dist/sophrosyne_linux_amd64"]
 # mise outputs=["build/sophrosyne.tar"]
+# mise depends=["build:dist"]
 
 platform="linux/arm64,linux/amd64"
 
@@ -23,3 +24,5 @@ done
 mkdir -p build
 
 docker buildx build --platform="$platform" -o type=oci,dest=build/sophrosyne.tar --tag sophrosyne:0.0.0 .
+
+docker load -i build/sophrosyne.tar

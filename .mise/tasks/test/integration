@@ -1,5 +1,6 @@
 #!/bin/sh
-# mise sources=["go.mod", "go.sum", "internal/**/*", "cmd/**/*", "*.go"]
+# mise sources=["tests/integration/**/*"]
 # mise outputs=[]
+# mise depends=["build:docker"]
 
-go test --tags=integration ./...
+go test --tags=integration ./tests/integration/...
