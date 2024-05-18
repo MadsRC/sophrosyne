@@ -31,6 +31,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"testing"
 	"time"
 
@@ -169,8 +170,13 @@ func setupEnv(ctx context.Context, t *testing.T) testEnv {
 logging:
   level: debug`, pgIP, "5432")))
 
+	img := "ghcr.io/madsrc/sophrosyne:latest"
+	if os.Getenv("sophrosyne_test_image") != "" {
+		img = os.Getenv("sophrosyne_test_image")
+	}
+
 	req := testcontainers.ContainerRequest{
-		Image:        "sophrosyne:0.0.0",
+		Image:        img,
 		ExposedPorts: []string{"8080/tcp"},
 		WaitingFor:   wait.ForLog("Starting server"),
 		Cmd:          []string{"--secretfiles", "/security.salt,/security.siteKey", "run"},

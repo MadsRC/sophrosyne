@@ -1,0 +1,82 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 1
+
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+
+report_sizes: true
+
+sboms:
+  - artifacts: archive
+
+# Enable verifiable builds
+gomod:
+  proxy: true
+
+builds:
+  - main: ./cmd/sophrosyne
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    binary: sophrosyne
+
+archives:
+  - format: tar.gz
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+
+dockers:
+  - id: sophrosyne_arm64
+    use: buildx
+    goos: linux
+    goarch: arm64
+    image_templates:
+      - "ghcr.io/madsrc/sophrosyne:{{ .Version }}-arm64"
+      - "ghcr.io/madsrc/sophrosyne:{{ .Major }}-arm64"
+      - "ghcr.io/madsrc/sophrosyne:{{ .Major }}.{{ .Minor }}-arm64"
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm64"
+  - id: sophrosyne_amd64
+    use: buildx
+    goos: linux
+    goarch: amd64
+    image_templates:
+      - "ghcr.io/madsrc/sophrosyne:{{ .Version }}-amd64"
+      - "ghcr.io/madsrc/sophrosyne:{{ .Major }}-amd64"
+      - "ghcr.io/madsrc/sophrosyne:{{ .Major }}.{{ .Minor }}-amd64"
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/amd64"
+
+docker_manifests:
+  - name_template: "madsrc/sophrosyne:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/madsrc/sophrosyne:{{ .Version }}"
+      - "ghcr.io/madsrc/sophrosyne:{{ .Major }}"
+      - "ghcr.io/madsrc/sophrosyne:{{ .Major }}.{{ .Minor }}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"

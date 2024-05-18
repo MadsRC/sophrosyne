@@ -20,7 +20,21 @@
 set -e
 # mise description="Run integration tests"
 # mise sources=["tests/integration/**/*"]
-# mise outputs=[]
-# mise depends=["build:docker"]
 
-go test --tags=integration ./tests/integration/...
+test_image=""
+
+handle_argument() {
+  echo "Argument '$1' not supported" >&2; exit 1
+}
+
+while test "$#" -gt 0; do
+  case "$1" in
+    --test-image=*) test_image="${1#*=}"; shift 1;;
+    --test-image) echo "$1 requires an argument" >&2; exit 1;;
+
+    -*) echo "unknown option: $1" >&2; exit 1;;
+    *) handle_argument "$1"; shift 1;;
+  esac
+done
+
+sophrosyne_test_image="$test_image" go test --tags=integration ./tests/integration/...
