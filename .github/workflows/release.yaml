@@ -24,6 +24,8 @@ jobs:
       with:
         # Disabling shallow clone is recommended for improving relevancy of reporting
         fetch-depth: 0
+    - name: Get syft
+      uses: anchore/sbom-action/download-syft@v0.15.11
     - name: Set up Go
       uses: actions/setup-go@v5
     - name: Run GoReleaser
