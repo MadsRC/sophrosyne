@@ -70,9 +70,12 @@ dockers:
 docker_manifests:
   - name_template: "madsrc/sophrosyne:{{ .Version }}"
     image_templates:
-      - "ghcr.io/madsrc/sophrosyne:{{ .Version }}"
-      - "ghcr.io/madsrc/sophrosyne:{{ .Major }}"
-      - "ghcr.io/madsrc/sophrosyne:{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/madsrc/sophrosyne:{{ .Version }}-amd64"
+      - "ghcr.io/madsrc/sophrosyne:{{ .Major }}-amd64"
+      - "ghcr.io/madsrc/sophrosyne:{{ .Major }}.{{ .Minor }}-amd64"
+      - "ghcr.io/madsrc/sophrosyne:{{ .Version }}-arm64"
+      - "ghcr.io/madsrc/sophrosyne:{{ .Major }}-arm64"
+      - "ghcr.io/madsrc/sophrosyne:{{ .Major }}.{{ .Minor }}-arm64"
 
 changelog:
   sort: asc
