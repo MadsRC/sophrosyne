@@ -68,7 +68,7 @@ dockers:
       - "--platform=linux/amd64"
 
 docker_manifests:
-  - name_template: "madsrc/sophrosyne:{{ .Version }}"
+  - name_template: "ghcr.io/madsrc/sophrosyne:{{ .Version }}"
     image_templates:
       - "ghcr.io/madsrc/sophrosyne:{{ .Version }}-amd64"
       - "ghcr.io/madsrc/sophrosyne:{{ .Major }}-amd64"
