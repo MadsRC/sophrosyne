@@ -32,3 +32,15 @@ services should function will be provided.
 
 This project follows semantic versioning, and will introduce breaking changes
 several times before reaching version 1.0.0.
+
+## Usage
+
+Sophrosyne is intended to be used in a container, although binaries are available for each release.
+
+Container images are hosted in `ghcr.io` and can be located [here](https://github.com/MadsRC/sophrosyne/releases/latest).
+
+The container repository in question is `ghcr.io/madsrc/sophrosyne`.
+
+Sophrosyne is released for `linux` on the `amd64` and `arm64` platform.
+
+A container can be run by running the following command: `docker run ghcr.io/madsrc/sophrosyne:0.0.2`.
