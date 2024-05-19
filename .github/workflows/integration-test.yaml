@@ -1,0 +1,46 @@
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - testintegrationtest
+
+# Declare default permissions as read only.
+permissions: read-all
+
+name: Release
+jobs:
+  release:
+    permissions:
+      contents: write
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+    - name: 'Login to GitHub Container Registry'
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{github.actor}}
+        password: ${{secrets.GITHUB_TOKEN}}
+    - name: Get syft
+      uses: anchore/sbom-action/download-syft@v0.15.11
+    - name: Set up Go
+      uses: actions/setup-go@v5
+    - id: create-release
+      name: Run GoReleaser
+      uses: goreleaser/goreleaser-action@v5
+      with:
+        args: release --snapshot --clean
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Run integration check
+      run: |
+        image=$(echo '${{ steps.create-release.outputs.artifacts }}' | jq '.[] | select(.type=="Docker Image") | select(.extra.DockerConfig.goos=="linux") | select(.extra.DockerConfig.goarch=="amd64") | select(.name|contains("-SNAPSHOT-")) | .name' -r)
+        echo "Testing image ${image}"
+        mise run test:integration --test-image="${image}"
