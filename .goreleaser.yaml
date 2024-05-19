@@ -84,7 +84,7 @@ docker_signs:
   - cmd: "cosign"
     args:
       - "sign"
-      - "${digest}"
+      - "ghcr.io/madsrc/sophrosyne@${digest}"
       - "--yes"
     artifacts: all
 
