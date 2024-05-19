@@ -1,0 +1,52 @@
+# Security
+
+## Supply Chain Security
+
+In order to be viewed as a trustworthy component of your supply chain, the Sophrosyne project has implemented, or is
+planning on implementing, the following controls related to Supply Chain Security:
+
+- Container image signing (see [Verify container images](#verify-container-images))
+- Binary release signing
+- SLSA Level 3 provenance attestations (issue [#84](https://github.com/MadsRC/sophrosyne/issues/84))
+- Vulnerability Management
+
+### Verify container images
+
+Container images can be verified by using `cosign`. The images are signed using ephemeral keys
+unique to each CI/CD run.
+
+3 pieces of information is needed in order to verify an image:
+
+1. The reference to the image.
+2. The URL of the OIDC Issuer for the certificate.
+3. The identity of subject that signed the image.
+
+The URL of the OIDC issuer for the certificate used to sign sophrosyne releases is
+`https://token.actions.githubusercontent.com`. The subject is unique for each CI/CD run, but follows
+the following template: `https://github.com/MadsRC/sophrosyne/.github/workflows/[WORKFLOW_FILENAME]@refs/tags/[RELEASE_SEMVER]`
+with `[WORKFLOW_FILENAME]` being replaced by the name of the file that contains the GitHub Actions workflow
+responsible for signing, and `[RELEASE_SEMVER]` being the semantic version (prefixed with a `v`) identifier
+of the release.
+
+To verify `ghcr.io/madsrc/sophrosyne:0.0.2` we would run the following command:
+
+```shell
+cosign verify ghcr.io/madsrc/sophrosyne:0.0.2 --certificate-oidc-issuer="https://token.actions.githubusercontent.com" --certificate-identity="https://github.com/MadsRC/sophrosyne/.github/workflows/release.yaml@refs/tags/v0.0.2"
+
+Verification for ghcr.io/madsrc/sophrosyne:0.0.2 --
+The following checks were performed on each of these signatures:
+  - The cosign claims were validated
+  - Existence of the claims in the transparency log was verified offline
+  - The code-signing certificate was verified using trusted certificate authority certificates
+
+[{"critical":{"identity":{"docker-reference":"ghcr.io/madsrc/sophrosyne"},"image":{"docker-manifest-digest":"sha256:c51d7967cca09ff85edf8f74fbeeda777c2bfea7495a2f318a571eb618f0c569"},"type":"cosign container image signature"},"optional":{"1.3.6.1.4.1.57264.1.1":"https://token.actions.githubusercontent.com","1.3.6.1.4.1.57264.1.2":"push","1.3.6.1.4.1.57264.1.3":"f3f7e36e382d8775aedc88554a6ee2682fad420a","1.3.6.1.4.1.57264.1.4":"Release","1.3.6.1.4.1.57264.1.5":"MadsRC/sophrosyne","1.3.6.1.4.1.57264.1.6":"refs/tags/v0.0.2","Bundle":{"SignedEntryTimestamp":"MEQCIDqP3nTKX/LAeT5hvjisxUPpFmpqNOGZmg2k4Sp6CtY1AiB9ZYViUL3aXVydq3Whh8+BfG4Mb0AIPcS2JOXO8Kxzag==","Payload":{"body":"eyJhcGlWZXJzaW9uIjoiMC4wLjEiLCJraW5kIjoiaGFzaGVkcmVrb3JkIiwic3BlYyI6eyJkYXRhIjp7Imhhc2giOnsiYWxnb3JpdGhtIjoic2hhMjU2IiwidmFsdWUiOiI5ODk3ZjVhNDc1MTI0Mzk3NmJjMGJhNTJkZmVkMDgyNzJhMGM2Y2E4NzlkMWQxZTFkYzE4ZTM1YWMzMDVkYTJhIn19LCJzaWduYXR1cmUiOnsiY29udGVudCI6Ik1FUUNJSFlJbkNtbUhTZUwySXo4czdqQUdVSjFET1dSdWkwcHByNEcza2o5V1EzRUFpQnBoOGpLS3hXaGs5RmdTdDJYeUZwUFFqcnhNQTFUajRPUjhoZWdQVEJDV3c9PSIsInB1YmxpY0tleSI6eyJjb250ZW50IjoiTFMwdExTMUNSVWRKVGlCRFJWSlVTVVpKUTBGVVJTMHRMUzB0Q2sxSlNVZHhWRU5EUW1rMlowRjNTVUpCWjBsVlFrOVRNM0IwYldWWGRUQjRSbUpJTlZSdE5HdG5aM1ZKZVZwTmQwTm5XVWxMYjFwSmVtb3dSVUYzVFhjS1RucEZWazFDVFVkQk1WVkZRMmhOVFdNeWJHNWpNMUoyWTIxVmRWcEhWakpOVWpSM1NFRlpSRlpSVVVSRmVGWjZZVmRrZW1SSE9YbGFVekZ3WW01U2JBcGpiVEZzV2tkc2FHUkhWWGRJYUdOT1RXcFJkMDVVUlRWTmFrVjZUVlJWZUZkb1kwNU5hbEYzVGxSRk5VMXFSVEJOVkZWNFYycEJRVTFHYTNkRmQxbElDa3R2V2tsNmFqQkRRVkZaU1V0dldrbDZhakJFUVZGalJGRm5RVVZHVlVOS2FqSjVTa05YYTJWQlR5OTRjV1JuWnpVelNGTnBMMFZ3WVVGcFVrbEplbElLYTNWNWEwRm5Xa2gyVFV4Q2J6WlBNSEl2V1hSUU9UTXZaU3RRUlc0eWJFcE5jMGx3UjNscWRsRjZkbkZVVUZaRVZrdFBRMEpWTUhkbloxWktUVUUwUndwQk1WVmtSSGRGUWk5M1VVVkJkMGxJWjBSQlZFSm5UbFpJVTFWRlJFUkJTMEpuWjNKQ1owVkdRbEZqUkVGNlFXUkNaMDVXU0ZFMFJVWm5VVlZUU0RaTENtaDZhM2g1UlZOb1VXMVJNRVpzY25weVNIQjFZMkk0ZDBoM1dVUldVakJxUWtKbmQwWnZRVlV6T1ZCd2VqRlphMFZhWWpWeFRtcHdTMFpYYVhocE5Ga0tXa1E0ZDFsbldVUldVakJTUVZGSUwwSkdaM2RXYjFwVllVaFNNR05JVFRaTWVUbHVZVmhTYjJSWFNYVlpNamwwVERBeGFGcElUbE5SZVRsNllqTkNid3BqYlRsNlpWYzFiRXg1Tlc1aFdGSnZaRmRKZG1ReU9YbGhNbHB6WWpOa2Vrd3pTbXhpUjFab1l6SlZkV1ZYUm5SaVJVSjVXbGRhZWt3elVtaGFNMDEyQ21ScVFYVk5RelI1VFVSclIwTnBjMGRCVVZGQ1p6YzRkMEZSUlVWTE1tZ3daRWhDZWs5cE9IWmtSemx5V2xjMGRWbFhUakJoVnpsMVkzazFibUZZVW04S1pGZEtNV015Vm5sWk1qbDFaRWRXZFdSRE5XcGlNakIzUldkWlMwdDNXVUpDUVVkRWRucEJRa0ZuVVVWalNGWjZZVVJCTWtKbmIzSkNaMFZGUVZsUEx3cE5RVVZFUWtOb2JVMHlXVE5hVkUweVdsUk5ORTF0VVRST2VtTXhXVmRXYTFsNlp6Uk9WRlV3V1ZSYWJGcFVTVEpQUkVwdFdWZFJNRTFxUW1oTlFsVkhDa05wYzBkQlVWRkNaemM0ZDBGUlVVVkNNVXBzWWtkV2FHTXlWWGRJZDFsTFMzZFpRa0pCUjBSMmVrRkNRbEZSVWxSWFJtdGpNVXBFVEROT2RtTkhhSGtLWWpOT05XSnRWWGRJWjFsTFMzZFpRa0pCUjBSMmVrRkNRbWRSVVdOdFZtMWplVGt3V1Zka2Vrd3pXWGRNYWtGMVRXcEJOMEpuYjNKQ1owVkZRVmxQTHdwTlFVVkpRa013VFVzeWFEQmtTRUo2VDJrNGRtUkhPWEphVnpSMVdWZE9NR0ZYT1hWamVUVnVZVmhTYjJSWFNqRmpNbFo1V1RJNWRXUkhWblZrUXpWcUNtSXlNSGRhUVZsTFMzZFpRa0pCUjBSMmVrRkNRMUZTVjBSR1VtOWtTRkozWTNwdmRrd3laSEJrUjJneFdXazFhbUl5TUhaVVYwWnJZekZLUkV3elRuWUtZMGRvZVdJelRqVmliVlYyVEcxa2NHUkhhREZaYVRrellqTktjbHB0ZUhaa00wMTJZMjFXYzFwWFJucGFVelUxV1ZjeGMxRklTbXhhYmsxMlpFZEdiZ3BqZVRreVRVTTBkMHhxU1hkUFFWbExTM2RaUWtKQlIwUjJla0ZDUTJkUmNVUkRhRzFOTWxreldsUk5NbHBVVFRSTmJWRTBUbnBqTVZsWFZtdFplbWMwQ2s1VVZUQlpWRnBzV2xSSk1rOUVTbTFaVjFFd1RXcENhRTFDTUVkRGFYTkhRVkZSUW1jM09IZEJVWE5GUkhkM1Rsb3liREJoU0ZacFRGZG9kbU16VW13S1drUkJNRUpuYjNKQ1owVkZRVmxQTDAxQlJVMUNRMWxOU2tkb01HUklRbnBQYVRoMldqSnNNR0ZJVm1sTWJVNTJZbE01VGxsWFVucFZhMDEyWXpJNWR3cGhTRXAyWXpOc2RWcFVRVFJDWjI5eVFtZEZSVUZaVHk5TlFVVk9Ra052VFV0SFdYcGFhbVJzVFhwYWJFMTZaM2xhUkdjelRucFdhRnBYVW1wUFJHY3hDazVVVW1oT2JWWnNUV3BaTkUxdFdtaGFSRkY1VFVkRmQwbEJXVXRMZDFsQ1FrRkhSSFo2UVVKRVoxRlRSRUpDZVZwWFducE1NMUpvV2pOTmRtUnFRWFVLVFVNMGVVMUNhMGREYVhOSFFWRlJRbWMzT0hkQlVUaEZRM2QzU2s1Nlp6Sk5hbEUwVFZSUk5FMURhMGREYVhOSFFWRlJRbWMzT0hkQlVrRkZSM2QzV2dwaFNGSXdZMGhOTmt4NU9XNWhXRkp2WkZkSmRWa3lPWFJNTURGb1draE9VMUY2UVZoQ1oyOXlRbWRGUlVGWlR5OU5RVVZTUWtGclRVSjZTVE5QVkdONUNrNXFXWGRhUVZsTFMzZFpRa0pCUjBSMmVrRkNSV2RTVjBSR1VtOWtTRkozWTNwdmRrd3laSEJrUjJneFdXazFhbUl5TUhaVVYwWnJZekZLUkV3elRuWUtZMGRvZVdJelRqVmliVlYyVEcxa2NHUkhhREZaYVRrellqTktjbHB0ZUhaa00wMTJZMjFXYzFwWFJucGFVelUxV1ZjeGMxRklTbXhhYmsxMlpFZEdiZ3BqZVRreVRVTTBkMHhxU1hkUFFWbExTM2RaUWtKQlIwUjJla0ZDUlhkUmNVUkRhRzFOTWxreldsUk5NbHBVVFRSTmJWRTBUbnBqTVZsWFZtdFplbWMwQ2s1VVZUQlpWRnBzV2xSSk1rOUVTbTFaVjFFd1RXcENhRTFDVVVkRGFYTkhRVkZSUW1jM09IZEJVbEZGUW1kM1JXTklWbnBoUkVKWVFtZHZja0puUlVVS1FWbFBMMDFCUlZaQ1JXdE5VakpvTUdSSVFucFBhVGgyV2pKc01HRklWbWxNYlU1MllsTTVUbGxYVW5wVmEwMTJZekk1ZDJGSVNuWmpNMngxV2xNNWFBcFpNMUp3WWpJMWVrd3pTakZpYmsxMlQxUkZNVTFFV1RGT2FsVXlUMU01YUdSSVVteGlXRUl3WTNrNGVFMUNXVWREYVhOSFFWRlJRbWMzT0hkQlVsbEZDa05CZDBkalNGWnBZa2RzYWsxSlIwdENaMjl5UW1kRlJVRmtXalZCWjFGRFFraDNSV1ZuUWpSQlNGbEJNMVF3ZDJGellraEZWRXBxUjFJMFkyMVhZek1LUVhGS1MxaHlhbVZRU3pNdmFEUndlV2RET0hBM2J6UkJRVUZIVUd0elUycElaMEZCUWtGTlFWSjZRa1pCYVVGV1pWaDFZelJsWVhWTFRIUTJiVWQyT0FwbGNEQjJUVzByVFRGRk1WbEZTVWd4V21wcVlXSnlPRk5YVVVsb1FVbENRM05KZGtWM1dFUjVVWEF6SzNkSGNXdENTWFIwVG5VdloxbGxSeTlRVUdWekNubDZNazFWZGxCRFRVRnZSME5EY1VkVFRUUTVRa0ZOUkVFeWEwRk5SMWxEVFZGRWQzUndaMDR6VFRKdFNFVkxRMnBwTjBaTVpUVmlVazlyYzBWM1lYSUtUMGgxZDNOU00zWnJlU3N4VGtwaVNXVjJWelJOU2xOc1oyWnZSazlYVUdZelIwRkRUVkZEWkZoWFVXbG5kRzh5VGpBME1VZEVUWFpKUmtwVGRWUk1TQXBQVXpNeFkxaFdjekExU1ZadVEyTmhNRTltVm1Wb1RsaHdTM05uVkc0emRFWlpSMUJ5WTBFOUNpMHRMUzB0UlU1RUlFTkZVbFJKUmtsRFFWUkZMUzB0TFMwSyJ9fX19","integratedTime":1716154311,"logIndex":95199820,"logID":"c0d23d6ad406973f9559f3ba2d1ca01f84147d8ffc5b8445c224f98b9591801d"}},"Issuer":"https://token.actions.githubusercontent.com","Subject":"https://github.com/MadsRC/sophrosyne/.github/workflows/release.yaml@refs/tags/v0.0.2","githubWorkflowName":"Release","githubWorkflowRef":"refs/tags/v0.0.2","githubWorkflowRepository":"MadsRC/sophrosyne","githubWorkflowSha":"f3f7e36e382d8775aedc88554a6ee2682fad420a","githubWorkflowTrigger":"push"}}]
+```
+
+Alternatively, the following command can be used instead:
+
+```shell
+cosign verify ghcr.io/madsrc/sophrosyne:0.0.2 --certificate-oidc-issuer="https://token.actions.githubusercontent.com" --certificate-identity-regexp="https://github.com/MadsRC/sophrosyne/.github/workflows/.*@refs/tags/v.*"
+```
+
+The above command uses a regex to match the subject. This is arguably less secure, but offers the benefit
+the user not having to know the exact workflow file and version that is being verified.
