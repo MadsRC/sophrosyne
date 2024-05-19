@@ -12,10 +12,7 @@ permissions: read-all
 
 name: Integration Test
 jobs:
-  release:
-    permissions:
-      contents: write
-      packages: write
+  integration-test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
@@ -26,24 +23,26 @@ jobs:
       with:
         experimental: true
     - name: 'Login to GitHub Container Registry'
-      uses: docker/login-action@v1
+      uses: docker/login-action@dd4fa0671be5250ee6f50aedf4cb05514abda2c7 # v1
       with:
         registry: ghcr.io
         username: ${{github.actor}}
         password: ${{secrets.GITHUB_TOKEN}}
     - name: Get syft
-      uses: anchore/sbom-action/download-syft@v0.15.11
+      uses: anchore/sbom-action/download-syft@7ccf588e3cf3cc2611714c2eeae48550fbc17552 # v0.15.11
     - name: Set up Go
-      uses: actions/setup-go@v5
-    - id: create-release
-      name: Run GoReleaser
-      uses: goreleaser/goreleaser-action@v5
+      uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5
       with:
-        args: release --snapshot --clean
+        go-version-file: 'go.mod'
+    - id: snapshot-release
+      name: Run GoReleaser
+      uses: goreleaser/goreleaser-action@5742e2a039330cbb23ebf35f046f814d4c6ff811 # v5
+      with:
+        args: release --clean
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Run integration check
       run: |
-        image=$(echo '${{ steps.create-release.outputs.artifacts }}' | jq '.[] | select(.type=="Docker Image") | select(.extra.DockerConfig.goos=="linux") | select(.extra.DockerConfig.goarch=="amd64") | select(.name|contains("-SNAPSHOT-")) | .name' -r)
+        image=$(echo '${{ steps.snapshot-release.outputs.artifacts }}' | jq '.[] | select(.type=="Docker Image") | select(.extra.DockerConfig.goos=="linux") | select(.extra.DockerConfig.goarch=="amd64") | select(.name|contains("-SNAPSHOT-")) | .name' -r)
         echo "Testing image ${image}"
         mise run test:integration --test-image="${image}"
