@@ -20,6 +20,7 @@ package jsonrpc
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -28,42 +29,41 @@ import (
 
 func TestID_MarshalJSON(t *testing.T) {
 	tests := []struct {
-		name    string
-		id      ID
-		want    []byte
-		wantErr bool
+		name string
+		id   ID
+		want []byte
 	}{
 		{
 			name: "id is string",
-			id:   ID("test"),
+			id:   ID{value: "test"},
 			want: []byte(`"test"`),
 		},
 		{
 			name: "id is int",
-			id:   ID("1"),
+			id:   ID{value: "1"},
 			want: []byte(`"1"`),
 		},
 		{
 			name: "id is float",
-			id:   ID("1.1"),
+			id:   ID{value: "1.1"},
 			want: []byte(`"1.1"`),
 		},
 		{
 			name: "id is empty",
-			id:   ID(""),
+			id:   ID{value: ""},
 			want: []byte(`""`),
+		},
+		{
+			name: "id is null",
+			id:   ID{isNull: true, value: ""},
+			want: []byte(`null`),
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s - json.Marshal", tt.name), func(t *testing.T) {
 			got, err := json.Marshal(tt.id)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("MarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("MarshalJSON() got = %v, want %v", got, tt.want)
-			}
+			require.NoErrorf(t, err, "MarshalJSON() error = %v", err)
+			require.JSONEq(t, string(tt.want), string(got), "MarshalJSON() got = %v, want %v", got, tt.want)
 		})
 	}
 }
@@ -80,22 +80,22 @@ func TestID_UnmarshalJSON(t *testing.T) {
 	}{
 		{
 			name: "id is string",
-			id:   ID("test"),
+			id:   ID{value: "test"},
 			args: args{data: []byte(`"test"`)},
 		},
 		{
 			name: "id is int",
-			id:   ID("1"),
+			id:   ID{value: "1"},
 			args: args{data: []byte(`1`)},
 		},
 		{
 			name: "id is float",
-			id:   ID("1.1"),
+			id:   ID{value: "1.1"},
 			args: args{data: []byte(`"1.1"`)},
 		},
 		{
 			name: "id is null",
-			id:   ID(""),
+			id:   ID{isNull: true, value: ""},
 			args: args{data: []byte(`null`)},
 		},
 	}
@@ -491,7 +491,7 @@ func TestRequest_MarshalJSON(t *testing.T) {
 			r: Request{
 				Method: "test",
 				Params: &ParamsArray{1, 2, 3},
-				ID:     ID("1"),
+				ID:     ID{value: "1"},
 			},
 			want: []byte(`{"jsonrpc":"2.0","method":"test","params":[1,2,3],"id":"1"}`),
 		},
@@ -500,7 +500,7 @@ func TestRequest_MarshalJSON(t *testing.T) {
 			r: Request{
 				Method: "test",
 				Params: nil,
-				ID:     ID("1"),
+				ID:     ID{value: "1"},
 			},
 			want: []byte(`{"jsonrpc":"2.0","method":"test","id":"1"}`),
 		},
@@ -509,7 +509,7 @@ func TestRequest_MarshalJSON(t *testing.T) {
 			r: Request{
 				Method: "test",
 				Params: &ParamsObject{},
-				ID:     ID("1"),
+				ID:     ID{value: "1"},
 			},
 			want: []byte(`{"jsonrpc":"2.0","method":"test","params":{},"id":"1"}`),
 		},
@@ -518,7 +518,7 @@ func TestRequest_MarshalJSON(t *testing.T) {
 			r: Request{
 				Method: "test",
 				Params: &ParamsArray{1, 2, 3},
-				ID:     ID(""),
+				ID:     ID{value: ""},
 			},
 			want: []byte(`{"jsonrpc":"2.0","method":"test","params":[1,2,3],"id":""}`),
 		},
@@ -527,7 +527,7 @@ func TestRequest_MarshalJSON(t *testing.T) {
 			r: Request{
 				Method: "test",
 				Params: &ParamsArray{1, 2, 3},
-				ID:     ID("0"),
+				ID:     ID{value: "0"},
 			},
 			want: []byte(`{"jsonrpc":"2.0","method":"test","params":[1,2,3],"id":"0"}`),
 		},
@@ -955,7 +955,7 @@ func Test_Request_with_ParamsArray(t *testing.T) {
 	r := Request{}
 	err := json.Unmarshal([]byte(`{"jsonrpc":"2.0","method":"test","params":[1,2,3],"id":1}`), &r)
 	require.NoError(t, err)
-	require.Equal(t, ID("1"), r.ID)
+	require.Equal(t, ID{value: "1"}, r.ID)
 	require.Equal(t, Method("test"), r.Method)
 	require.Equal(t, &ParamsArray{1, 2, 3}, r.Params)
 
@@ -986,7 +986,7 @@ func Test_BatchRequest_with_Request(t *testing.T) {
 	err := json.Unmarshal(b, &br)
 	require.NoError(t, err)
 	require.False(t, br[0].isNotification)
-	require.Equal(t, ID("1"), br[0].ID)
+	require.Equal(t, ID{value: "1"}, br[0].ID)
 	require.Equal(t, Method("test"), br[0].Method)
 	require.Equal(t, &ParamsArray{1, 2, 3}, br[0].Params)
 }
@@ -1029,7 +1029,7 @@ func Test_Response_EndToEnd(t *testing.T) {
 
 func TestResponse_without_result_result_not_null(t *testing.T) {
 	r := Response{
-		ID: ID("1234"),
+		ID: ID{value: "1234"},
 		Error: &Error{
 			Code:    12345,
 			Message: "test",
@@ -1042,9 +1042,61 @@ func TestResponse_without_result_result_not_null(t *testing.T) {
 
 func TestResponse_without_result_or_error(t *testing.T) {
 	r := Response{
-		ID: ID("1234"),
+		ID: ID{value: "1234"},
 	}
 	b, err := r.MarshalJSON()
 	require.NoError(t, err)
 	require.JSONEq(t, `{"jsonrpc":"2.0","result":null,"id":"1234"}`, string(b))
+}
+
+func TestResponseParseError(t *testing.T) {
+	resp := ResponseParseError()
+	want := `{"jsonrpc":"2.0","error":{"code":-32700,"message":"Parse error"},"id":null}`
+	b, err := json.Marshal(resp)
+	require.NoError(t, err)
+	require.JSONEq(t, want, string(b))
+}
+
+// Returns an ID struct with the given value and isNull=false when no isNull parameter is passed
+func TestNewID_NoIsNullParameter(t *testing.T) {
+	value := "test"
+	id := NewID(value)
+
+	if id.isNull {
+		t.Errorf("Expected isNull to be false, but got true")
+	}
+
+	if id.value != value {
+		t.Errorf("Expected value to be %s, but got %s", value, id.value)
+	}
+}
+
+// Returns an ID struct with the given value and isNull=false when isNull parameter is false
+func TestNewID_IsNullParameterFalse(t *testing.T) {
+	value := "test"
+	isNull := false
+	id := NewID(value, isNull)
+
+	if id.isNull {
+		t.Errorf("Expected isNull to be false, but got true")
+	}
+
+	if id.value != value {
+		t.Errorf("Expected value to be %s, but got %s", value, id.value)
+	}
+}
+
+// Creating a new ID with a non-null value should return an ID object with isNull=false and the provided value.
+func TestNewIDWithNonNullValue(t *testing.T) {
+	value := "test"
+	id := NewID(value)
+	require.Equal(t, false, id.isNull)
+	require.Equal(t, value, id.value)
+}
+
+// Creating a new ID with multiple isNull values should return an ID object with isNull=true and an empty value.
+func TestNewIDWithMultipleIsNullValues(t *testing.T) {
+	id := NewID("", true, true)
+	require.Equal(t, true, id.isNull)
+	require.Equal(t, "", id.value)
 }

@@ -1,5 +1,40 @@
 #!/bin/sh
-# mise sources=["go.mod", "go.sum", "internal/**/*", "cmd/**/*", "*.go"]
-# mise outputs=[]
+#
+# Sophrosyne
+#   Copyright (C) 2024  Mads R. Havmand
+#
+# This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU Affero General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU Affero General Public License for more details.
+#
+#   You should have received a copy of the GNU Affero General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 
-go test --tags=integration ./...
+set -e
+# mise description="Run integration tests"
+# mise sources=["tests/integration/**/*"]
+
+test_image=""
+
+handle_argument() {
+  echo "Argument '$1' not supported" >&2; exit 1
+}
+
+while test "$#" -gt 0; do
+  case "$1" in
+    --test-image=*) test_image="${1#*=}"; shift 1;;
+    --test-image) echo "$1 requires an argument" >&2; exit 1;;
+
+    -*) echo "unknown option: $1" >&2; exit 1;;
+    *) handle_argument "$1"; shift 1;;
+  esac
+done
+
+sophrosyne_test_image="$test_image" go test --tags=integration ./tests/integration/...

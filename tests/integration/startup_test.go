@@ -27,9 +27,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"testing"
 	"time"
 
@@ -45,6 +47,7 @@ type testEnv struct {
 	t              *testing.T
 	database       *postgres.PostgresContainer
 	api            testcontainers.Container
+	dummycheck     testcontainers.Container
 	network        *testcontainers.DockerNetwork
 	rootToken      string
 	httpClient     *http.Client
@@ -61,11 +64,32 @@ func (te testEnv) Close(ctx context.Context) {
 	if te.api != nil {
 		err = errors.Join(err, te.api.Terminate(ctx))
 	}
+	if te.dummycheck != nil {
+		err = errors.Join(err, te.dummycheck.Terminate(ctx))
+	}
 	if te.network != nil {
 		err = errors.Join(err, te.network.Remove(ctx))
 	}
 
 	require.NoError(te.t, err, "could not clean up test environment")
+}
+
+func doAuthenticatedRequest(t *testing.T, te *testEnv, method string, body []byte) (*http.Response, error) {
+	t.Helper()
+	req, err := http.NewRequest(method, te.rpcEndpoint.String(), bytes.NewBuffer(body))
+	require.NoError(t, err, "could not create HTTP request")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", te.rootToken))
+	return te.httpClient.Do(req)
+}
+
+func compareResponse(t *testing.T, expected []byte, response *http.Response) {
+	t.Helper()
+	require.NotNil(t, response, "response is nil")
+	require.Equalf(t, http.StatusOK, response.StatusCode, "expected status code %d, got %d", http.StatusOK, response.StatusCode)
+	body, err := io.ReadAll(response.Body)
+	require.NoError(t, err, "could not read response body")
+	require.JSONEq(t, string(expected), string(body), "expected response body to be different")
 }
 
 func setupEnv(ctx context.Context, t *testing.T) testEnv {
@@ -102,6 +126,27 @@ func setupEnv(ctx context.Context, t *testing.T) testEnv {
 
 	te.database = postgresContainer
 
+	dummycheckReq := testcontainers.ContainerRequest{
+		FromDockerfile: testcontainers.FromDockerfile{
+			Context:       "../../",
+			Dockerfile:    "tests/integration/dummycheck.Dockerfile",
+			PrintBuildLog: true,
+			KeepImage:     true,
+		},
+		ExposedPorts: []string{"11432/tcp"},
+		Networks:     []string{nw.Name},
+		WaitingFor:   wait.ForLog("starting server on port 11432"),
+	}
+
+	dummycheck, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: dummycheckReq,
+		Started:          true,
+	})
+	if err != nil {
+		t.Fatalf("Could not start dummycheck: %s", err)
+	}
+	te.dummycheck = dummycheck
+
 	_, err = postgresContainer.Endpoint(ctx, "")
 	require.NoError(t, err)
 	pgIP, err := postgresContainer.ContainerIP(ctx)
@@ -121,10 +166,17 @@ func setupEnv(ctx context.Context, t *testing.T) testEnv {
   port: %s
   user: user
   password: password
-  name: users`, pgIP, "5432")))
+  name: users
+logging:
+  level: debug`, pgIP, "5432")))
+
+	img := "ghcr.io/madsrc/sophrosyne:latest"
+	if os.Getenv("sophrosyne_test_image") != "" {
+		img = os.Getenv("sophrosyne_test_image")
+	}
 
 	req := testcontainers.ContainerRequest{
-		Image:        "sophrosyne:0.0.0",
+		Image:        img,
 		ExposedPorts: []string{"8080/tcp"},
 		WaitingFor:   wait.ForLog("Starting server"),
 		Cmd:          []string{"--secretfiles", "/security.salt,/security.siteKey", "run"},
@@ -221,12 +273,22 @@ func newHTTPClient(t *testing.T) *http.Client {
 	}
 }
 
+func outputAPILogs(t *testing.T, ctx context.Context, te *testEnv) {
+	t.Helper()
+	logReader, err := te.api.Logs(ctx)
+	require.NoError(t, err)
+	l, err := io.ReadAll(logReader)
+	require.NoError(t, err)
+	t.Log(string(l))
+}
+
 func TestStartup(t *testing.T) {
 
 	ctx := context.Background()
 
 	te := setupEnv(ctx, t)
 	t.Cleanup(func() {
+		outputAPILogs(t, ctx, &te)
 		te.Close(ctx)
 	})
 
@@ -284,5 +346,33 @@ func TestStartup(t *testing.T) {
 		res, err := te.httpClient.Get(te.rpcEndpoint.String())
 		require.NoError(t, err)
 		require.Equal(t, http.StatusUnauthorized, res.StatusCode)
+	})
+
+	t.Run("send invalid json body in request", func(t *testing.T) {
+		res, err := doAuthenticatedRequest(t, &te, "POST", []byte(`{ this is not json }`))
+		require.NoError(t, err)
+		expected := []byte(`{"jsonrpc":"2.0","error":{"code":-32700,"message":"Parse error"},"id":null}`)
+		compareResponse(t, expected, res)
+	})
+
+	t.Run("Create dummycheck", func(t *testing.T) {
+		dummyIP, err := te.dummycheck.ContainerIP(ctx)
+		require.NoError(t, err)
+		rawPayload := []byte(
+			fmt.Sprintf(
+				`{"jsonrpc":"2.0","id":"dummycheck","method":"Checks::CreateCheck","params":{"name":"dummycheck","profiles":["default"],"upstream_services":["http://%s:11432"]}}`,
+				dummyIP,
+			),
+		)
+		res, err := doAuthenticatedRequest(t, &te, "POST", rawPayload)
+		require.NoError(t, err)
+		require.Equal(t, http.StatusOK, res.StatusCode)
+	})
+
+	t.Run("Perform scan using default profile", func(t *testing.T) {
+		res, err := doAuthenticatedRequest(t, &te, "POST", []byte(`{"jsonrpc":"2.0","id":"1234","method":"Scans::PerformScan","params":{}}`))
+		require.NoError(t, err)
+		expected := []byte(`{"jsonrpc":"2.0","result":{"result":true,"checks":{"dummycheck":{"status":true,"detail":"this was true"}}},"id":"1234"}`)
+		compareResponse(t, expected, res)
 	})
 }

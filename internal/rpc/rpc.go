@@ -41,10 +41,12 @@ func NewRPCServer(logger *slog.Logger) (*Server, error) {
 }
 
 func (s *Server) HandleRPCRequest(ctx context.Context, req []byte) ([]byte, error) {
+	s.logger.DebugContext(ctx, "handling rpc request", "request", req)
 	pReq := jsonrpc.Request{}
 	err := pReq.UnmarshalJSON(req)
 	if err != nil {
-		return nil, err
+		s.logger.ErrorContext(ctx, "error unmarshaling rpc request", "error", err)
+		return jsonrpc.ResponseParseError().MarshalJSON()
 	}
 
 	svcName := strings.Split(string(pReq.Method), "::")[0]
@@ -56,7 +58,6 @@ func (s *Server) HandleRPCRequest(ctx context.Context, req []byte) ([]byte, erro
 	}
 	data, err := service.InvokeMethod(ctx, pReq)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "error handling rpc request", "error", err)
 		return nil, err
 	}
 

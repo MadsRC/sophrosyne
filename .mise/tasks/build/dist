@@ -1,39 +1,39 @@
 #!/bin/sh
-# mise sources=["go.mod", "go.sum", "internal/**/*", "cmd/**/*", "*.go"]
-# mise outputs=["dist/sophrosyne", "dist/sophrosyne_linux_amd64", "dist/sophrosyne_linux_arm64"]
+#
+# Sophrosyne
+#   Copyright (C) 2024  Mads R. Havmand
+#
+# This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU Affero General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU Affero General Public License for more details.
+#
+#   You should have received a copy of the GNU Affero General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 
-goos=""
-goarch=""
-debug=1
-ldflags=""
+set -e
+# mise description="Builds distributables of Sophrosyne"
+# mise sources=["go.mod", "go.sum", "internal/**/*", "cmd/**/*", "*.go"]
 
 handle_argument() {
   echo "Argument '$1' not supported" >&2; exit 1
 }
 
+snapshot=""
+
 while test "$#" -gt 0; do
   case "$1" in
-    -o) goos="$2"; shift 2;;
-    -a) goarch="$2"; shift 2;;
-
-    --goos=*) goos="${1#*=}"; shift 1;;
-    --goarch=*) goarch="${1#*=}"; shift 1;;
-    --goos|--goarch) echo "$1 requires an argument" >&2; exit 1;;
-
-    --debug) debug=0; shift 1;;
+    --snapshot) snapshot="--snapshot"; shift 1;;
 
     -*) echo "unknown option: $1" >&2; exit 1;;
     *) handle_argument "$1"; shift 1;;
   esac
 done
 
-if test "$debug" = 1; then
-  ldflags="-s -w"
-fi
-
-if test "$goarch" = ""; then
-  GOOS="linux" GOARCH="amd64" go build -ldflags="$ldflags" -o dist/sophrosyne_linux_amd64 cmd/sophrosyne/main.go
-  GOOS="linux" GOARCH="arm64" go build -ldflags="$ldflags" -o dist/sophrosyne_linux_arm64 cmd/sophrosyne/main.go
-else
-  GOOS="$goos" GOARCH="$goarch" go build -ldflags="$ldflags" -o dist/sophrosyne cmd/sophrosyne/main.go
-fi
+goreleaser build $snapshot --clean

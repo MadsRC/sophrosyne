@@ -39,7 +39,8 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", c.Int("port")))
+			log.Printf("starting server on port %d\n", c.Int("port"))
+			lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", c.Int("port")))
 			if err != nil {
 				log.Fatalf("failed to listen: %v", err)
 			}
