@@ -12,6 +12,8 @@ github.com/Microsoft/hcsshim v0.11.4 h1:68vKo2VN8DE9AdN4tnkWnmdhqdbpUFM8OF3Airm7
 github.com/Microsoft/hcsshim v0.11.4/go.mod h1:smjE4dvqPX9Zldna+t5FG3rnoHhaB7QYxPRqGcpAD9w=
 github.com/cedar-policy/cedar-go v0.0.0-20240423170804-f3d86202cb43 h1:mCdHcb1NVpAo0L2+bq4HZ3Iz9q7iJ4PPQgHgvfZ1Crc=
 github.com/cedar-policy/cedar-go v0.0.0-20240423170804-f3d86202cb43/go.mod h1:qZuNWmkhx7pxkYvgmNPcBE4NtfGBF6nmI+bjecaQp14=
+github.com/cedar-policy/cedar-go v0.0.0-20240429205519-77c610b20627 h1:g6H+cQeHZP6A0ohFM/GVrKTIumMwtVhxyf+Xxj6gvOQ=
+github.com/cedar-policy/cedar-go v0.0.0-20240429205519-77c610b20627/go.mod h1:qZuNWmkhx7pxkYvgmNPcBE4NtfGBF6nmI+bjecaQp14=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
 github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
 github.com/containerd/containerd v1.7.12 h1:+KQsnv4VnzyxWcfO9mlxxELaoztsDEjOuCMPAuPqgU0=
