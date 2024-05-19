@@ -3,6 +3,7 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  workflow_dispatch: {}
   push:
     branches:
       - testintegrationtest
@@ -14,6 +15,10 @@ name: Integration Test
 jobs:
   integration-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     steps:
     - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
       with:
