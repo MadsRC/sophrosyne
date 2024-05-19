@@ -84,10 +84,9 @@ docker_signs:
   - cmd: "cosign"
     args:
       - "sign"
-      - "${artifact}"
+      - "${digest}"
       - "--yes"
     artifacts: all
-    output: true
 
 signs:
   - cmd: "cosign"
@@ -96,7 +95,6 @@ signs:
       - "${artifact}"
       - "--yes"
     artifacts: all
-    output: true
 
 changelog:
   sort: asc
