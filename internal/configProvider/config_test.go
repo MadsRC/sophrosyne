@@ -242,12 +242,7 @@ func TestNewConfigProvider(t *testing.T) {
 	// change and reload the config
 	time.Sleep(100 * time.Millisecond)
 
-	// Ensure that the config has been updated - Allow for one failure to account
-	// for potentially slow CI runners.
-	if !assert.Equal(t, newPasswordString, c.k.String(databasePasswordKey)) {
-		time.Sleep(400 * time.Millisecond)
-		require.Equal(t, newPasswordString, c.k.String(databasePasswordKey))
-	}
+	assert.Equal(t, newPasswordString, c.k.String(databasePasswordKey))
 
 	badYamlContent := []byte{0x00, 0x01, 0x02}
 	err = os.WriteFile(tempFile, badYamlContent, 0644)
@@ -255,14 +250,9 @@ func TestNewConfigProvider(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	// Ensure that the config has been updated - Allow for one failure to account
-	// for potentially slow CI runners.
 	// The bad yaml content should not have been loaded and thus the previous
 	// value should still be present.
-	if !assert.Equal(t, newPasswordString, c.k.String(databasePasswordKey)) {
-		time.Sleep(400 * time.Millisecond)
-		require.Equal(t, newPasswordString, c.k.String(databasePasswordKey))
-	}
+	assert.Equal(t, newPasswordString, c.k.String(databasePasswordKey))
 }
 
 func TestNewConfigProviderErrorNoYamlFile(t *testing.T) {
@@ -297,12 +287,7 @@ func TestNewConfigProviderErrorUpdateFailValidate(t *testing.T) {
 	require.NoError(t, err)
 
 	time.Sleep(100 * time.Millisecond)
-	// Ensure that the config has been updated - Allow for one failure to account
-	// for potentially slow CI runners.
-	if !assert.Equal(t, 5432, cfg.Database.Port) {
-		time.Sleep(400 * time.Millisecond)
-		require.Equal(t, 5432, cfg.Database.Port)
-	}
+	require.Equal(t, 5432, cfg.Database.Port)
 }
 
 func TestNewConfigProviderErrorValidateYamlFile(t *testing.T) {
@@ -346,12 +331,8 @@ func TestConfigProviderGet(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 
 	require.NotNil(t, cfg)
-	// Ensure that the config has been updated - Allow for one failure to account
-	// for potentially slow CI runners.
-	if !assert.Equal(t, newPasswordString, cfg.Database.Password) {
-		time.Sleep(1900 * time.Millisecond)
-		require.Equal(t, newPasswordString, cfg.Database.Password)
-	}
+	// Ensure that the config has been updated
+	require.Equal(t, newPasswordString, cfg.Database.Password)
 	// Ensure that the other values have not changed
 	require.Equal(t, "postgres", cfg.Database.User)
 	require.Equal(t, "localhost", cfg.Database.Host)
@@ -367,12 +348,7 @@ func TestConfigProviderGet(t *testing.T) {
 	// The bad yaml content should not have been loaded and thus the previous
 	// value should still be present.
 	require.NotNil(t, cfg)
-	// Ensure that the config has been updated - Allow for one failure to account
-	// for potentially slow CI runners.
-	if !assert.Equal(t, newPasswordString, cfg.Database.Password) {
-		time.Sleep(400 * time.Millisecond)
-		require.Equal(t, newPasswordString, cfg.Database.Password)
-	}
+	require.Equal(t, newPasswordString, cfg.Database.Password)
 	require.Equal(t, "postgres", cfg.Database.User)
 	require.Equal(t, "localhost", cfg.Database.Host)
 	require.Equal(t, 5432, cfg.Database.Port)
