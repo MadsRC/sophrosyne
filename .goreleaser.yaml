@@ -77,6 +77,9 @@ docker_manifests:
       - "ghcr.io/madsrc/sophrosyne:{{ .Major }}-arm64"
       - "ghcr.io/madsrc/sophrosyne:{{ .Major }}.{{ .Minor }}-arm64"
 
+release:
+  prerelease: auto
+
 changelog:
   sort: asc
   filters:
