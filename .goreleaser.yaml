@@ -84,7 +84,6 @@ docker_signs:
   - cmd: "cosign"
     args:
       - "sign"
-      - "--upload=false"
       - "${artifact}"
       - "--yes"
     artifacts: all
@@ -94,7 +93,6 @@ signs:
   - cmd: "cosign"
     args:
       - "sign-blob"
-      - "--upload=false"
       - "${artifact}"
       - "--yes"
     artifacts: all
