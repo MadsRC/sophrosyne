@@ -1085,3 +1085,18 @@ func TestNewID_IsNullParameterFalse(t *testing.T) {
 		t.Errorf("Expected value to be %s, but got %s", value, id.value)
 	}
 }
+
+// Creating a new ID with a non-null value should return an ID object with isNull=false and the provided value.
+func TestNewIDWithNonNullValue(t *testing.T) {
+	value := "test"
+	id := NewID(value)
+	require.Equal(t, false, id.isNull)
+	require.Equal(t, value, id.value)
+}
+
+// Creating a new ID with multiple isNull values should return an ID object with isNull=true and an empty value.
+func TestNewIDWithMultipleIsNullValues(t *testing.T) {
+	id := NewID("", true, true)
+	require.Equal(t, true, id.isNull)
+	require.Equal(t, "", id.value)
+}
