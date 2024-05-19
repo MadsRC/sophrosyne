@@ -4,9 +4,6 @@ concurrency:
 
 on:
   workflow_dispatch: {}
-  push:
-    branches:
-      - testintegrationtest
 
 # Declare default permissions as read only.
 permissions: read-all
