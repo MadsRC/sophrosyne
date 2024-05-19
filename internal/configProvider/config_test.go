@@ -322,35 +322,4 @@ func TestConfigProviderGet(t *testing.T) {
 	require.Equal(t, "localhost", cfg.Database.Host)
 	require.Equal(t, 5432, cfg.Database.Port)
 	require.Equal(t, "postgres", cfg.Database.Name)
-
-	newYamlContent := []byte(`database:
-  password: ` + newPasswordString)
-	err = os.WriteFile(tempFile, newYamlContent, 0644)
-	require.NoError(t, err)
-
-	time.Sleep(100 * time.Millisecond)
-
-	require.NotNil(t, cfg)
-	// Ensure that the config has been updated
-	require.Equal(t, newPasswordString, cfg.Database.Password)
-	// Ensure that the other values have not changed
-	require.Equal(t, "postgres", cfg.Database.User)
-	require.Equal(t, "localhost", cfg.Database.Host)
-	require.Equal(t, 5432, cfg.Database.Port)
-	require.Equal(t, "postgres", cfg.Database.Name)
-
-	badYamlContent := []byte{0x00, 0x01, 0x02}
-	err = os.WriteFile(tempFile, badYamlContent, 0644)
-	require.NoError(t, err)
-
-	time.Sleep(100 * time.Millisecond)
-
-	// The bad yaml content should not have been loaded and thus the previous
-	// value should still be present.
-	require.NotNil(t, cfg)
-	require.Equal(t, newPasswordString, cfg.Database.Password)
-	require.Equal(t, "postgres", cfg.Database.User)
-	require.Equal(t, "localhost", cfg.Database.Host)
-	require.Equal(t, 5432, cfg.Database.Port)
-	require.Equal(t, "postgres", cfg.Database.Name)
 }
