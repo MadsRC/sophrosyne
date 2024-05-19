@@ -1056,3 +1056,32 @@ func TestResponseParseError(t *testing.T) {
 	require.NoError(t, err)
 	require.JSONEq(t, want, string(b))
 }
+
+// Returns an ID struct with the given value and isNull=false when no isNull parameter is passed
+func TestNewID_NoIsNullParameter(t *testing.T) {
+	value := "test"
+	id := NewID(value)
+
+	if id.isNull {
+		t.Errorf("Expected isNull to be false, but got true")
+	}
+
+	if id.value != value {
+		t.Errorf("Expected value to be %s, but got %s", value, id.value)
+	}
+}
+
+// Returns an ID struct with the given value and isNull=false when isNull parameter is false
+func TestNewID_IsNullParameterFalse(t *testing.T) {
+	value := "test"
+	isNull := false
+	id := NewID(value, isNull)
+
+	if id.isNull {
+		t.Errorf("Expected isNull to be false, but got true")
+	}
+
+	if id.value != value {
+		t.Errorf("Expected value to be %s, but got %s", value, id.value)
+	}
+}

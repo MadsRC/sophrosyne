@@ -188,6 +188,20 @@ type ID struct {
 	value  string
 }
 
+func NewID(value string, isNull ...bool) ID {
+	for _, v := range isNull {
+		if v {
+			return ID{
+				isNull: true,
+				value:  "",
+			}
+		}
+	}
+	return ID{
+		value: value,
+	}
+}
+
 func (id ID) MarshalJSON() ([]byte, error) {
 	if id.isNull {
 		return []byte(`null`), nil

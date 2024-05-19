@@ -287,7 +287,7 @@ func TestUserService_InvokeMethod(t *testing.T) {
 			},
 			args: args{
 				req: jsonrpc.Request{
-					ID:     "123",
+					ID:     jsonrpc.NewID("123"),
 					Method: "Users::GetUser",
 				},
 			},
@@ -305,7 +305,7 @@ func TestUserService_InvokeMethod(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				req: jsonrpc.Request{
-					ID:     "sadlk;fghj",
+					ID:     jsonrpc.NewID("sadlk;fghj"),
 					Method: "Users::GetUsers",
 				},
 			},
@@ -376,7 +376,7 @@ func TestUserService_InvokeMethod(t *testing.T) {
 			},
 			args: args{
 				req: jsonrpc.Request{
-					ID:     "42",
+					ID:     jsonrpc.NewID("42"),
 					Method: "Users::badMethod",
 				},
 			},
