@@ -90,6 +90,15 @@ docker_signs:
     artifacts: all
     output: true
 
+signs:
+  - cmd: "cosign"
+    args:
+      - "sign-blob"
+      - "--upload=false"
+      - "${artifact}"
+      - "--yes"
+    artifacts: all
+    output: true
 
 changelog:
   sort: asc
