@@ -8,7 +8,7 @@ planning on implementing, the following controls related to Supply Chain Securit
 - Container image signing (see [Verify container images](#verify-container-images))
 - Binary release signing
 - SLSA Level 3 provenance attestations (issue [#84](https://github.com/MadsRC/sophrosyne/issues/84))
-- Vulnerability Management
+- Container images build using [Chainguard](https://www.chainguard.dev/)
 
 ### Verify container images
 
