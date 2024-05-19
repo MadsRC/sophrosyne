@@ -349,7 +349,7 @@ func TestConfigProviderGet(t *testing.T) {
 	// Ensure that the config has been updated - Allow for one failure to account
 	// for potentially slow CI runners.
 	if !assert.Equal(t, newPasswordString, cfg.Database.Password) {
-		time.Sleep(900 * time.Millisecond)
+		time.Sleep(1900 * time.Millisecond)
 		require.Equal(t, newPasswordString, cfg.Database.Password)
 	}
 	// Ensure that the other values have not changed
