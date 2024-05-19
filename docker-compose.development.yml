@@ -18,7 +18,7 @@ services:
       retries: 5
 
   jaeger:
-    image: jaegertracing/all-in-one:1.56@sha256:d2cd4c226624bdc116decd3106091b4df9882da8db42f8550293596cab79b8ea
+    image: jaegertracing/all-in-one:1.57@sha256:8f165334f418ca53691ce358c19b4244226ed35c5d18408c5acf305af2065fb9
     ports:
       - 5778:5778
       - 16686:16686
