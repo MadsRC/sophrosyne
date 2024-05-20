@@ -128,15 +128,15 @@ type Config struct {
 	Services struct {
 		Users struct {
 			PageSize int   `key:"pageSize" validate:"required,min=2"`
-			CacheTTL int64 `key:"cacheTTL" validate:"required,min=0"`
+			CacheTTL int64 `key:"cacheTTL" validate:"required,min=1"`
 		} `key:"users" validate:"required"`
 		Profiles struct {
 			PageSize int   `key:"pageSize" validate:"required,min=2"`
-			CacheTTL int64 `key:"cacheTTL" validate:"required,min=0"`
+			CacheTTL int64 `key:"cacheTTL" validate:"required,min=1"`
 		} `key:"profiles" validate:"required"`
 		Checks struct {
 			PageSize int   `key:"pageSize" validate:"required,min=2"`
-			CacheTTL int64 `key:"cacheTTL" validate:"required,min=0"`
+			CacheTTL int64 `key:"cacheTTL" validate:"required,min=1"`
 		} `key:"checks" validate:"required"`
 	} `key:"services" validate:"required"`
 	Development struct {
