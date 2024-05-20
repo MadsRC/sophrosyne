@@ -18,8 +18,6 @@ package cache
 
 import (
 	"context"
-	"time"
-
 	"github.com/madsrc/sophrosyne"
 )
 
@@ -31,7 +29,7 @@ type ProfileServiceCache struct {
 
 func NewProfileServiceCache(config *sophrosyne.Config, profileService sophrosyne.ProfileService, tracingService sophrosyne.TracingService) *ProfileServiceCache {
 	return &ProfileServiceCache{
-		cache:          NewCache(time.Duration(config.Services.Profiles.CacheTTL)*time.Millisecond, 100*time.Millisecond),
+		cache:          NewCache(config.Services.Profiles.Cache.TTL, config.Services.Profiles.Cache.CleanupInterval),
 		profileService: profileService,
 		tracingService: tracingService,
 	}
