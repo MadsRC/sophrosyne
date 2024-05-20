@@ -24,7 +24,6 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
@@ -145,22 +144,6 @@ func newMeterProvider(ctx context.Context, config *sophrosyne.Config, res *resou
 		sdkMetric.WithResource(res),
 	)
 	return meterProvider, nil
-}
-
-// AttrString is a convenient wrapper around attribute.String.
-//
-// It should be used to set attribute strings on spans.
-//
-// Example:
-//
-//	ctx, span := tracer.start(r.Context(), "internal/v1/users/get-user")
-//	defer span.End()
-//
-//	span.SetAttributes(otel.AttrString("custom", "value"))
-//
-// This sets the attribute "custom" with the value "value" on the span.
-func AttrString(key, value string) attribute.KeyValue {
-	return attribute.String(key, value)
 }
 
 type Span struct {
