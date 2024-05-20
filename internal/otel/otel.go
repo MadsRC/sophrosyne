@@ -153,7 +153,7 @@ func newMeterProvider(ctx context.Context, config *sophrosyne.Config, res *resou
 //
 // Example:
 //
-//	ctx, span := tracer.Start(r.Context(), "internal/v1/users/get-user")
+//	ctx, span := tracer.start(r.Context(), "internal/v1/users/get-user")
 //	defer span.End()
 //
 //	span.SetAttributes(otel.AttrString("custom", "value"))

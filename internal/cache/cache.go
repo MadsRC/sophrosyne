@@ -42,7 +42,7 @@
 //
 // --- End of license applicable to the go-cache project ---
 
-package sophrosyne
+package cache
 
 import (
 	"runtime"
@@ -50,33 +50,62 @@ import (
 	"time"
 )
 
-type CacheItem struct {
-	Value      any
-	Expiration int64
+const DefaultExpiration = 100 * time.Millisecond
+
+type cacheItem struct {
+	ExpiresAt time.Time
+	Value     any
 }
 
 type Cache struct {
-	expiration int64
-	items      map[string]CacheItem
-	lock       sync.RWMutex
-	cleaner    *cacheCleaner
+	*cache
 }
 
-func NewCache(expiration int64) *Cache {
-	c := &Cache{
-		expiration: expiration,
-		items:      make(map[string]CacheItem),
+type cache struct {
+	items   map[string]cacheItem
+	lock    *sync.RWMutex
+	exp     time.Duration
+	cleaner *cleaner
+}
+
+// NewCache creates a new cache with the given expiration time and cleaning interval.
+//
+// If the cleaning interval is 0, a nil cache is returned.
+//
+// If the expiration time is 0 or less, [DefaultExpiration] will be used.
+func NewCache(exp time.Duration, cleanerInterval time.Duration) *Cache {
+	if cleanerInterval <= 0 {
+		return nil
 	}
 
-	// Doing it this way ensures that the cacheCleaner goroutine does not keep the returned Cache object from being
-	// garbage collected. When garbage collection does occur, the finalizer will stop the cacheCleaner goroutine.
-	runCacheCleaner(c, time.Duration(expiration)*time.Nanosecond)
-	runtime.SetFinalizer(c, stopCacheCleaner)
+	if exp <= 0 {
+		exp = DefaultExpiration
+	}
 
-	return c
+	c := &cache{
+		items: make(map[string]cacheItem),
+		lock:  &sync.RWMutex{},
+		exp:   exp,
+	}
+
+	// Doing it this way ensures that the cleaner goroutine does not keep the returned Cache object from being
+	// garbage collected. When garbage collection does occur, the finalizer will stop the cleaner goroutine.
+	C := &Cache{c}
+	runCleaner(c, cleanerInterval)
+	runtime.SetFinalizer(C, stopCleaner)
+
+	return C
 }
 
-func (c *Cache) Get(key string) (any, bool) {
+// Set sets the value of the item in the cache with the given key.
+func (c *cache) Set(key string, value any) {
+	c.lock.Lock()
+	c.items[key] = cacheItem{ExpiresAt: time.Now().Add(c.exp), Value: value}
+	c.lock.Unlock()
+}
+
+// Get retrieves the value associated with the given key.
+func (c *cache) Get(key string) (any, bool) {
 	c.lock.RLock()
 	item, ok := c.items[key]
 	if !ok {
@@ -87,55 +116,62 @@ func (c *Cache) Get(key string) (any, bool) {
 	return item.Value, true
 }
 
-func (c *Cache) Set(key string, value any) {
-	c.lock.Lock()
-	c.items[key] = CacheItem{Value: value, Expiration: c.expiration}
-	c.lock.Unlock()
-}
-
-func (c *Cache) Delete(key string) {
+// Delete removes the item with the specified key from the cache.
+func (c *cache) Delete(key string) {
 	c.lock.Lock()
 	delete(c.items, key)
 	c.lock.Unlock()
 }
 
-func (c *Cache) DeleteExpired() {
-	now := time.Now().UnixNano()
+// Expire removes expired items from the cache.
+//
+// It iterates over the items in the cache and deletes any item whose expiration time is before the current time.
+// The function does not take any parameters.
+// It does not return any values.
+func (c *cache) Expire() {
+	now := time.Now()
 	c.lock.Lock()
 	for key, item := range c.items {
-		if item.Expiration > 0 && now > item.Expiration {
+		if item.ExpiresAt.Before(now) {
 			delete(c.items, key)
 		}
 	}
 	c.lock.Unlock()
 }
 
-type cacheCleaner struct {
+type cleaner struct {
 	interval time.Duration
-	stop     chan bool
+	stop     chan struct{}
 }
 
-func (cleaner *cacheCleaner) Start(c *Cache) {
-	ticker := time.NewTicker(cleaner.interval)
+// start starts the cleaner goroutine for the given cache.
+//
+// It takes a pointer to a cache object as a parameter.
+// The function does not return any value.
+func (j *cleaner) start(c *cache) {
+	ticker := time.NewTicker(j.interval)
 	for {
 		select {
 		case <-ticker.C:
-			c.DeleteExpired()
-		case <-cleaner.stop:
+			c.Expire()
+		case <-j.stop:
 			ticker.Stop()
 			return
 		}
 	}
 }
 
-func runCacheCleaner(c *Cache, interval time.Duration) {
-	cleaner := &cacheCleaner{
+// runCleaner will create and start a new cleaner goroutine for the given cache using the given interval.
+func runCleaner(c *cache, interval time.Duration) {
+	j := &cleaner{
 		interval: interval,
-		stop:     make(chan bool),
+		stop:     make(chan struct{}),
 	}
-	go cleaner.Start(c)
+	c.cleaner = j
+	go j.start(c)
 }
 
-func stopCacheCleaner(c *Cache) {
-	c.cleaner.stop <- true
+// stopCleaner will send a signal to stop the cleaner goroutine for the given cache.
+func stopCleaner(c *Cache) {
+	c.cleaner.stop <- struct{}{}
 }

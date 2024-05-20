@@ -21,6 +21,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"github.com/madsrc/sophrosyne/internal/cache"
 	"log/slog"
 	http2 "net/http"
 	"os"
@@ -266,7 +267,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	checkService := sophrosyne.NewCheckServiceCache(config, checkServiceDatabase, otelService)
+	checkService := cache.NewCheckServiceCache(config, checkServiceDatabase, otelService)
 
 	profileServiceDatabase, err := pgx.NewProfileService(ctx, config, logger, checkService)
 	if err != nil {
@@ -278,12 +279,12 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	userService := sophrosyne.NewUserServiceCache(config, userServiceDatabase, otelService)
+	userService := cache.NewUserServiceCache(config, userServiceDatabase, otelService)
 	if err != nil {
 		return err
 	}
 
-	profileService := sophrosyne.NewProfileServiceCache(config, profileServiceDatabase, otelService)
+	profileService := cache.NewProfileServiceCache(config, profileServiceDatabase, otelService)
 	if err != nil {
 		return err
 	}
