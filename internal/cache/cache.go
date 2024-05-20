@@ -70,14 +70,10 @@ type cache struct {
 
 // NewCache creates a new cache with the given expiration time and cleaning interval.
 //
-// If the cleaning interval is 0, a nil cache is returned.
+// If the cleaning interval is 0, no cleaning will be performed.
 //
 // If the expiration time is 0 or less, [DefaultExpiration] will be used.
 func NewCache(exp time.Duration, cleanerInterval time.Duration) *Cache {
-	if cleanerInterval <= 0 {
-		return nil
-	}
-
 	if exp <= 0 {
 		exp = DefaultExpiration
 	}
@@ -91,8 +87,10 @@ func NewCache(exp time.Duration, cleanerInterval time.Duration) *Cache {
 	// Doing it this way ensures that the cleaner goroutine does not keep the returned Cache object from being
 	// garbage collected. When garbage collection does occur, the finalizer will stop the cleaner goroutine.
 	C := &Cache{c}
-	runCleaner(c, cleanerInterval)
-	runtime.SetFinalizer(C, stopCleaner)
+	if cleanerInterval > 0 {
+		runCleaner(c, cleanerInterval)
+		runtime.SetFinalizer(C, stopCleaner)
+	}
 
 	return C
 }

@@ -281,14 +281,8 @@ func run(c *cli.Context) error {
 	}
 
 	userService := cache.NewUserServiceCache(config, userServiceDatabase, otelService)
-	if err != nil {
-		return err
-	}
 
 	profileService := cache.NewProfileServiceCache(config, profileServiceDatabase, otelService)
-	if err != nil {
-		return err
-	}
 
 	authzProvider, err := cedar.NewAuthorizationProvider(ctx, logger, userService, otelService, profileService, checkService)
 

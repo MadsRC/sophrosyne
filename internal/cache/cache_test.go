@@ -76,7 +76,8 @@ func TestCacheTimes(t *testing.T) {
 
 func TestNewCacheZeroInterval(t *testing.T) {
 	tc := NewCache(0, 0)
-	require.Nil(t, tc)
+	require.NotNil(t, tc)
+	require.Nil(t, tc.cleaner)
 }
 
 func TestNewCacheDefaultExpiration(t *testing.T) {
