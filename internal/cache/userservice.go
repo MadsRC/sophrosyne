@@ -18,8 +18,9 @@ package cache
 
 import (
 	"context"
-	"github.com/madsrc/sophrosyne"
 	"time"
+
+	"github.com/madsrc/sophrosyne"
 )
 
 type UserServiceCache struct {

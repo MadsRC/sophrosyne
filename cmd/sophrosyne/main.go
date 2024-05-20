@@ -21,13 +21,14 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"github.com/madsrc/sophrosyne/internal/cache"
 	"log/slog"
 	http2 "net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/madsrc/sophrosyne/internal/cache"
 
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
