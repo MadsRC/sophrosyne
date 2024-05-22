@@ -23,6 +23,7 @@ import (
 
 type UserServiceCache struct {
 	cache          *Cache
+	nameToIDCache  *Cache
 	userService    sophrosyne.UserService
 	tracingService sophrosyne.TracingService
 }
@@ -30,6 +31,7 @@ type UserServiceCache struct {
 func NewUserServiceCache(config *sophrosyne.Config, userService sophrosyne.UserService, tracingService sophrosyne.TracingService) *UserServiceCache {
 	return &UserServiceCache{
 		cache:          NewCache(config.Services.Users.Cache.TTL, config.Services.Users.Cache.CleanupInterval),
+		nameToIDCache:  NewCache(config.Services.Users.Cache.TTL, config.Services.Users.Cache.CleanupInterval),
 		userService:    userService,
 		tracingService: tracingService,
 	}
@@ -69,13 +71,18 @@ func (c *UserServiceCache) GetUserByEmail(ctx context.Context, email string) (so
 
 func (c *UserServiceCache) GetUserByName(ctx context.Context, name string) (sophrosyne.User, error) {
 	ctx, span := c.tracingService.StartSpan(ctx, "UserServiceCache.GetUserByName")
+	v, ok := c.nameToIDCache.Get(name)
+	if ok {
+		span.End()
+		return c.GetUser(ctx, v.(string))
+	}
 	user, err := c.userService.GetUserByName(ctx, name)
 	if err != nil {
 		span.End()
 		return sophrosyne.User{}, err
 	}
 
-	c.cache.Set(user.ID, user)
+	c.nameToIDCache.Set(user.Name, user.ID)
 	span.End()
 	return user, nil
 }

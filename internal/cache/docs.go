@@ -14,4 +14,13 @@
 //   You should have received a copy of the GNU Affero General Public License
 //   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// Package cache implements a caching layer for Sophrosyne.
+//
+// The original caching code is loosely based on Patrick Mylund Nielsen's go-cache project
+// (https://github.com/patrickmn/go-cache), but with modifications made to remove unnecessary functionality. The
+// code that can be considered a derivative work of go-cache can be found in the cache.go file in this package.
+//
+// Code in this package carries with it optimizations which to some may seem unnatural (that's a Star Wars quote,
+// right?). Examples of these optimizations is the lack of `defer` statements to the extent that they do not hurt the
+// readability of the code. See the comments on the BenchmarkDefer function for more details.
 package cache

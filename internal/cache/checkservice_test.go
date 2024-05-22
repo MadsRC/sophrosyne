@@ -82,3 +82,48 @@ func TestCheckServiceCache_GetCheck(t *testing.T) {
 		require.Equal(t, expectedCheck, got)
 	})
 }
+
+func TestCheckServiceCache_GetCheckByName(t *testing.T) {
+	t.Run("retrieved from cache", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		checkServiceCache := getCheckServiceCache(t, cts)
+		expectedCheck := testCheck
+		checkServiceCache.nameToIDCache.Set(expectedCheck.Name, expectedCheck.ID)
+		checkServiceCache.cache.Set(expectedCheck.ID, expectedCheck)
+
+		cts.tracingService.On("StartSpan", cts.ctx, mock.Anything).Once().Return(cts.ctx, cts.span)
+		cts.span.On("End").Once().Return(nil)
+
+		result, err := checkServiceCache.GetCheckByName(cts.ctx, expectedCheck.Name)
+
+		require.NoError(t, err)
+		require.Equal(t, expectedCheck, result)
+		cts.checkService.AssertNotCalled(t, "GetCheckByName", mock.Anything, mock.Anything)
+	})
+	t.Run("retrieved from service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		checkServiceCache := getCheckServiceCache(t, cts)
+		expectedCheck := testCheck
+
+		cts.checkService.On("GetCheckByName", cts.ctx, expectedCheck.Name).Once().Return(expectedCheck, nil)
+
+		result, err := checkServiceCache.GetCheckByName(cts.ctx, expectedCheck.Name)
+
+		require.NoError(t, err)
+		require.Equal(t, expectedCheck, result)
+	})
+
+	t.Run("error retrieving from service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		checkServiceCache := getCheckServiceCache(t, cts)
+		expectedCheck := sophrosyne.Check{}
+
+		cts.checkService.On("GetCheckByName", cts.ctx, testCheck.Name).Once().Return(expectedCheck, assert.AnError)
+
+		result, err := checkServiceCache.GetCheckByName(cts.ctx, testCheck.Name)
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, assert.AnError)
+		require.Equal(t, expectedCheck, result)
+	})
+}

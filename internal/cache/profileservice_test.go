@@ -77,10 +77,55 @@ func TestProfileServiceCache_GetProfile(t *testing.T) {
 
 		cts.profileService.On("GetProfile", cts.ctx, testProfile.ID).Once().Return(expectedProfile, assert.AnError)
 
-		got, err := profileServiceCache.GetProfile(cts.ctx, testProfile.ID)
+		result, err := profileServiceCache.GetProfile(cts.ctx, testProfile.ID)
 
 		require.Error(t, err)
 		require.ErrorIs(t, err, assert.AnError)
-		require.Equal(t, expectedProfile, got)
+		require.Equal(t, expectedProfile, result)
+	})
+}
+
+func TestProfileServiceCache_GetProfileByName(t *testing.T) {
+	t.Run("retrieved from cache", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		profileServiceCache := getProfileServiceCache(t, cts)
+		expectedProfile := testProfile
+		profileServiceCache.nameToIDCache.Set(expectedProfile.Name, expectedProfile.ID)
+		profileServiceCache.cache.Set(expectedProfile.ID, expectedProfile)
+
+		cts.tracingService.On("StartSpan", cts.ctx, mock.Anything).Once().Return(cts.ctx, cts.span)
+		cts.span.On("End").Once().Return(nil)
+
+		result, err := profileServiceCache.GetProfileByName(cts.ctx, expectedProfile.Name)
+
+		require.NoError(t, err)
+		require.Equal(t, expectedProfile, result)
+		cts.profileService.AssertNotCalled(t, "GetProfileByName", mock.Anything, mock.Anything)
+	})
+	t.Run("retrieved from service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		profileServiceCache := getProfileServiceCache(t, cts)
+		expectedProfile := testProfile
+
+		cts.profileService.On("GetProfileByName", cts.ctx, expectedProfile.Name).Once().Return(expectedProfile, nil)
+
+		result, err := profileServiceCache.GetProfileByName(cts.ctx, expectedProfile.Name)
+
+		require.NoError(t, err)
+		require.Equal(t, expectedProfile, result)
+	})
+
+	t.Run("error retrieving from service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		profileServiceCache := getProfileServiceCache(t, cts)
+		expectedProfile := sophrosyne.Profile{}
+
+		cts.profileService.On("GetProfileByName", cts.ctx, testProfile.Name).Once().Return(expectedProfile, assert.AnError)
+
+		result, err := profileServiceCache.GetProfileByName(cts.ctx, testProfile.Name)
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, assert.AnError)
+		require.Equal(t, expectedProfile, result)
 	})
 }

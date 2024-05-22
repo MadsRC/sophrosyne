@@ -21,15 +21,20 @@ import (
 	"github.com/madsrc/sophrosyne"
 )
 
+// CheckServiceCache is a cache for checks that implements [sophrosyne.CheckService]. It is designed to sit in
+// front of another [sophrosyne.CheckService] and only cache the result of the [sophrosyne.CheckService].
 type CheckServiceCache struct {
 	cache          *Cache
+	nameToIDCache  *Cache
 	checkService   sophrosyne.CheckService
 	tracingService sophrosyne.TracingService
 }
 
+// NewCheckServiceCache creates a new instance of CheckServiceCache.
 func NewCheckServiceCache(config *sophrosyne.Config, checkService sophrosyne.CheckService, tracingService sophrosyne.TracingService) *CheckServiceCache {
 	return &CheckServiceCache{
 		cache:          NewCache(config.Services.Checks.Cache.TTL, config.Services.Checks.Cache.CleanupInterval),
+		nameToIDCache:  NewCache(config.Services.Checks.Cache.TTL, config.Services.Checks.Cache.CleanupInterval),
 		checkService:   checkService,
 		tracingService: tracingService,
 	}
@@ -56,13 +61,18 @@ func (c CheckServiceCache) GetCheck(ctx context.Context, id string) (sophrosyne.
 
 func (c CheckServiceCache) GetCheckByName(ctx context.Context, name string) (sophrosyne.Check, error) {
 	ctx, span := c.tracingService.StartSpan(ctx, "CheckServiceCache.GetCheckByName")
+	id, ok := c.nameToIDCache.Get(name)
+	if ok {
+		span.End()
+		return c.GetCheck(ctx, id.(string))
+	}
 	profile, err := c.checkService.GetCheckByName(ctx, name)
 	if err != nil {
 		span.End()
 		return sophrosyne.Check{}, err
 	}
 
-	c.cache.Set(profile.ID, profile)
+	c.nameToIDCache.Set(profile.Name, profile.ID)
 	span.End()
 	return profile, nil
 }

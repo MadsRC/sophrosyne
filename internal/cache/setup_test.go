@@ -88,6 +88,7 @@ func getProfileServiceCache(t *testing.T, cts *commonTestStuff) *ProfileServiceC
 	t.Helper()
 	profileServiceCache := ProfileServiceCache{
 		cache:          &Cache{&cache{items: make(map[string]cacheItem), lock: new(sync.RWMutex)}},
+		nameToIDCache:  &Cache{&cache{items: make(map[string]cacheItem), lock: new(sync.RWMutex)}},
 		profileService: cts.profileService,
 		tracingService: cts.tracingService,
 	}
@@ -98,6 +99,7 @@ func getUserServiceCache(t *testing.T, cts *commonTestStuff) *UserServiceCache {
 	t.Helper()
 	userServiceCache := UserServiceCache{
 		cache:          &Cache{&cache{items: make(map[string]cacheItem), lock: new(sync.RWMutex)}},
+		nameToIDCache:  &Cache{&cache{items: make(map[string]cacheItem), lock: new(sync.RWMutex)}},
 		userService:    cts.userService,
 		tracingService: cts.tracingService,
 	}
@@ -108,6 +110,7 @@ func getCheckServiceCache(t *testing.T, cts *commonTestStuff) *CheckServiceCache
 	t.Helper()
 	checkServiceCache := CheckServiceCache{
 		cache:          &Cache{&cache{items: make(map[string]cacheItem), lock: new(sync.RWMutex)}},
+		nameToIDCache:  &Cache{&cache{items: make(map[string]cacheItem), lock: new(sync.RWMutex)}},
 		checkService:   cts.checkService,
 		tracingService: cts.tracingService,
 	}

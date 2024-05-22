@@ -82,3 +82,48 @@ func TestUserServiceCache_GetUser(t *testing.T) {
 		require.Equal(t, expectedCheck, got)
 	})
 }
+
+func TestUserServiceCache_GetUserByName(t *testing.T) {
+	t.Run("retrieved from cache", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		userServiceCache := getUserServiceCache(t, cts)
+		expectedUser := testUser
+		userServiceCache.nameToIDCache.Set(expectedUser.Name, expectedUser.ID)
+		userServiceCache.cache.Set(expectedUser.ID, expectedUser)
+
+		cts.tracingService.On("StartSpan", cts.ctx, mock.Anything).Once().Return(cts.ctx, cts.span)
+		cts.span.On("End").Once().Return(nil)
+
+		result, err := userServiceCache.GetUserByName(cts.ctx, expectedUser.Name)
+
+		require.NoError(t, err)
+		require.Equal(t, expectedUser, result)
+		cts.userService.AssertNotCalled(t, "GetUserByName", mock.Anything, mock.Anything)
+	})
+	t.Run("retrieved from service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		userServiceCache := getUserServiceCache(t, cts)
+		expectedUser := testUser
+
+		cts.userService.On("GetUserByName", cts.ctx, expectedUser.Name).Once().Return(expectedUser, nil)
+
+		result, err := userServiceCache.GetUserByName(cts.ctx, expectedUser.Name)
+
+		require.NoError(t, err)
+		require.Equal(t, expectedUser, result)
+	})
+
+	t.Run("error retrieving from service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		userServiceCache := getUserServiceCache(t, cts)
+		expectedUser := sophrosyne.User{}
+
+		cts.userService.On("GetUserByName", cts.ctx, testUser.Name).Once().Return(expectedUser, assert.AnError)
+
+		result, err := userServiceCache.GetUserByName(cts.ctx, testUser.Name)
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, assert.AnError)
+		require.Equal(t, expectedUser, result)
+	})
+}

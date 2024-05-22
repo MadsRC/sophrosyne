@@ -21,8 +21,11 @@ import (
 	"github.com/madsrc/sophrosyne"
 )
 
+// ProfileServiceCache is a cache for profiles that implements [sophrosyne.ProfileService]. It is designed to sit in
+// front of another [sophrosyne.ProfileService] and only cache the result of the [sophrosyne.ProfileService].
 type ProfileServiceCache struct {
-	cache          *Cache
+	cache          *Cache // cache for profiles
+	nameToIDCache  *Cache // cache for profile names to IDs.
 	profileService sophrosyne.ProfileService
 	tracingService sophrosyne.TracingService
 }
@@ -30,6 +33,7 @@ type ProfileServiceCache struct {
 func NewProfileServiceCache(config *sophrosyne.Config, profileService sophrosyne.ProfileService, tracingService sophrosyne.TracingService) *ProfileServiceCache {
 	return &ProfileServiceCache{
 		cache:          NewCache(config.Services.Profiles.Cache.TTL, config.Services.Profiles.Cache.CleanupInterval),
+		nameToIDCache:  NewCache(config.Services.Profiles.Cache.TTL, config.Services.Profiles.Cache.CleanupInterval),
 		profileService: profileService,
 		tracingService: tracingService,
 	}
@@ -56,13 +60,18 @@ func (p ProfileServiceCache) GetProfile(ctx context.Context, id string) (sophros
 
 func (p ProfileServiceCache) GetProfileByName(ctx context.Context, name string) (sophrosyne.Profile, error) {
 	ctx, span := p.tracingService.StartSpan(ctx, "ProfileServiceCache.GetProfileByName")
+	id, ok := p.nameToIDCache.Get(name)
+	if ok {
+		span.End()
+		return p.GetProfile(ctx, id.(string))
+	}
 	profile, err := p.profileService.GetProfileByName(ctx, name)
 	if err != nil {
 		span.End()
 		return sophrosyne.Profile{}, err
 	}
 
-	p.cache.Set(profile.ID, profile)
+	p.nameToIDCache.Set(profile.Name, profile.ID)
 	span.End()
 	return profile, nil
 }

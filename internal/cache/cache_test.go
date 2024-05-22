@@ -14,37 +14,10 @@
 //   You should have received a copy of the GNU Affero General Public License
 //   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-// Part of the codebase in this file is lifted from the go-cache project (commit
-// 46f407853014144407b6c2ec7ccc76bf67958d93) by Patrick Mylund Nielsen. The original project
-// can be found at https://github.com/patrickmn/go-cache. The go-cache project is licensed under the MIT License, and
-// therefore so is parts of this file.
-//
-// --- License applicable to the go-cache project ---
-// Copyright (c) 2012-2019 Patrick Mylund Nielsen and the go-cache contributors
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//
-// --- End of license applicable to the go-cache project ---
-
 package cache
 
 import (
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -176,4 +149,52 @@ func TestStopCleanerSendsSignal(t *testing.T) {
 	}
 	stopCleaner(&Cache{c})
 	require.Len(t, c.cleaner.stop, 1, "Expected stop channel to receive one signal")
+}
+
+func (c *cache) getDefer(key string) (any, bool) {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	item, ok := c.items[key]
+	if !ok {
+		return nil, false
+	}
+	return item.Value, true
+}
+
+func (c *cache) setDefer(key string, value any) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.items[key] = cacheItem{ExpiresAt: time.Now().Add(c.exp), Value: value}
+}
+
+// BenchmarkDefer tests the performance of the cache with and without defer in key places.
+//
+// The original go-cache code carries with it a comment which says:
+// "Calls to mu.Unlock are currently not deferred because defer adds ~200 ns (as of go1.)".
+// As of Go1.22.3, this does not seem to be as bad as it seems, as it only seems to add ~20ns.
+// However, since these functions are rather simple, not using a `defer` statement does not hurt
+// the readability or maintainability of the code and as such it is decided to not use `defer` statements here.
+func BenchmarkDefer(b *testing.B) {
+	deferCache := NewCache(10*time.Second, 1*time.Second)
+	noDeferCache := NewCache(10*time.Second, 1*time.Second)
+	b.Run("set with defer", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			deferCache.setDefer(fmt.Sprintf("%d", i), i)
+		}
+	})
+	b.Run("set without defer", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			noDeferCache.setDefer(fmt.Sprintf("%d", i), i)
+		}
+	})
+	b.Run("get with defer", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			_, _ = deferCache.getDefer(fmt.Sprintf("%d", i))
+		}
+	})
+	b.Run("get without defer", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			_, _ = noDeferCache.getDefer(fmt.Sprintf("%d", i))
+		}
+	})
 }
