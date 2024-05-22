@@ -198,3 +198,11 @@ func BenchmarkDefer(b *testing.B) {
 		}
 	})
 }
+
+func TestCache_Set_NoUpdateExpiry(t *testing.T) {
+	cache := NewCache(10*time.Second, 1*time.Second)
+	cache.Set("foo", "bar")
+	expiresAt := cache.items["foo"].ExpiresAt
+	cache.Set("foo", "bar")
+	require.Equal(t, expiresAt, cache.items["foo"].ExpiresAt)
+}

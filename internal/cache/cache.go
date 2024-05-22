@@ -15,9 +15,9 @@
 //   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // Part of the codebase in this file is lifted from the go-cache project (commit
-// 46f407853014144407b6c2ec7ccc76bf67958d93) by Patrick Mylund Nielsen. The original project
-// can be found at https://github.com/patrickmn/go-cache. The go-cache project is licensed under the MIT License, and
-// therefore so is parts of this file.
+// 46f407853014144407b6c2ec7ccc76bf67958d93) by Patrick Mylund Nielsen. The original
+// project can be found at https://github.com/patrickmn/go-cache. The go-cache project
+// is licensed under the MIT License, and therefore so is parts of this file.
 //
 // --- License applicable to the go-cache project ---
 // Copyright (c) 2012-2019 Patrick Mylund Nielsen and the go-cache contributors
@@ -95,9 +95,16 @@ func NewCache(exp time.Duration, cleanerInterval time.Duration) *Cache {
 	return C
 }
 
-// Set sets the value of the item in the cache with the given key.
+// Set sets the value of the item in the cache with the given key. If the given key already exists in the cache,
+// it's value will be overwritten, but the expiration time will remain unchanged.
 func (c *cache) Set(key string, value any) {
 	c.lock.Lock()
+	if item, exists := c.items[key]; exists && item.ExpiresAt.After(time.Now()) {
+		item.Value = value
+		c.items[key] = item
+		c.lock.Unlock()
+		return
+	}
 	c.items[key] = cacheItem{ExpiresAt: time.Now().Add(c.exp), Value: value}
 	c.lock.Unlock()
 }

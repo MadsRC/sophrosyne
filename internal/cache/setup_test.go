@@ -100,6 +100,7 @@ func getUserServiceCache(t *testing.T, cts *commonTestStuff) *UserServiceCache {
 	userServiceCache := UserServiceCache{
 		cache:          &Cache{&cache{items: make(map[string]cacheItem), lock: new(sync.RWMutex)}},
 		nameToIDCache:  &Cache{&cache{items: make(map[string]cacheItem), lock: new(sync.RWMutex)}},
+		emailToIDCache: &Cache{&cache{items: make(map[string]cacheItem), lock: new(sync.RWMutex)}},
 		userService:    cts.userService,
 		tracingService: cts.tracingService,
 	}

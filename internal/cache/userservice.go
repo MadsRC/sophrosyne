@@ -24,6 +24,7 @@ import (
 type UserServiceCache struct {
 	cache          *Cache
 	nameToIDCache  *Cache
+	emailToIDCache *Cache
 	userService    sophrosyne.UserService
 	tracingService sophrosyne.TracingService
 }
@@ -32,6 +33,7 @@ func NewUserServiceCache(config *sophrosyne.Config, userService sophrosyne.UserS
 	return &UserServiceCache{
 		cache:          NewCache(config.Services.Users.Cache.TTL, config.Services.Users.Cache.CleanupInterval),
 		nameToIDCache:  NewCache(config.Services.Users.Cache.TTL, config.Services.Users.Cache.CleanupInterval),
+		emailToIDCache: NewCache(config.Services.Users.Cache.TTL, config.Services.Users.Cache.CleanupInterval),
 		userService:    userService,
 		tracingService: tracingService,
 	}
@@ -58,13 +60,18 @@ func (c *UserServiceCache) GetUser(ctx context.Context, id string) (sophrosyne.U
 
 func (c *UserServiceCache) GetUserByEmail(ctx context.Context, email string) (sophrosyne.User, error) {
 	ctx, span := c.tracingService.StartSpan(ctx, "UserServiceCache.GetUserByEmail")
+	v, ok := c.emailToIDCache.Get(email)
+	if ok {
+		span.End()
+		return c.GetUser(ctx, v.(string))
+	}
 	user, err := c.userService.GetUserByEmail(ctx, email)
 	if err != nil {
 		span.End()
 		return sophrosyne.User{}, err
 	}
 
-	c.cache.Set(user.ID, user)
+	c.emailToIDCache.Set(user.Email, user.ID)
 	span.End()
 	return user, nil
 }
@@ -87,6 +94,12 @@ func (c *UserServiceCache) GetUserByName(ctx context.Context, name string) (soph
 	return user, nil
 }
 
+// Get the user associated with the given token.
+//
+// This method bypasses the cache and retrieves the user directly from the underlying service in order to ensure that
+// the token is still valid.
+//
+// The returned user is written to the cache before being returned.
 func (c *UserServiceCache) GetUserByToken(ctx context.Context, token []byte) (sophrosyne.User, error) {
 	ctx, span := c.tracingService.StartSpan(ctx, "UserServiceCache.GetUserByToken")
 	user, err := c.userService.GetUserByToken(ctx, token)
