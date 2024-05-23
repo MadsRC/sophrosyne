@@ -30,6 +30,10 @@ var testUser = sophrosyne.User{
 	ID:   "123",
 	Name: "I am the test user - if you see me, something is probably wrong!",
 }
+var secondTestUser = sophrosyne.User{
+	ID:   "456",
+	Name: "I am the second test user - if you see me, something is probably wrong!",
+}
 
 func TestNewUserServiceCache(t *testing.T) {
 	psc := NewUserServiceCache(
@@ -41,45 +45,45 @@ func TestUserServiceCache_GetUser(t *testing.T) {
 	t.Run("retrieved from cache", func(t *testing.T) {
 		cts := setupTestStuff(t, nil)
 		userServiceCache := getUserServiceCache(t, cts)
-		expectedCheck := testUser
-		userServiceCache.cache.Set(expectedCheck.ID, expectedCheck)
+		expectedUser := testUser
+		userServiceCache.cache.Set(expectedUser.ID, expectedUser)
 
-		result, err := userServiceCache.GetUser(cts.ctx, expectedCheck.ID)
+		result, err := userServiceCache.GetUser(cts.ctx, expectedUser.ID)
 
 		require.NoError(t, err)
-		require.Equal(t, expectedCheck, result)
+		require.Equal(t, expectedUser, result)
 		cts.userService.AssertNotCalled(t, "GetUser", mock.Anything, mock.Anything)
 	})
 	t.Run("retrieved from service", func(t *testing.T) {
 		cts := setupTestStuff(t, nil)
 		userServiceCache := getUserServiceCache(t, cts)
-		expectedCheck := testUser
+		expectedUser := testUser
 
-		cts.userService.On("GetUser", cts.ctx, expectedCheck.ID).Once().Return(expectedCheck, nil)
+		cts.userService.On("GetUser", cts.ctx, expectedUser.ID).Once().Return(expectedUser, nil)
 
-		result, err := userServiceCache.GetUser(cts.ctx, expectedCheck.ID)
+		result, err := userServiceCache.GetUser(cts.ctx, expectedUser.ID)
 
 		require.NoError(t, err)
-		require.Equal(t, expectedCheck, result)
+		require.Equal(t, expectedUser, result)
 
 		t.Run("result was saved in cache", func(t *testing.T) {
-			cacheResult, ok := userServiceCache.cache.Get(expectedCheck.ID)
+			cacheResult, ok := userServiceCache.cache.Get(expectedUser.ID)
 			require.True(t, ok)
-			require.Equal(t, expectedCheck, cacheResult)
+			require.Equal(t, expectedUser, cacheResult)
 		})
 	})
 	t.Run("error retrieving from service", func(t *testing.T) {
 		cts := setupTestStuff(t, nil)
 		userServiceCache := getUserServiceCache(t, cts)
-		expectedCheck := sophrosyne.User{}
+		expectedUser := sophrosyne.User{}
 
-		cts.userService.On("GetUser", cts.ctx, testUser.ID).Once().Return(expectedCheck, assert.AnError)
+		cts.userService.On("GetUser", cts.ctx, testUser.ID).Once().Return(expectedUser, assert.AnError)
 
 		got, err := userServiceCache.GetUser(cts.ctx, testUser.ID)
 
 		require.Error(t, err)
 		require.ErrorIs(t, err, assert.AnError)
-		require.Equal(t, expectedCheck, got)
+		require.Equal(t, expectedUser, got)
 	})
 }
 
@@ -205,4 +209,183 @@ func TestUserServiceCache_GetUserByToken(t *testing.T) {
 		require.ErrorIs(t, err, assert.AnError)
 		require.Equal(t, expectedUser, result)
 	})
+}
+
+func TestUserServiceCache_GetUsers(t *testing.T) {
+	t.Run("retrieved from service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		userServiceCache := getUserServiceCache(t, cts)
+		expectedUsers := []sophrosyne.User{testUser, secondTestUser}
+
+		cts.userService.On("GetUsers", cts.ctx, mock.Anything).Once().Return(expectedUsers, nil)
+
+		result, err := userServiceCache.GetUsers(cts.ctx, nil)
+
+		require.NoError(t, err)
+		require.Equal(t, expectedUsers, result)
+		cacheEntryOne, ok := userServiceCache.cache.Get(expectedUsers[0].ID)
+		require.True(t, ok)
+		require.Equal(t, expectedUsers[0], cacheEntryOne)
+		cacheEntryTwo, ok := userServiceCache.cache.Get(expectedUsers[1].ID)
+		require.True(t, ok)
+		require.Equal(t, expectedUsers[1], cacheEntryTwo)
+	})
+	t.Run("error retrieving", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		userServiceCache := getUserServiceCache(t, cts)
+
+		cts.userService.On("GetUsers", cts.ctx, mock.Anything).Once().Return(nil, assert.AnError)
+
+		result, err := userServiceCache.GetUsers(cts.ctx, nil)
+		require.Nil(t, result)
+		require.ErrorIs(t, err, assert.AnError)
+	})
+}
+
+func TestUserServiceCache_CreateUser(t *testing.T) {
+	t.Run("created in service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		userServiceCache := getUserServiceCache(t, cts)
+		expectedUser := testUser
+		input := sophrosyne.CreateUserRequest{
+			Name: expectedUser.Name,
+		}
+
+		cts.userService.On("CreateUser", cts.ctx, mock.Anything).Once().Return(expectedUser, nil)
+
+		result, err := userServiceCache.CreateUser(cts.ctx, input)
+
+		require.NoError(t, err)
+		require.Equal(t, expectedUser, result)
+		cacheEntry, ok := userServiceCache.cache.Get(expectedUser.ID)
+		require.True(t, ok)
+		require.Equal(t, expectedUser, cacheEntry)
+
+	})
+	t.Run("error creating", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		userServiceCache := getUserServiceCache(t, cts)
+		input := sophrosyne.CreateUserRequest{
+			Name: testUser.Name,
+		}
+
+		cts.userService.On("CreateUser", cts.ctx, mock.Anything).Once().Return(sophrosyne.User{}, assert.AnError)
+
+		result, err := userServiceCache.CreateUser(cts.ctx, input)
+
+		require.Equal(t, sophrosyne.User{}, result)
+		require.ErrorIs(t, err, assert.AnError)
+	})
+}
+
+func TestUserServiceCache_UpdateUser(t *testing.T) {
+	t.Run("updated in service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		userServiceCache := getUserServiceCache(t, cts)
+		expectedUser := testUser
+		input := sophrosyne.UpdateUserRequest{
+			Name: expectedUser.Name,
+		}
+
+		cts.userService.On("UpdateUser", cts.ctx, mock.Anything).Once().Return(expectedUser, nil)
+
+		result, err := userServiceCache.UpdateUser(cts.ctx, input)
+
+		require.NoError(t, err)
+		require.Equal(t, expectedUser, result)
+		cacheEntry, ok := userServiceCache.cache.Get(expectedUser.ID)
+		require.True(t, ok)
+		require.Equal(t, expectedUser, cacheEntry)
+
+	})
+	t.Run("error updating", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		userServiceCache := getUserServiceCache(t, cts)
+		input := sophrosyne.UpdateUserRequest{
+			Name: testUser.Name,
+		}
+
+		cts.userService.On("UpdateUser", cts.ctx, mock.Anything).Once().Return(sophrosyne.User{}, assert.AnError)
+
+		result, err := userServiceCache.UpdateUser(cts.ctx, input)
+
+		require.Equal(t, sophrosyne.User{}, result)
+		require.ErrorIs(t, err, assert.AnError)
+	})
+}
+
+func TestUserServiceCache_DeleteUser(t *testing.T) {
+	t.Run("deleted in service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		userServiceCache := getUserServiceCache(t, cts)
+		expectedUser := testUser
+		input := expectedUser.ID
+		userServiceCache.cache.Set(expectedUser.ID, expectedUser)
+		userServiceCache.nameToIDCache.Set(expectedUser.Name, expectedUser.ID)
+
+		cts.userService.On("GetUser", cts.ctx, input).Once().Return(expectedUser, nil)
+		cts.userService.On("DeleteUser", cts.ctx, mock.Anything).Once().Return(nil)
+
+		err := userServiceCache.DeleteUser(cts.ctx, input)
+
+		require.NoError(t, err)
+		cacheEntry, ok := userServiceCache.cache.Get(expectedUser.ID)
+		require.False(t, ok)
+		require.NotEqual(t, expectedUser, cacheEntry)
+
+	})
+	t.Run("error getting user", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		userServiceCache := getUserServiceCache(t, cts)
+		expectedUser := testUser
+		input := expectedUser.Name
+		userServiceCache.cache.Set(expectedUser.ID, expectedUser)
+		userServiceCache.nameToIDCache.Set(expectedUser.Name, expectedUser.ID)
+
+		cts.userService.On("GetUser", cts.ctx, input).Once().Return(expectedUser, assert.AnError)
+
+		err := userServiceCache.DeleteUser(cts.ctx, input)
+
+		require.ErrorIs(t, err, assert.AnError)
+		cacheEntry, ok := userServiceCache.cache.Get(expectedUser.ID)
+		require.True(t, ok)
+		require.Equal(t, expectedUser, cacheEntry)
+	})
+	t.Run("error deleting", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		userServiceCache := getUserServiceCache(t, cts)
+		input := testUser.ID
+
+		cts.userService.On("GetUser", cts.ctx, input).Once().Return(testUser, nil)
+		cts.userService.On("DeleteUser", cts.ctx, mock.Anything).Once().Return(assert.AnError)
+
+		err := userServiceCache.DeleteUser(cts.ctx, input)
+
+		require.ErrorIs(t, err, assert.AnError)
+	})
+}
+
+func TestUserServiceCache_RotateToken(t *testing.T) {
+	t.Run("rotated in service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		userServiceCache := getUserServiceCache(t, cts)
+		expectedUser := testUser
+		input := expectedUser.ID
+
+		cts.userService.On("RotateToken", cts.ctx, input).Once().Return([]byte("token"), nil)
+
+		result, err := userServiceCache.RotateToken(cts.ctx, input)
+
+		require.NoError(t, err)
+		require.Equal(t, []byte("token"), result)
+	})
+}
+
+func TestUserServiceCache_Health(t *testing.T) {
+	cts := setupTestStuff(t, nil)
+	userServiceCache := getUserServiceCache(t, cts)
+	ok, result := userServiceCache.Health(cts.ctx)
+
+	require.True(t, ok)
+	require.Equal(t, []byte(`{"ok"}`), result)
 }

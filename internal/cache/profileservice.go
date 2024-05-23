@@ -120,13 +120,19 @@ func (p ProfileServiceCache) UpdateProfile(ctx context.Context, profile sophrosy
 
 func (p ProfileServiceCache) DeleteProfile(ctx context.Context, name string) error {
 	ctx, span := p.tracingService.StartSpan(ctx, "ProfileServiceCache.DeleteProfile")
-	err := p.profileService.DeleteProfile(ctx, name)
+	profile, err := p.profileService.GetProfileByName(ctx, name)
+	if err != nil {
+		span.End()
+		return err
+	}
+	err = p.profileService.DeleteProfile(ctx, name)
 	if err != nil {
 		span.End()
 		return err
 	}
 
-	p.cache.Delete(name)
+	p.nameToIDCache.Delete(name)
+	p.cache.Delete(profile.ID)
 	span.End()
 	return nil
 }

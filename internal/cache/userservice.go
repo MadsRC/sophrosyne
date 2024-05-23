@@ -157,21 +157,33 @@ func (c *UserServiceCache) UpdateUser(ctx context.Context, req sophrosyne.Update
 
 func (c *UserServiceCache) DeleteUser(ctx context.Context, id string) error {
 	ctx, span := c.tracingService.StartSpan(ctx, "UserServiceCache.DeleteUser")
-	err := c.userService.DeleteUser(ctx, id)
+	user, err := c.userService.GetUser(ctx, id)
+	if err != nil {
+		span.End()
+		return err
+	}
+	err = c.userService.DeleteUser(ctx, id)
 	if err != nil {
 		span.End()
 		return err
 	}
 
+	c.nameToIDCache.Delete(user.Name)
 	c.cache.Delete(id)
 	span.End()
 	return nil
 }
 
 func (c *UserServiceCache) RotateToken(ctx context.Context, id string) ([]byte, error) {
-	return c.userService.RotateToken(ctx, id)
+	ctx, span := c.tracingService.StartSpan(ctx, "UserServiceCache.RotateToken")
+	result, err := c.userService.RotateToken(ctx, id)
+	span.End()
+
+	return result, err
 }
 
 func (c *UserServiceCache) Health(ctx context.Context) (bool, []byte) {
+	_, span := c.tracingService.StartSpan(ctx, "UserServiceCache.Health")
+	span.End()
 	return true, []byte(`{"ok"}`)
 }

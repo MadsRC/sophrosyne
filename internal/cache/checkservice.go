@@ -121,12 +121,18 @@ func (c CheckServiceCache) UpdateCheck(ctx context.Context, check sophrosyne.Upd
 
 func (c CheckServiceCache) DeleteCheck(ctx context.Context, id string) error {
 	ctx, span := c.tracingService.StartSpan(ctx, "CheckServiceCache.DeleteCheck")
-	err := c.checkService.DeleteCheck(ctx, id)
+	check, err := c.checkService.GetCheck(ctx, id)
+	if err != nil {
+		span.End()
+		return err
+	}
+	err = c.checkService.DeleteCheck(ctx, id)
 	if err != nil {
 		span.End()
 		return err
 	}
 
+	c.nameToIDCache.Delete(check.Name)
 	c.cache.Delete(id)
 	span.End()
 	return nil

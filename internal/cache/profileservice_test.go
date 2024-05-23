@@ -17,11 +17,10 @@
 package cache
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"testing"
 
 	"github.com/madsrc/sophrosyne"
 )
@@ -29,6 +28,10 @@ import (
 var testProfile = sophrosyne.Profile{
 	ID:   "123",
 	Name: "I am the test profile - if you see me, something is probably wrong!",
+}
+var secondTestProfile = sophrosyne.Profile{
+	ID:   "456",
+	Name: "I am the second test profile - if you see me, something is probably wrong!",
 }
 
 func TestNewProfileServiceCache(t *testing.T) {
@@ -127,5 +130,159 @@ func TestProfileServiceCache_GetProfileByName(t *testing.T) {
 		require.Error(t, err)
 		require.ErrorIs(t, err, assert.AnError)
 		require.Equal(t, expectedProfile, result)
+	})
+}
+
+func TestProfileServiceCache_GetProfiles(t *testing.T) {
+	t.Run("retrieved from service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		profileServiceCache := getProfileServiceCache(t, cts)
+		expectedProfiles := []sophrosyne.Profile{testProfile, secondTestProfile}
+
+		cts.profileService.On("GetProfiles", cts.ctx, mock.Anything).Once().Return(expectedProfiles, nil)
+
+		result, err := profileServiceCache.GetProfiles(cts.ctx, nil)
+
+		require.NoError(t, err)
+		require.Equal(t, expectedProfiles, result)
+		cacheEntryOne, ok := profileServiceCache.cache.Get(expectedProfiles[0].ID)
+		require.True(t, ok)
+		require.Equal(t, expectedProfiles[0], cacheEntryOne)
+		cacheEntryTwo, ok := profileServiceCache.cache.Get(expectedProfiles[1].ID)
+		require.True(t, ok)
+		require.Equal(t, expectedProfiles[1], cacheEntryTwo)
+	})
+	t.Run("error retrieving", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		profileServiceCache := getProfileServiceCache(t, cts)
+
+		cts.profileService.On("GetProfiles", cts.ctx, mock.Anything).Once().Return(nil, assert.AnError)
+
+		result, err := profileServiceCache.GetProfiles(cts.ctx, nil)
+		require.Nil(t, result)
+		require.ErrorIs(t, err, assert.AnError)
+	})
+}
+
+func TestProfileServiceCache_CreateProfile(t *testing.T) {
+	t.Run("created in service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		profileServiceCache := getProfileServiceCache(t, cts)
+		expectedProfile := testProfile
+		input := sophrosyne.CreateProfileRequest{
+			Name: expectedProfile.Name,
+		}
+
+		cts.profileService.On("CreateProfile", cts.ctx, mock.Anything).Once().Return(expectedProfile, nil)
+
+		result, err := profileServiceCache.CreateProfile(cts.ctx, input)
+
+		require.NoError(t, err)
+		require.Equal(t, expectedProfile, result)
+		cacheEntry, ok := profileServiceCache.cache.Get(expectedProfile.ID)
+		require.True(t, ok)
+		require.Equal(t, expectedProfile, cacheEntry)
+
+	})
+	t.Run("error creating", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		profileServiceCache := getProfileServiceCache(t, cts)
+		input := sophrosyne.CreateProfileRequest{
+			Name: testProfile.Name,
+		}
+
+		cts.profileService.On("CreateProfile", cts.ctx, mock.Anything).Once().Return(sophrosyne.Profile{}, assert.AnError)
+
+		result, err := profileServiceCache.CreateProfile(cts.ctx, input)
+
+		require.Equal(t, sophrosyne.Profile{}, result)
+		require.ErrorIs(t, err, assert.AnError)
+	})
+}
+
+func TestProfileServiceCache_UpdateProfile(t *testing.T) {
+	t.Run("updated in service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		profileServiceCache := getProfileServiceCache(t, cts)
+		expectedProfile := testProfile
+		input := sophrosyne.UpdateProfileRequest{
+			Name: expectedProfile.Name,
+		}
+
+		cts.profileService.On("UpdateProfile", cts.ctx, mock.Anything).Once().Return(expectedProfile, nil)
+
+		result, err := profileServiceCache.UpdateProfile(cts.ctx, input)
+
+		require.NoError(t, err)
+		require.Equal(t, expectedProfile, result)
+		cacheEntry, ok := profileServiceCache.cache.Get(expectedProfile.ID)
+		require.True(t, ok)
+		require.Equal(t, expectedProfile, cacheEntry)
+
+	})
+	t.Run("error updating", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		profileServiceCache := getProfileServiceCache(t, cts)
+		input := sophrosyne.UpdateProfileRequest{
+			Name: testProfile.Name,
+		}
+
+		cts.profileService.On("UpdateProfile", cts.ctx, mock.Anything).Once().Return(sophrosyne.Profile{}, assert.AnError)
+
+		result, err := profileServiceCache.UpdateProfile(cts.ctx, input)
+
+		require.Equal(t, sophrosyne.Profile{}, result)
+		require.ErrorIs(t, err, assert.AnError)
+	})
+}
+
+func TestProfileServiceCache_DeleteProfile(t *testing.T) {
+	t.Run("deleted in service", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		profileServiceCache := getProfileServiceCache(t, cts)
+		expectedProfile := testProfile
+		input := expectedProfile.Name
+		profileServiceCache.cache.Set(expectedProfile.ID, expectedProfile)
+		profileServiceCache.nameToIDCache.Set(expectedProfile.Name, expectedProfile.ID)
+
+		cts.profileService.On("GetProfileByName", cts.ctx, input).Once().Return(expectedProfile, nil)
+		cts.profileService.On("DeleteProfile", cts.ctx, mock.Anything).Once().Return(nil)
+
+		err := profileServiceCache.DeleteProfile(cts.ctx, input)
+
+		require.NoError(t, err)
+		cacheEntry, ok := profileServiceCache.cache.Get(expectedProfile.ID)
+		require.False(t, ok)
+		require.NotEqual(t, expectedProfile, cacheEntry)
+
+	})
+	t.Run("error getting profile", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		profileServiceCache := getProfileServiceCache(t, cts)
+		expectedProfile := testProfile
+		input := expectedProfile.Name
+		profileServiceCache.cache.Set(expectedProfile.ID, expectedProfile)
+		profileServiceCache.nameToIDCache.Set(expectedProfile.Name, expectedProfile.ID)
+
+		cts.profileService.On("GetProfileByName", cts.ctx, input).Once().Return(expectedProfile, assert.AnError)
+
+		err := profileServiceCache.DeleteProfile(cts.ctx, input)
+
+		require.ErrorIs(t, err, assert.AnError)
+		cacheEntry, ok := profileServiceCache.cache.Get(expectedProfile.ID)
+		require.True(t, ok)
+		require.Equal(t, expectedProfile, cacheEntry)
+	})
+	t.Run("error deleting", func(t *testing.T) {
+		cts := setupTestStuff(t, nil)
+		profileServiceCache := getProfileServiceCache(t, cts)
+		input := testProfile.Name
+
+		cts.profileService.On("GetProfileByName", cts.ctx, input).Once().Return(testProfile, nil)
+		cts.profileService.On("DeleteProfile", cts.ctx, mock.Anything).Once().Return(assert.AnError)
+
+		err := profileServiceCache.DeleteProfile(cts.ctx, input)
+
+		require.ErrorIs(t, err, assert.AnError)
 	})
 }
