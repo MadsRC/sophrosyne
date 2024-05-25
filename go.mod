@@ -7,7 +7,7 @@ require (
 	github.com/exaring/otelpgx v0.5.4
 	github.com/go-playground/validator/v10 v10.20.0
 	github.com/golang-migrate/migrate/v4 v4.17.1
-	github.com/jackc/pgx/v5 v5.5.5
+	github.com/jackc/pgx/v5 v5.6.0
 	github.com/knadh/koanf/parsers/yaml v0.1.0
 	github.com/knadh/koanf/providers/confmap v0.1.0
 	github.com/knadh/koanf/providers/env v0.1.0
