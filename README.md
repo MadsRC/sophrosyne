@@ -16,10 +16,10 @@
 [![CodeQL](https://github.com/MadsRC/sophrosyne/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/MadsRC/sophrosyne/actions/workflows/github-code-scanning/codeql)
 [![Semgrep](https://github.com/MadsRC/sophrosyne/actions/workflows/semgrep.yml/badge.svg)](https://github.com/MadsRC/sophrosyne/actions/workflows/semgrep.yml)
 
-Sophrosyne is a horizontally scaleable content moderation API built for the
+Sophrosyne is a horizontally scalable content moderation API built for the
 age of Generative AI.
 
-The API allows you to register upstream modules to perform artibrary checks
+The API allows you to register upstream modules to perform arbitrary checks
 on input data and return a `go`/`no-go` verdict. Checks are associated with
 profiles, allowing several checks to be run on a piece of input data.
 
