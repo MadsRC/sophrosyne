@@ -1,6 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "automergeType": "pr",
   "configMigration": true,
+  "dependencyDashboardOSVVulnerabilitySummary": "all",
+  "digest": {
+    "automerge": true
+  },
   "docker-compose": {
     "enabled": true
   },
@@ -13,7 +18,23 @@
     "helpers:pinGitHubActionDigests",
     ":pinDevDependencies"
   ],
+  "gomod": {
+    "enabled": true
+  },
+  "lockFileMaintenance": {
+    "automerge": true
+  },
+  "minor": {
+    "automerge": true
+  },
+  "osvVulnerabilityAlerts": true,
   "packageRules": [
+    {
+      "dependencyDashboardApproval": true,
+      "matchUpdateTypes": [
+        "major"
+      ]
+    },
     {
       "matchDepTypes": [
         "action"
@@ -35,6 +56,12 @@
       }
     }
   ],
+  "patch": {
+    "automerge": true
+  },
+  "pin": {
+    "automerge": true
+  },
   "pre-commit": {
     "enabled": true
   },

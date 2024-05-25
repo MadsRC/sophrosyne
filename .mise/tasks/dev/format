@@ -44,5 +44,5 @@ if test "$check" = 0; then
     exit 0
   fi
 else
-  goimports -w -local github.com/madsrc/sophrosyne -e .
+  goimports -w -local github.com/madsrc/sophrosyne -e $(find . -name "*.go" | grep -v "\./build\|\./internal/mocks\|.*\.pb\.go")
 fi

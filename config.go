@@ -16,6 +16,8 @@
 
 package sophrosyne
 
+import "time"
+
 // The ConfigProvider interface is used to retrieve the configuration of the
 // application.
 //
@@ -52,33 +54,36 @@ type ConfigProvider interface {
 //
 // Values that should not have a default value should not be included.
 var DefaultConfig = map[string]interface{}{
-	"database.user":                   "postgres",
-	"database.host":                   "localhost",
-	"database.port":                   5432,
-	"database.name":                   "postgres",
-	"server.port":                     8080,
-	"logging.level":                   LogLevelInfo,
-	"logging.format":                  LogFormatJSON,
-	"logging.enabled":                 true,
-	"tracing.enabled":                 true,
-	"tracing.batch.timeout":           5,
-	"tracing.output":                  OtelOutputStdout,
-	"metrics.enabled":                 false,
-	"metrics.interval":                60,
-	"metrics.output":                  OtelOutputStdout,
-	"principals.root.name":            "root",
-	"principals.root.email":           "root@localhost",
-	"principals.root.recreate":        false,
-	"services.users.pageSize":         2,
-	"services.users.cacheTTL":         100,
-	"security.tls.keyType":            "EC-P384",
-	"security.tls.insecureSkipVerify": false,
-	"services.profiles.pageSize":      2,
-	"services.profiles.cacheTTL":      100,
-	"services.checks.pageSize":        2,
-	"services.checks.cacheTTL":        100,
-	"server.maxBodySize":              20 * megabyte,
-	"server.advertisedHost":           "localhost",
+	"database.user":                           "postgres",
+	"database.host":                           "localhost",
+	"database.port":                           5432,
+	"database.name":                           "postgres",
+	"server.port":                             8080,
+	"logging.level":                           LogLevelInfo,
+	"logging.format":                          LogFormatJSON,
+	"logging.enabled":                         true,
+	"tracing.enabled":                         true,
+	"tracing.batch.timeout":                   5,
+	"tracing.output":                          OtelOutputStdout,
+	"metrics.enabled":                         false,
+	"metrics.interval":                        60,
+	"metrics.output":                          OtelOutputStdout,
+	"principals.root.name":                    "root",
+	"principals.root.email":                   "root@localhost",
+	"principals.root.recreate":                false,
+	"services.users.pageSize":                 2,
+	"services.users.cache.TTL":                1 * time.Second,
+	"services.users.cache.cleanupInterval":    500 * time.Millisecond,
+	"security.tls.keyType":                    "EC-P384",
+	"security.tls.insecureSkipVerify":         false,
+	"services.profiles.pageSize":              2,
+	"services.profiles.cache.TTL":             1 * time.Second,
+	"services.profiles.cache.cleanupInterval": 500 * time.Millisecond,
+	"services.checks.pageSize":                2,
+	"services.checks.cache.TTL":               1 * time.Second,
+	"services.checks.cache.cleanupInterval":   500 * time.Millisecond,
+	"server.maxBodySize":                      20 * megabyte,
+	"server.advertisedHost":                   "localhost",
 }
 
 const megabyte int64 = 1048576
@@ -127,21 +132,26 @@ type Config struct {
 	Security SecurityConfig `key:"security" validate:"required"`
 	Services struct {
 		Users struct {
-			PageSize int   `key:"pageSize" validate:"required,min=2"`
-			CacheTTL int64 `key:"cacheTTL" validate:"required,min=0"`
+			PageSize int         `key:"pageSize" validate:"required,min=2"`
+			Cache    CacheConfig `key:"cache" validate:"required"`
 		} `key:"users" validate:"required"`
 		Profiles struct {
-			PageSize int   `key:"pageSize" validate:"required,min=2"`
-			CacheTTL int64 `key:"cacheTTL" validate:"required,min=0"`
+			PageSize int         `key:"pageSize" validate:"required,min=2"`
+			Cache    CacheConfig `key:"cache" validate:"required"`
 		} `key:"profiles" validate:"required"`
 		Checks struct {
-			PageSize int   `key:"pageSize" validate:"required,min=2"`
-			CacheTTL int64 `key:"cacheTTL" validate:"required,min=0"`
+			PageSize int         `key:"pageSize" validate:"required,min=2"`
+			Cache    CacheConfig `key:"cache" validate:"required"`
 		} `key:"checks" validate:"required"`
 	} `key:"services" validate:"required"`
 	Development struct {
 		StaticRootToken string `key:"staticRootToken"`
 	} `key:"development"`
+}
+
+type CacheConfig struct {
+	TTL             time.Duration `key:"ttl" validate:"required,min=1"`
+	CleanupInterval time.Duration `key:"cleanupInterval" validate:"required,min=1"`
 }
 
 type TLSConfig struct {

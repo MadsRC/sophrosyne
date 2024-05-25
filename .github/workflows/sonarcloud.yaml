@@ -19,7 +19,7 @@ jobs:
   sonarcloud:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
+    - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
       with:
         # Disabling shallow clone is recommended for improving relevancy of reporting
         fetch-depth: 0
@@ -29,7 +29,7 @@ jobs:
     - run: mise run dev:lint --no-fail
     - run: mise run test:unit
     - name: SonarCloud Scan
-      uses: sonarsource/sonarcloud-github-action@3da91d8a6aff5e898114575b30c6dc1e4787a254
+      uses: sonarsource/sonarcloud-github-action@13d84ab51ea6fc29e22a1288ec28cc71fd2eb19e
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

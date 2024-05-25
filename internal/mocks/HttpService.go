@@ -22,7 +22,7 @@ func (_m *MockHttpService) Start() error {
 	ret := _m.Called()
 
 	if len(ret) == 0 {
-		panic("no return value specified for Start")
+		panic("no return value specified for start")
 	}
 
 	var r0 error
@@ -35,14 +35,14 @@ func (_m *MockHttpService) Start() error {
 	return r0
 }
 
-// MockHttpService_Start_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Start'
+// MockHttpService_Start_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'start'
 type MockHttpService_Start_Call struct {
 	*mock.Call
 }
 
 // Start is a helper method to define mock.On call
 func (_e *MockHttpService_Expecter) Start() *MockHttpService_Start_Call {
-	return &MockHttpService_Start_Call{Call: _e.mock.On("Start")}
+	return &MockHttpService_Start_Call{Call: _e.mock.On("start")}
 }
 
 func (_c *MockHttpService_Start_Call) Run(run func()) *MockHttpService_Start_Call {
