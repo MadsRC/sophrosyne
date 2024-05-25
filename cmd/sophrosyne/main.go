@@ -28,6 +28,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/madsrc/sophrosyne/internal/cache"
+
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v3"
 
@@ -266,7 +268,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	checkService := sophrosyne.NewCheckServiceCache(config, checkServiceDatabase, otelService)
+	checkService := cache.NewCheckServiceCache(config, checkServiceDatabase, otelService)
 
 	profileServiceDatabase, err := pgx.NewProfileService(ctx, config, logger, checkService)
 	if err != nil {
@@ -278,15 +280,9 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	userService := sophrosyne.NewUserServiceCache(config, userServiceDatabase, otelService)
-	if err != nil {
-		return err
-	}
+	userService := cache.NewUserServiceCache(config, userServiceDatabase, otelService)
 
-	profileService := sophrosyne.NewProfileServiceCache(config, profileServiceDatabase, otelService)
-	if err != nil {
-		return err
-	}
+	profileService := cache.NewProfileServiceCache(config, profileServiceDatabase, otelService)
 
 	authzProvider, err := cedar.NewAuthorizationProvider(ctx, logger, userService, otelService, profileService, checkService)
 
