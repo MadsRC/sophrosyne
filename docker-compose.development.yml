@@ -37,7 +37,7 @@ services:
     command: --web.enable-remote-write-receiver --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml
 
   grafana:
-    image: grafana/grafana-oss@sha256:b7fcb534f7b3512801bb3f4e658238846435804deb479d105b5cdc680847c272
+    image: grafana/grafana-oss@sha256:0dc5a246ab16bb2c38a349fb588174e832b4c6c2db0981d0c3e6cd774ba66a54
     container_name: grafana
     ports:
       - '3000:3000'
