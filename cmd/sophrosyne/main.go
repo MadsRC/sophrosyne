@@ -275,7 +275,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	userServiceDatabase, err := pgx.NewUserService(ctx, config, logger, rand.Reader, profileServiceDatabase)
+	userServiceDatabase, err := pgx.NewUserService(ctx, config, logger, rand.Reader, profileServiceDatabase, nil)
 	if err != nil {
 		return err
 	}

@@ -35,31 +35,60 @@ import (
 	"github.com/madsrc/sophrosyne"
 )
 
+const (
+	// Name of the default profile in the database
+	DefaultProfileName = "default"
+)
+
+type conn interface {
+	Begin(ctx context.Context) (pgx.Tx, error)
+	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+}
+
+// afterConnect is a pgx.ConnConfig.AfterConnect function that logs 'database connection established', at the debug level.
+//
+// If logger is nil, this function panics.
+func afterConnect(logger *slog.Logger) func(ctx context.Context, conn *pgx.Conn) error {
+	return func(ctx context.Context, conn *pgx.Conn) error {
+		logger.DebugContext(ctx, "database connection established")
+		return nil
+	}
+}
+
 func newPool(ctx context.Context, config *sophrosyne.Config, logger *slog.Logger) (*pgxpool.Pool, error) {
-	pgxconfig, err := pgxpool.ParseConfig(fmt.Sprintf("postgres://%s:%s@%s:%d/%s", config.Database.User, config.Database.Password, config.Database.Host, config.Database.Port, config.Database.Name))
+	pgxconfig, err := pgxpool.ParseConfig(fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s",
+		config.Database.User,
+		config.Database.Password,
+		config.Database.Host,
+		config.Database.Port,
+		config.Database.Name,
+	))
 	if err != nil {
 		return nil, err
 	}
 	pgxconfig.ConnConfig.Tracer = otelpgx.NewTracer()
-	pgxconfig.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
-		logger.DebugContext(ctx, "database connection established")
-		return nil
-	}
+	pgxconfig.AfterConnect = afterConnect(logger)
 	return pgxpool.NewWithConfig(ctx, pgxconfig)
 }
 
 type UserService struct {
 	config         *sophrosyne.Config
-	pool           *pgxpool.Pool
+	pool           conn
 	logger         *slog.Logger
 	randomSource   io.Reader
 	profileService sophrosyne.ProfileService
 }
 
-func NewUserService(ctx context.Context, config *sophrosyne.Config, logger *slog.Logger, randomSource io.Reader, profileService sophrosyne.ProfileService) (*UserService, error) {
-	pool, err := newPool(ctx, config, logger)
-	if err != nil {
-		return nil, err
+func NewUserService(ctx context.Context, config *sophrosyne.Config, logger *slog.Logger, randomSource io.Reader, profileService sophrosyne.ProfileService, pool conn) (*UserService, error) {
+	var err error
+	if pool == nil {
+		pool, err = newPool(ctx, config, logger)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	ue := &UserService{
@@ -78,31 +107,61 @@ func NewUserService(ctx context.Context, config *sophrosyne.Config, logger *slog
 	return ue, nil
 }
 
-func (s *UserService) getUser(ctx context.Context, column, input any) (sophrosyne.User, error) {
-	type dbret struct {
-		ID             string      `db:"id"`
-		Name           string      `db:"name"`
-		Email          string      `db:"email"`
-		Token          []byte      `db:"token"`
-		IsAdmin        bool        `db:"is_admin"`
-		DefaultProfile pgtype.Text `db:"default_profile"`
-		CreatedAt      time.Time   `db:"created_at"`
-		UpdatedAt      time.Time   `db:"updated_at"`
-		DeletedAt      *time.Time  `db:"deleted_at"`
+var getUserQueryMap = map[string]string{
+	"email": "SELECT id, name, email, token, is_admin, default_profile, created_at, updated_at, deleted_at FROM users WHERE email = $1 AND deleted_at IS NULL LIMIT 1",
+	"name":  "SELECT id, name, email, token, is_admin, default_profile, created_at, updated_at, deleted_at FROM users WHERE name = $1 AND deleted_at IS NULL LIMIT 1",
+	"id":    "SELECT id, name, email, token, is_admin, default_profile, created_at, updated_at, deleted_at FROM users WHERE id = $1 AND deleted_at IS NULL LIMIT 1",
+	"token": "SELECT id, name, email, token, is_admin, default_profile, created_at, updated_at, deleted_at FROM users WHERE token = $1 AND deleted_at IS NULL LIMIT 1",
+}
+
+type getUserDbReturn struct {
+	ID             string      `db:"id"`
+	Name           string      `db:"name"`
+	Email          string      `db:"email"`
+	Token          []byte      `db:"token"`
+	IsAdmin        bool        `db:"is_admin"`
+	DefaultProfile pgtype.Text `db:"default_profile"`
+	CreatedAt      time.Time   `db:"created_at"`
+	UpdatedAt      time.Time   `db:"updated_at"`
+	DeletedAt      *time.Time  `db:"deleted_at"`
+}
+
+func (g getUserDbReturn) ToUser(ctx context.Context, profileService sophrosyne.ProfileService) (sophrosyne.User, error) {
+	user := sophrosyne.User{
+		ID:        g.ID,
+		Name:      g.Name,
+		Email:     g.Email,
+		Token:     g.Token,
+		IsAdmin:   g.IsAdmin,
+		CreatedAt: g.CreatedAt,
+		UpdatedAt: g.UpdatedAt,
+		DeletedAt: g.DeletedAt,
 	}
-	var rows pgx.Rows
-	if column == "email" {
-		rows, _ = s.pool.Query(ctx, "SELECT * FROM users WHERE email = $1 AND deleted_at IS NULL LIMIT 1", input)
-	} else if column == "name" {
-		rows, _ = s.pool.Query(ctx, "SELECT * FROM users WHERE name = $1 AND deleted_at IS NULL LIMIT 1", input)
-	} else if column == "id" {
-		rows, _ = s.pool.Query(ctx, "SELECT * FROM users WHERE id = $1 AND deleted_at IS NULL LIMIT 1", input)
-	} else if column == "token" {
-		rows, _ = s.pool.Query(ctx, "SELECT * FROM users WHERE token = $1 AND deleted_at IS NULL LIMIT 1", input)
+
+	if g.DefaultProfile.String == "" {
+		prof, err := profileService.GetProfileByName(ctx, DefaultProfileName)
+		if err != nil {
+			return sophrosyne.User{}, err
+		}
+		user.DefaultProfile = prof
 	} else {
+		prof, err := profileService.GetProfile(ctx, g.DefaultProfile.String)
+		if err != nil {
+			return sophrosyne.User{}, err
+		}
+		user.DefaultProfile = prof
+	}
+
+	return user, nil
+}
+
+func (s *UserService) getUser(ctx context.Context, column string, input []byte) (sophrosyne.User, error) {
+	query, ok := getUserQueryMap[column]
+	if !ok {
 		return sophrosyne.User{}, sophrosyne.NewUnreachableCodeError()
 	}
-	user, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByName[dbret])
+	rows, _ := s.pool.Query(ctx, query, input)
+	user, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByName[getUserDbReturn])
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return sophrosyne.User{}, sophrosyne.ErrNotFound
@@ -110,42 +169,22 @@ func (s *UserService) getUser(ctx context.Context, column, input any) (sophrosyn
 		return sophrosyne.User{}, err
 	}
 
-	ret := sophrosyne.User{
-		ID:        user.ID,
-		Name:      user.Name,
-		Email:     user.Email,
-		Token:     user.Token,
-		IsAdmin:   user.IsAdmin,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-		DeletedAt: user.DeletedAt,
-	}
-
-	if user.DefaultProfile.String == "" {
-		prof, err := s.profileService.GetProfileByName(ctx, "default")
-		if err != nil {
-			return sophrosyne.User{}, err
-		}
-		ret.DefaultProfile = prof
-	} else {
-		prof, err := s.profileService.GetProfileByName(ctx, user.DefaultProfile.String)
-		if err != nil {
-			return sophrosyne.User{}, err
-		}
-		ret.DefaultProfile = prof
+	ret, err := user.ToUser(ctx, s.profileService)
+	if err != nil {
+		return sophrosyne.User{}, err
 	}
 
 	return ret, nil
 }
 
 func (s *UserService) GetUser(ctx context.Context, id string) (sophrosyne.User, error) {
-	return s.getUser(ctx, "id", id)
+	return s.getUser(ctx, "id", []byte(id))
 }
 func (s *UserService) GetUserByEmail(ctx context.Context, email string) (sophrosyne.User, error) {
-	return s.getUser(ctx, "email", email)
+	return s.getUser(ctx, "email", []byte(email))
 }
 func (s *UserService) GetUserByName(ctx context.Context, name string) (sophrosyne.User, error) {
-	return s.getUser(ctx, "name", name)
+	return s.getUser(ctx, "name", []byte(name))
 }
 func (s *UserService) GetUserByToken(ctx context.Context, token []byte) (sophrosyne.User, error) {
 	return s.getUser(ctx, "token", token)
@@ -290,5 +329,4 @@ func (s *UserService) createRootUser(ctx context.Context) error {
 		return err
 	}
 	return nil
-
 }
