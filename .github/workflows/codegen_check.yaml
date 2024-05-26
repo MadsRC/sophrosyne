@@ -47,5 +47,4 @@ jobs:
       with:
         comment_tag: 'code_gen_${{ matrix.target }}'
         mode: delete
-        message: |
-          Generating the ${{ matrix.target }} code succeeded.
+        message: "The content of this message means nothing as the action will delete a message, not post it - I don't know why a message is needed here."
