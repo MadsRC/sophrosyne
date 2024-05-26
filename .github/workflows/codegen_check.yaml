@@ -47,3 +47,5 @@ jobs:
       with:
         comment_tag: 'code_gen_${{ matrix.target }}'
         mode: delete
+        message: |
+          Generating the ${{ matrix.target }} code succeeded.
