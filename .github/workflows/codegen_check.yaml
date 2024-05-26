@@ -46,6 +46,4 @@ jobs:
       uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # v2.5.0
       with:
         comment_tag: 'code_gen_${{ matrix.target }}'
-        mode: upsert
-        message: |
-          It appears that the ${{ matrix.target }} code generation is up to date.
+        mode: delete
