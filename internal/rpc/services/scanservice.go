@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
+	"sync"
 
 	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 
@@ -71,6 +72,32 @@ func (s ScanService) InvokeMethod(ctx context.Context, req jsonrpc.Request) ([]b
 	}
 }
 
+func (p ScanService) lookupProfile(ctx context.Context, params sophrosyne.PerformScanRequest, curUser *sophrosyne.User) (*sophrosyne.Profile, error) {
+	var profile *sophrosyne.Profile
+	if params.Profile != "" {
+		dbp, err := p.profileService.GetProfileByName(ctx, params.Profile)
+		if err != nil {
+			return nil, fmt.Errorf("error getting profile by name: %v", err)
+		}
+		p.logger.DebugContext(ctx, "using profile from params for scan", "profile", params.Profile)
+		profile = &dbp
+	} else {
+		if curUser.DefaultProfile.Name == "" {
+			dbp, err := p.profileService.GetProfileByName(ctx, "default")
+			if err != nil {
+				return nil, fmt.Errorf("error getting default profile: %v", err)
+			}
+			p.logger.DebugContext(ctx, "using service-wide default profile for scan", "profile", dbp.Name)
+			profile = &dbp
+		} else {
+			p.logger.DebugContext(ctx, "using default profile for scan", "profile", curUser.DefaultProfile.Name)
+			profile = &curUser.DefaultProfile
+		}
+	}
+
+	return profile, nil
+}
+
 func (p ScanService) PerformScan(ctx context.Context, req jsonrpc.Request) ([]byte, error) {
 	curUser := sophrosyne.ExtractUser(ctx)
 	if curUser == nil {
@@ -84,42 +111,38 @@ func (p ScanService) PerformScan(ctx context.Context, req jsonrpc.Request) ([]by
 		return rpc.ErrorFromRequest(&req, jsonrpc.InvalidParams, string(jsonrpc.InvalidParamsMessage))
 	}
 
-	var profile *sophrosyne.Profile
-	if params.Profile != "" {
-		dbp, err := p.profileService.GetProfileByName(ctx, params.Profile)
-		if err != nil {
-			p.logger.ErrorContext(ctx, "error getting profile by name", "profile", params.Profile, "error", err)
-			return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
-		}
-		p.logger.DebugContext(ctx, "using profile from params for scan", "profile", params.Profile)
-		profile = &dbp
-	} else {
-		if curUser.DefaultProfile.Name == "" {
-			dbp, err := p.profileService.GetProfileByName(ctx, "default")
-			if err != nil {
-				p.logger.ErrorContext(ctx, "error getting default profile", "error", err)
-				return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
-			}
-			p.logger.DebugContext(ctx, "using service-wide default profile for scan", "profile", dbp.Name)
-			profile = &dbp
-		} else {
-			p.logger.DebugContext(ctx, "using default profile for scan", "profile", curUser.DefaultProfile.Name)
-			profile = &curUser.DefaultProfile
-		}
+	profile, err := p.lookupProfile(ctx, params, curUser)
+	if err != nil {
+		p.logger.ErrorContext(ctx, "cannot get profile", "error", err)
+		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
 	checkResults := make(map[string]checkResult)
 	var success bool
 
+	messages := make(chan checkResult, len(profile.Checks))
+	var wg sync.WaitGroup
+	wg.Add(len(profile.Checks))
+
 	for _, check := range profile.Checks {
 		p.logger.DebugContext(ctx, "running check from profile", "profile", profile.Name, "check", check.Name)
-		res, err := doCheck(ctx, p.logger, check)
-		if err != nil {
-			p.logger.ErrorContext(ctx, "error running check", "check", check.Name, "error", err)
-			return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
-		}
-		checkResults[check.Name] = res
-		if res.Status {
+		go func(check sophrosyne.Check) {
+			defer wg.Done()
+			res, err := doCheck(ctx, p.logger, check)
+			if err != nil {
+				p.logger.ErrorContext(ctx, "error running check", "check", check.Name, "error", err)
+			}
+
+			messages <- res
+		}(check)
+	}
+
+	wg.Wait()
+	close(messages)
+
+	for msg := range messages {
+		checkResults[msg.Name] = msg
+		if msg.Status {
 			success = true
 		} else {
 			success = false
@@ -138,6 +161,7 @@ func (p ScanService) PerformScan(ctx context.Context, req jsonrpc.Request) ([]by
 }
 
 type checkResult struct {
+	Name   string `json:"-"`
 	Status bool   `json:"status"`
 	Detail string `json:"detail"`
 }

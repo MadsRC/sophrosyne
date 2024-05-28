@@ -57,6 +57,9 @@ func afterConnect(logger *slog.Logger) func(ctx context.Context, conn *pgx.Conn)
 	}
 }
 
+// newPool creates a new pgx connection pool using the provided configuration and logger.
+// It parses the configuration details, sets up a new tracer, and defines a function to be executed after connecting to the database.
+// It returns a new pgx connection pool based on the provided context and configuration, or an error if the configuration parsing fails.
 func newPool(ctx context.Context, config *sophrosyne.Config, logger *slog.Logger) (*pgxpool.Pool, error) {
 	pgxconfig, err := pgxpool.ParseConfig(fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s",
@@ -160,7 +163,14 @@ func (s *UserService) getUser(ctx context.Context, column string, input []byte) 
 	if !ok {
 		return sophrosyne.User{}, sophrosyne.NewUnreachableCodeError()
 	}
-	rows, _ := s.pool.Query(ctx, query, input)
+	rows, err := s.pool.Query(ctx, query, input)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return sophrosyne.User{}, sophrosyne.ErrNotFound
+	}
+	if err != nil {
+		return sophrosyne.User{}, err
+	}
+	defer rows.Close()
 	user, err := pgx.CollectOneRow(rows, pgx.RowToAddrOfStructByName[getUserDbReturn])
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
