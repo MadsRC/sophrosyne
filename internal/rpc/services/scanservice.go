@@ -117,9 +117,11 @@ func (p ScanService) PerformScan(ctx context.Context, req jsonrpc.Request) ([]by
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	checkResults := make(map[string]checkResult)
-	var success bool
+	return p.performScan(ctx, req, profile)
 
+}
+
+func (p ScanService) performScan(ctx context.Context, req jsonrpc.Request, profile *sophrosyne.Profile) ([]byte, error) {
 	messages := make(chan checkResult, len(profile.Checks))
 	var wg sync.WaitGroup
 	wg.Add(len(profile.Checks))
@@ -128,7 +130,7 @@ func (p ScanService) PerformScan(ctx context.Context, req jsonrpc.Request) ([]by
 		p.logger.DebugContext(ctx, "running check from profile", "profile", profile.Name, "check", check.Name)
 		go func(check sophrosyne.Check) {
 			defer wg.Done()
-			res, err := doCheck(ctx, p.logger, check)
+			res, err := doCheck(ctx, p.logger, check, nil)
 			if err != nil {
 				p.logger.ErrorContext(ctx, "error running check", "check", check.Name, "error", err)
 			}
@@ -140,7 +142,24 @@ func (p ScanService) PerformScan(ctx context.Context, req jsonrpc.Request) ([]by
 	wg.Wait()
 	close(messages)
 
+	return rpc.ResponseToRequest(&req, processCheckResults(ctx, messages, p.logger))
+}
+
+type processedCheckResults struct {
+	Result bool                   `json:"result"`
+	Checks map[string]checkResult `json:"checks"`
+}
+
+func processCheckResults(ctx context.Context, messages chan checkResult, logger *slog.Logger) processedCheckResults {
+	logger.DebugContext(ctx, "processing results from checks")
+	checkResults := make(map[string]checkResult)
+	var success bool
 	for msg := range messages {
+		logger.DebugContext(ctx, "receiving check result", "check", msg.Name, "check_result", msg)
+		if msg.Name == "" {
+			logger.DebugContext(ctx, "ignoring check result")
+			continue
+		}
 		checkResults[msg.Name] = msg
 		if msg.Status {
 			success = true
@@ -149,15 +168,13 @@ func (p ScanService) PerformScan(ctx context.Context, req jsonrpc.Request) ([]by
 		}
 	}
 
-	resp := struct {
-		Result bool                   `json:"result"`
-		Checks map[string]checkResult `json:"checks"`
-	}{
+	resp := processedCheckResults{
 		Result: success,
 		Checks: checkResults,
 	}
+	logger.DebugContext(ctx, "finished processing results from checks", "result", resp)
 
-	return rpc.ResponseToRequest(&req, resp)
+	return resp
 }
 
 type checkResult struct {
@@ -166,7 +183,7 @@ type checkResult struct {
 	Detail string `json:"detail"`
 }
 
-func doCheck(ctx context.Context, logger *slog.Logger, check sophrosyne.Check) (checkResult, error) {
+func doCheck(ctx context.Context, logger *slog.Logger, check sophrosyne.Check, client checks.CheckServiceClient) (checkResult, error) {
 	if len(check.UpstreamServices) == 0 {
 		logger.ErrorContext(ctx, "no upstream services for check", "check", check.Name)
 		return checkResult{}, fmt.Errorf("missing upstream services")
@@ -176,7 +193,7 @@ func doCheck(ctx context.Context, logger *slog.Logger, check sophrosyne.Check) (
 	conn, err := grpc.NewClient(check.UpstreamServices[0].Host, opts...)
 	if err != nil {
 		logger.ErrorContext(ctx, "error connecting to check", "check", check.Name, "error", err)
-		return checkResult{}, err
+		return checkResult{Name: check.Name, Detail: "error connecting to upstream service"}, err
 	}
 	defer func() {
 		err := conn.Close()
@@ -184,14 +201,15 @@ func doCheck(ctx context.Context, logger *slog.Logger, check sophrosyne.Check) (
 			logger.ErrorContext(ctx, "error closing grpc connection", "check", check.Name, "error", err)
 		}
 	}()
-	client := checks.NewCheckServiceClient(conn)
+	if client == nil {
+		client = checks.NewCheckServiceClient(conn)
+	}
+
 	resp, err := client.Check(ctx, &checks.CheckRequest{Check: &checks.CheckRequest_Text{Text: "something"}})
 	if err != nil {
 		logger.ErrorContext(ctx, "error calling check", "check", check.Name, "error", err)
-		return checkResult{}, err
+		return checkResult{Name: check.Name, Detail: "error calling upstream service"}, err
 	}
-	return checkResult{
-		Status: resp.Result,
-		Detail: resp.Details,
-	}, nil
+	logger.DebugContext(ctx, "finished calling upstream service", "check", check.Name, "result", resp)
+	return checkResult{Name: check.Name, Status: resp.Result, Detail: resp.Details}, nil
 }
