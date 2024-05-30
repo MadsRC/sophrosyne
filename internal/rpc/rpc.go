@@ -109,6 +109,16 @@ func GetParams(req *jsonrpc.Request) (*jsonrpc.ParamsObject, *jsonrpc.ParamsArra
 
 var ErrNoParams = fmt.Errorf("no params found")
 
+// ParamsIntoAny takes a jsonrpc.Request, a target interface{}, and a
+// validation function, and attempts to unmarshal the request parameters into
+// the target interface{}.
+// It first checks the type of parameters in the request, then marshals them
+// into bytes, and finally unmarshals them into the target interface{}.
+// If a validation function is provided, it validates the target interface{}
+// after unmarshaling.
+// If target implements [sophrosyne.Validator], then target.Validate is called
+// after unmarshalling data into it.
+// Returns an error if any unmarshaling or validation fails.
 func ParamsIntoAny(req *jsonrpc.Request, target any, validate sophrosyne.Validator) error {
 	pa, po, ok := GetParams(req)
 	if !ok {

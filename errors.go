@@ -87,3 +87,17 @@ func (e ConstraintViolationError) Error() string {
 func (e ConstraintViolationError) Code() string {
 	return e.code
 }
+
+type ValidationError struct {
+	Detail string
+}
+
+func NewValidationError(detail string) *ValidationError {
+	return &ValidationError{
+		Detail: detail,
+	}
+}
+
+func (e *ValidationError) Error() string {
+	return fmt.Sprintf("validation error: %s", e.Detail)
+}

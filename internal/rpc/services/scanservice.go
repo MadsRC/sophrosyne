@@ -117,11 +117,11 @@ func (p ScanService) PerformScan(ctx context.Context, req jsonrpc.Request) ([]by
 		return rpc.ErrorFromRequest(&req, jsonrpc.InternalError, string(jsonrpc.InternalErrorMessage))
 	}
 
-	return p.performScan(ctx, req, profile)
+	return p.performScan(ctx, req, profile, params)
 
 }
 
-func (p ScanService) performScan(ctx context.Context, req jsonrpc.Request, profile *sophrosyne.Profile) ([]byte, error) {
+func (p ScanService) performScan(ctx context.Context, req jsonrpc.Request, profile *sophrosyne.Profile, params sophrosyne.PerformScanRequest) ([]byte, error) {
 	messages := make(chan checkResult, len(profile.Checks))
 	var wg sync.WaitGroup
 	wg.Add(len(profile.Checks))
@@ -130,7 +130,7 @@ func (p ScanService) performScan(ctx context.Context, req jsonrpc.Request, profi
 		p.logger.DebugContext(ctx, "running check from profile", "profile", profile.Name, "check", check.Name)
 		go func(check sophrosyne.Check) {
 			defer wg.Done()
-			res, err := doCheck(ctx, p.logger, check, nil)
+			res, err := doCheck(ctx, p.logger, check, nil, params)
 			if err != nil {
 				p.logger.ErrorContext(ctx, "error running check", "check", check.Name, "error", err)
 			}
@@ -183,16 +183,16 @@ type checkResult struct {
 	Detail string `json:"detail"`
 }
 
-func doCheck(ctx context.Context, logger *slog.Logger, check sophrosyne.Check, client checks.CheckServiceClient) (checkResult, error) {
+func doCheck(ctx context.Context, logger *slog.Logger, check sophrosyne.Check, client checks.CheckServiceClient, params sophrosyne.PerformScanRequest) (checkResult, error) {
 	if len(check.UpstreamServices) == 0 {
-		logger.ErrorContext(ctx, "no upstream services for check", "check", check.Name)
+		logger.DebugContext(ctx, "no upstream services for check", "check", check.Name)
 		return checkResult{}, fmt.Errorf("missing upstream services")
 	}
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	conn, err := grpc.NewClient(check.UpstreamServices[0].Host, opts...)
 	if err != nil {
-		logger.ErrorContext(ctx, "error connecting to check", "check", check.Name, "error", err)
+		logger.DebugContext(ctx, "error connecting to check", "check", check.Name, "error", err)
 		return checkResult{Name: check.Name, Detail: "error connecting to upstream service"}, err
 	}
 	defer func() {
@@ -205,11 +205,23 @@ func doCheck(ctx context.Context, logger *slog.Logger, check sophrosyne.Check, c
 		client = checks.NewCheckServiceClient(conn)
 	}
 
-	resp, err := client.Check(ctx, &checks.CheckRequest{Check: &checks.CheckRequest_Text{Text: "something"}})
+	resp, err := client.Check(ctx, createCheckRequest(ctx, params, logger))
 	if err != nil {
-		logger.ErrorContext(ctx, "error calling check", "check", check.Name, "error", err)
+		logger.DebugContext(ctx, "error calling check", "check", check.Name, "error", err)
 		return checkResult{Name: check.Name, Detail: "error calling upstream service"}, err
 	}
 	logger.DebugContext(ctx, "finished calling upstream service", "check", check.Name, "result", resp)
 	return checkResult{Name: check.Name, Status: resp.Result, Detail: resp.Details}, nil
+}
+
+func createCheckRequest(ctx context.Context, params sophrosyne.PerformScanRequest, logger *slog.Logger) *checks.CheckRequest {
+	if params.Image != "" {
+		logger.DebugContext(ctx, "creating check request for image", "image", params.Image)
+		return &checks.CheckRequest{Check: &checks.CheckRequest_Image{Image: params.Image}}
+	}
+	if params.Text != "" {
+		logger.DebugContext(ctx, "creating check request for text", "text", params.Text)
+		return &checks.CheckRequest{Check: &checks.CheckRequest_Text{Text: params.Text}}
+	}
+	return nil
 }

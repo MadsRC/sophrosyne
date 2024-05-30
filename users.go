@@ -18,7 +18,6 @@ package sophrosyne
 
 import (
 	"context"
-	"fmt"
 	"time"
 )
 
@@ -76,10 +75,10 @@ type GetUserRequest struct {
 
 func (p GetUserRequest) Validate(interface{}) error {
 	if p.ID == "" && p.Name == "" && p.Email == "" {
-		return fmt.Errorf("one of ID, Name or Email must be provided")
+		return NewValidationError("one of ID, Name or Email must be provided")
 	}
 	if p.ID != "" && (p.Name != "" || p.Email != "") {
-		return fmt.Errorf("only one of ID, Name or Email must be provided")
+		return NewValidationError("only one of ID, Name or Email must be provided")
 	}
 	return nil
 }
