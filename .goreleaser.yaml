@@ -32,6 +32,12 @@ builds:
       - amd64
       - arm64
     binary: sophrosyne
+    ldflags:
+      - '-s -w'
+      - '-X main.version={{.Version}}'
+      - '-X main.commit={{.Commit}}'
+      - '-X main.date={{.Date}}'
+      - '-X main.builtBy=goreleaser'
 
 archives:
   - format: tar.gz

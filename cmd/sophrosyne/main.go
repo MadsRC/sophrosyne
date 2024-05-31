@@ -48,6 +48,12 @@ import (
 	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
+var (
+	version = "0.0.0-dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 func main() {
 	cli.VersionPrinter = func(c *cli.Context) {
 		_, _ = fmt.Fprintf(c.App.Writer, "v%s\n", c.App.Version)
@@ -70,7 +76,7 @@ func main() {
 				Value: nil,
 			},
 		},
-		Version: "0.0.0",
+		Version: version,
 		Commands: []*cli.Command{
 			{
 				Name:  "run",
