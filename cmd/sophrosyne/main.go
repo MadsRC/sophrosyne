@@ -57,6 +57,11 @@ var (
 func main() {
 	cli.VersionPrinter = func(c *cli.Context) {
 		_, _ = fmt.Fprintf(c.App.Writer, "v%s\n", c.App.Version)
+		if !c.Bool("verbose") {
+			return
+		}
+		_, _ = fmt.Fprintf(c.App.Writer, "commit: %s\n", commit)
+		_, _ = fmt.Fprintf(c.App.Writer, "date: %s\n", date)
 	}
 	cli.VersionFlag = &cli.BoolFlag{
 		Name:    "version",
@@ -74,6 +79,11 @@ func main() {
 				Name:  "secretfiles",
 				Usage: "Files to read individual configuration values from. Multiple files can be specified by separating them with a comma or supply the option multiple times. The name of the file is used to determine what configuration parameter the content of the file will be read in to. For example, a file called 'database.host' will have its content used as the the value for 'database.host' in the configuration. This option is recommended to be used for secrets.",
 				Value: nil,
+			},
+			&cli.BoolFlag{
+				Name:  "verbose",
+				Usage: "If set, application will provide verbose outputs for commands that doesn't use the logger.",
+				Value: false,
 			},
 		},
 		Version: version,
