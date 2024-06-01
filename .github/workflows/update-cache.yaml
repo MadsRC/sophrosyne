@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
 
       - name: cache mise
-        uses: jdx/mise-action@0c39a522dfbced3ed83924152c45804a71ce216f # v2.0.4
+        uses: jdx/mise-action@b02b0576a303103155c986ce4e0ee322dcda8f72 # v2.0.5
         with:
           experimental: true
           cache: true
