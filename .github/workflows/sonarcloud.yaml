@@ -23,7 +23,7 @@ jobs:
       with:
         # Disabling shallow clone is recommended for improving relevancy of reporting
         fetch-depth: 0
-    - uses: jdx/mise-action@0c39a522dfbced3ed83924152c45804a71ce216f # v2.0.4
+    - uses: jdx/mise-action@b02b0576a303103155c986ce4e0ee322dcda8f72 # v2.0.5
       with:
         experimental: true
     - run: mise run dev:lint --no-fail
