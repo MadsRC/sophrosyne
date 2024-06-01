@@ -23,7 +23,7 @@ import (
 
 	"github.com/madsrc/sophrosyne"
 	"github.com/madsrc/sophrosyne/internal/grpc/checks"
-	"github.com/madsrc/sophrosyne/internal/logger"
+	"github.com/madsrc/sophrosyne/internal/log"
 	checks2 "github.com/madsrc/sophrosyne/internal/mocks/internal_/grpc/checks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -38,7 +38,7 @@ func TestScanService_doCheck_checkResultNameNotEmpty(t *testing.T) {
 		Detail: "something",
 	}
 
-	logger, _ := logger.NewTestLogger(nil)
+	logger, _ := log.NewTestLogger(nil)
 	mockCheckServiceClient := checks2.NewMockCheckServiceClient(t)
 	mockCheckServiceClient.On("Check", ctx, mock.Anything).Return(&checks.CheckResponse{
 		Result:  false,

@@ -82,7 +82,7 @@ func main() {
 			},
 			&cli.BoolFlag{
 				Name:  "verbose",
-				Usage: "If set, application will provide verbose outputs for commands that doesn't use the logger.",
+				Usage: "If set, application will provide verbose outputs for commands that doesn't use the log.",
 				Value: false,
 			},
 		},
@@ -322,15 +322,9 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	rpcScanService, err := services.NewScanService(authzProvider, logger, validate, profileService, checkService)
-	if err != nil {
-		return err
-	}
-
 	rpcServer.Register(rpcUserService.EntityID(), rpcUserService)
 	rpcServer.Register(rpcCheckService.EntityID(), rpcCheckService)
 	rpcServer.Register(rpcProfileService.EntityID(), rpcProfileService)
-	rpcServer.Register(rpcScanService.EntityID(), rpcScanService)
 
 	tlsConfig, err := tls.NewTLSServerConfig(config, rand.Reader)
 

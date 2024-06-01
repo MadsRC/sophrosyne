@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/madsrc/sophrosyne"
-	"github.com/madsrc/sophrosyne/internal/logger"
+	"github.com/madsrc/sophrosyne/internal/log"
 	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
 	"github.com/madsrc/sophrosyne/internal/rpc/jsonrpc"
 	"github.com/stretchr/testify/assert"
@@ -38,7 +38,7 @@ func TestScanService_PerformScan_userExtractedSuccessfully(t *testing.T) {
 	}}
 	expectedResponse := []byte(`{"jsonrpc":"2.0","id":"1","result":{"result":false,"checks":{}}}`)
 
-	logger, _ := logger.NewTestLogger(nil)
+	logger, _ := log.NewTestLogger(nil)
 	mockValidator := sophrosyne2.NewMockValidator(t)
 	mockProfileService := sophrosyne2.NewMockProfileService(t)
 	scanService := ScanService{
@@ -66,7 +66,7 @@ func TestScanService_performScan_checkRunSuccessReturnNoSuccess(t *testing.T) {
 	req := jsonrpc.Request{ID: jsonrpc.NewID("1"), Method: "scan", Params: &jsonrpc.ParamsObject{}}
 	expectedResponse := []byte(`{"jsonrpc":"2.0","id":"1","result":{"result":false,"checks":{"testCheck":{"status":false, "detail":"error calling upstream service"}}}}`)
 
-	logger, _ := logger.NewTestLogger(nil)
+	logger, _ := log.NewTestLogger(nil)
 	scanService := ScanService{
 		logger: logger,
 	}
@@ -92,7 +92,7 @@ func TestScanService_performScan_checkRunSuccessReturnNoSuccess(t *testing.T) {
 // Performs all checks in the profile and returns the results
 func TestPerformScan_PerformsAllChecks(t *testing.T) {
 	ctx := context.Background()
-	logger, _ := logger.NewTestLogger(nil)
+	logger, _ := log.NewTestLogger(nil)
 	profile := &sophrosyne.Profile{
 		Name: "test-profile",
 		Checks: []sophrosyne.Check{
@@ -114,7 +114,7 @@ func TestPerformScan_PerformsAllChecks(t *testing.T) {
 // Profile has no checks
 func TestPerformScan_ProfileHasNoChecks(t *testing.T) {
 	ctx := context.Background()
-	logger, _ := logger.NewTestLogger(nil)
+	logger, _ := log.NewTestLogger(nil)
 	profile := &sophrosyne.Profile{
 		Name:   "test-profile",
 		Checks: []sophrosyne.Check{},

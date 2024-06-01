@@ -50,7 +50,7 @@ func TestAfterConnect_LogsMessage(t *testing.T) {
 	require.Equal(t, "DEBUG", logEvent["level"])
 }
 
-// Check behavior when logger is nil.
+// Check behavior when log is nil.
 func TestAfterConnect_WithNilLogger(t *testing.T) {
 	afterConnectFunc := afterConnect(nil)
 

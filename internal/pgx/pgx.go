@@ -49,7 +49,7 @@ type conn interface {
 
 // afterConnect is a pgx.ConnConfig.AfterConnect function that logs 'database connection established', at the debug level.
 //
-// If logger is nil, this function panics.
+// If log is nil, this function panics.
 func afterConnect(logger *slog.Logger) func(ctx context.Context, conn *pgx.Conn) error {
 	return func(ctx context.Context, conn *pgx.Conn) error {
 		logger.DebugContext(ctx, "database connection established")
@@ -57,7 +57,7 @@ func afterConnect(logger *slog.Logger) func(ctx context.Context, conn *pgx.Conn)
 	}
 }
 
-// newPool creates a new pgx connection pool using the provided configuration and logger.
+// newPool creates a new pgx connection pool using the provided configuration and log.
 // It parses the configuration details, sets up a new tracer, and defines a function to be executed after connecting to the database.
 // It returns a new pgx connection pool based on the provided context and configuration, or an error if the configuration parsing fails.
 func newPool(ctx context.Context, config *sophrosyne.Config, logger *slog.Logger) (*pgxpool.Pool, error) {

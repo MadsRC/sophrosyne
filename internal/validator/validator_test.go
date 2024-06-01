@@ -198,3 +198,23 @@ func TestMutualExclusivity_Two_Fields(t *testing.T) {
 		})
 	}
 }
+
+// Test that the validator fails validation if the field tag is required and the field is a nil pointer
+func TestValidate_RequiredPointerIsNil(t *testing.T) {
+	v := NewValidator()
+	type thing struct{}
+	type obj struct {
+		A *thing  `validate:"required"`
+		B *string `validate:"required"`
+	}
+	i := obj{}
+	err := v.Validate(i)
+	require.Error(t, err)
+	var ve validator.ValidationErrors
+	require.ErrorAs(t, err, &ve)
+	require.Len(t, ve, 2)
+	require.Equal(t, "A", ve[0].Field())
+	require.Equal(t, "required", ve[0].Tag())
+	require.Equal(t, "B", ve[1].Field())
+	require.Equal(t, "required", ve[1].Tag())
+}
