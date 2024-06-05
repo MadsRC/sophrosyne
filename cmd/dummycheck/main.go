@@ -26,7 +26,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"google.golang.org/grpc"
 
-	"github.com/madsrc/sophrosyne/internal/grpc/checks"
+	"github.com/madsrc/sophrosyne/internal/grpc/sophrosyne/v0"
 )
 
 func main() {
@@ -46,7 +46,7 @@ func main() {
 			}
 			var opts []grpc.ServerOption
 			grpcServer := grpc.NewServer(opts...)
-			checks.RegisterCheckServiceServer(grpcServer, checkServer{})
+			v0.RegisterCheckProviderServiceServer(grpcServer, checkServer{})
 			err = grpcServer.Serve(lis)
 			if err != nil {
 				log.Fatalf("failed to serve: %v", err)
@@ -63,27 +63,25 @@ func main() {
 }
 
 type checkServer struct {
-	checks.UnimplementedCheckServiceServer
+	v0.UnimplementedCheckProviderServiceServer
 }
 
-func (c checkServer) Check(ctx context.Context, request *checks.CheckRequest) (*checks.CheckResponse, error) {
-	var cnt string
+func (c checkServer) Check(ctx context.Context, request *v0.CheckProviderRequest) (*v0.CheckProviderResponse, error) {
+	var cnt any
 	switch request.GetCheck().(type) {
-	case *checks.CheckRequest_Text:
+	case *v0.CheckProviderRequest_Text:
 		cnt = request.GetText()
-	case *checks.CheckRequest_Image:
+	case *v0.CheckProviderRequest_Image:
 		cnt = request.GetImage()
 	default:
 		cnt = ""
 	}
 	if cnt == "false" {
-		return &checks.CheckResponse{
-			Result:  false,
-			Details: "this was false",
+		return &v0.CheckProviderResponse{
+			Result: false,
 		}, nil
 	}
-	return &checks.CheckResponse{
-		Result:  true,
-		Details: "this was true",
+	return &v0.CheckProviderResponse{
+		Result: true,
 	}, nil
 }

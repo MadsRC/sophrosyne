@@ -17,11 +17,13 @@
 package grpc
 
 import (
-	"github.com/madsrc/sophrosyne"
-	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
-	"github.com/stretchr/testify/require"
 	"log/slog"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/madsrc/sophrosyne"
+	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
 )
 
 // correctly assigns profileService to ScanServiceServer

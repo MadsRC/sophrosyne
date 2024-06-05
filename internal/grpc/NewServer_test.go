@@ -18,15 +18,15 @@ package grpc
 
 import (
 	"context"
-	"encoding/json"
-	"github.com/madsrc/sophrosyne"
-	"github.com/madsrc/sophrosyne/internal/log"
-	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
-	"github.com/madsrc/sophrosyne/internal/validator"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"testing"
+
+	"github.com/madsrc/sophrosyne"
+	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
+	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
 // Tests that a default validator is attached to the server
@@ -40,23 +40,6 @@ func TestNewServer_UsesProvidedValidator(t *testing.T) {
 	v := validator.NewValidator()
 	server, _ := NewServer(context.Background(), WithValidator(v))
 	require.Equal(t, v, server.validator)
-}
-
-// Test that if a log is attached, it is used
-func TestNewServer_UsesProvidedLogger(t *testing.T) {
-	logger, buf := log.NewTestLogger(nil)
-	server, _ := NewServer(context.Background(), WithLogger(logger))
-	require.Equal(t, logger, server.logger)
-
-	// parse log as json
-	data := make(map[string]interface{})
-	err := json.Unmarshal(buf.Bytes(), &data)
-	require.NoError(t, err)
-
-	require.Equal(t, "DEBUG", data["level"])
-	require.Equal(t, "validating server options", data["msg"])
-	require.NotEmpty(t, data["options"])
-	require.NotEmpty(t, data["defaults"])
 }
 
 // Test that no grpcServer is provided, validation fails

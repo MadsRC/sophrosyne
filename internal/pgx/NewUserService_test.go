@@ -20,13 +20,15 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
-	"github.com/jackc/pgx/v5"
-	"github.com/madsrc/sophrosyne"
-	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
-	"github.com/pashagolub/pgxmock/v3"
-	"github.com/stretchr/testify/require"
 	"log/slog"
 	"testing"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/pashagolub/pgxmock/v3"
+	"github.com/stretchr/testify/require"
+
+	"github.com/madsrc/sophrosyne"
+	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
 )
 
 // UserService is successfully created when all inputs are valid

@@ -17,13 +17,15 @@
 package grpc
 
 import (
-	"github.com/madsrc/sophrosyne"
-	"github.com/madsrc/sophrosyne/internal/validator"
-	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc"
 	"log/slog"
 	"net"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
+
+	"github.com/madsrc/sophrosyne"
+	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
 // Server's listener is set correctly when a valid listener is provided.

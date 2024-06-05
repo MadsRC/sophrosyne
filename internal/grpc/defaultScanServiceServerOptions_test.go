@@ -17,9 +17,11 @@
 package grpc
 
 import (
-	"github.com/madsrc/sophrosyne/internal/validator"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
 // returns a slice of Option with a validator

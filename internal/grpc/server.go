@@ -18,11 +18,18 @@ package grpc
 
 import (
 	"context"
-	"github.com/madsrc/sophrosyne"
-	"github.com/madsrc/sophrosyne/internal/validator"
-	"google.golang.org/grpc"
 	"log/slog"
 	"net"
+
+	"google.golang.org/grpc"
+
+	"github.com/madsrc/sophrosyne"
+	"github.com/madsrc/sophrosyne/internal/validator"
+)
+
+const (
+	InvalidTokenMsg  = "invalid token"
+	InvalidCursorMsg = "invalid cursor"
 )
 
 type Server struct {
@@ -37,9 +44,6 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 	s := &Server{}
 	setOptions(s, defaultServerOptions(), opts...)
 
-	if s.logger != nil {
-		s.logger.DebugContext(ctx, "validating server options", "options", opts, "defaults", defaultServerOptions())
-	}
 	err := s.validator.Validate(s)
 	if err != nil {
 		return nil, err
@@ -51,6 +55,24 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 // Serve starts the server. It is a wrapper around [grpc.Server.Serve].
 func (s Server) Serve() error {
 	return s.grpcServer.Serve(s.listener)
+}
+
+// GracefulStop stops the server gracefully. It is a wrapper around
+// [grpc.Server.GracefulStop].
+func (s Server) GracefulStop() {
+	s.grpcServer.GracefulStop()
+}
+
+// RegisterService registers the service with the gRPC server. It is a
+// wrapper around [grpc.Server.RegisterService].
+func (s Server) RegisterService(desc *grpc.ServiceDesc, ss interface{}) {
+	s.grpcServer.RegisterService(desc, ss)
+}
+
+// GetServiceInfo returns the service info for the gRPC server. It is a
+// wrapper around [grpc.Server.GetServiceInfo].
+func (s Server) GetServiceInfo() map[string]grpc.ServiceInfo {
+	return s.grpcServer.GetServiceInfo()
 }
 
 // defaultServerOptions returns a set of default ServerOption functions.

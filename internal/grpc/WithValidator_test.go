@@ -17,14 +17,16 @@
 package grpc
 
 import (
-	"github.com/madsrc/sophrosyne"
-	"github.com/madsrc/sophrosyne/internal/validator"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc"
 	"log/slog"
 	"net"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
+
+	"github.com/madsrc/sophrosyne"
+	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
 // Assigns the provided validator to the server's validator field.
@@ -194,7 +196,7 @@ func TestWithValidator_Chained(t *testing.T) {
 
 	// Create another Option
 	anotherOption := func(s *Server) {
-		// Do something else with the server
+		// Do getTargetUser else with the server
 	}
 
 	// Chain the Options

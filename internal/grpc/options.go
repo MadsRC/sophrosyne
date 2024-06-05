@@ -17,10 +17,12 @@
 package grpc
 
 import (
-	"github.com/madsrc/sophrosyne"
-	"google.golang.org/grpc"
 	"log/slog"
 	"net"
+
+	"google.golang.org/grpc"
+
+	"github.com/madsrc/sophrosyne"
 )
 
 type Option func(s any)
@@ -59,6 +61,9 @@ func WithOptions(opts ...Option) Option {
 // The Option function can only be applied to the following types:
 // - *ScanServiceServer
 // - *Server
+// - *UserServiceServer
+// - *CheckServiceServer
+// - *ProfileServiceServer
 //
 // If the type is not one of the above, the Option function does nothing.
 func WithLogger(logger *slog.Logger) Option {
@@ -67,6 +72,12 @@ func WithLogger(logger *slog.Logger) Option {
 		case *ScanServiceServer:
 			s.logger = logger
 		case *Server:
+			s.logger = logger
+		case *UserServiceServer:
+			s.logger = logger
+		case *CheckServiceServer:
+			s.logger = logger
+		case *ProfileServiceServer:
 			s.logger = logger
 		default:
 			return
@@ -80,6 +91,9 @@ func WithLogger(logger *slog.Logger) Option {
 // The Option function can only be applied to the following types:
 // - *ScanServiceServer
 // - *Server
+// - *UserServiceServer
+// - *CheckServiceServer
+// - *ProfileServiceServer
 //
 // If the type is not one of the above, the Option function does nothing.
 func WithConfig(config *sophrosyne.Config) Option {
@@ -88,6 +102,12 @@ func WithConfig(config *sophrosyne.Config) Option {
 		case *ScanServiceServer:
 			s.config = config
 		case *Server:
+			s.config = config
+		case *UserServiceServer:
+			s.config = config
+		case *CheckServiceServer:
+			s.config = config
+		case *ProfileServiceServer:
 			s.config = config
 		default:
 			return
@@ -101,6 +121,9 @@ func WithConfig(config *sophrosyne.Config) Option {
 // The Option function can only be applied to the following types:
 // - *ScanServiceServer
 // - *Server
+// - *UserServiceServer
+// - *CheckServiceServer
+// - *ProfileServiceServer
 //
 // If the type is not one of the above, the Option function does nothing.
 func WithValidator(validator sophrosyne.Validator) Option {
@@ -109,6 +132,12 @@ func WithValidator(validator sophrosyne.Validator) Option {
 		case *ScanServiceServer:
 			s.validator = validator
 		case *Server:
+			s.validator = validator
+		case *UserServiceServer:
+			s.validator = validator
+		case *CheckServiceServer:
+			s.validator = validator
+		case *ProfileServiceServer:
 			s.validator = validator
 		default:
 			return
@@ -157,6 +186,7 @@ func WithGrpcServer(grpcServer *grpc.Server) Option {
 //
 // The Option function can only be applied to the following types:
 // - *ScanServiceServer
+// - *ProfileServiceServer
 //
 // If the type is not one of the above, the Option function does nothing.
 func WithProfileService(profileService sophrosyne.ProfileService) Option {
@@ -164,6 +194,68 @@ func WithProfileService(profileService sophrosyne.ProfileService) Option {
 		switch s := target.(type) {
 		case *ScanServiceServer:
 			s.profileService = profileService
+		case *ProfileServiceServer:
+			s.profileService = profileService
+		default:
+			return
+		}
+	}
+}
+
+// WithCheckService returns an Option function that sets the
+// provided checkService to instance.
+//
+// The Option function can only be applied to the following types:
+// - *CheckServiceServer
+//
+// If the type is not one of the above, the Option function does nothing.
+func WithCheckService(checkService sophrosyne.CheckService) Option {
+	return func(target any) {
+		switch s := target.(type) {
+		case *CheckServiceServer:
+			s.checkService = checkService
+		default:
+			return
+		}
+	}
+}
+
+// WithUserService returns an Option function that sets the
+// provided userService to instance.
+//
+// The Option function can only be applied to the following types:
+// - *UserServiceServer
+//
+// If the type is not one of the above, the Option function does nothing.
+func WithUserService(userService sophrosyne.UserService) Option {
+	return func(target any) {
+		switch s := target.(type) {
+		case *UserServiceServer:
+			s.userService = userService
+		default:
+			return
+		}
+	}
+}
+
+// WithAuthorizationProvider returns an Option function that sets the
+// provided authorizationProvider to instance.
+//
+// The Option function can only be applied to the following types:
+// - *UserServiceServer
+// - *CheckServiceServer
+// - *ProfileServiceServer
+//
+// If the type is not one of the above, the Option function does nothing.
+func WithAuthorizationProvider(authorizationProvider sophrosyne.AuthorizationProvider) Option {
+	return func(target any) {
+		switch s := target.(type) {
+		case *UserServiceServer:
+			s.authzProvider = authorizationProvider
+		case *CheckServiceServer:
+			s.authzProvider = authorizationProvider
+		case *ProfileServiceServer:
+			s.authzProvider = authorizationProvider
 		default:
 			return
 		}

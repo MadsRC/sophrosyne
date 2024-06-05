@@ -19,13 +19,18 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"sync"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
 	"github.com/madsrc/sophrosyne"
 	v0 "github.com/madsrc/sophrosyne/internal/grpc/sophrosyne/v0"
 	"github.com/madsrc/sophrosyne/internal/validator"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"log/slog"
-	"sync"
 )
 
 // ScanServiceServer is a gGRPC server that handles scans.
@@ -69,7 +74,7 @@ func defaultScanServiceServerOptions() []Option {
 func (s ScanServiceServer) Scan(ctx context.Context, request *v0.ScanRequest) (*v0.ScanResponse, error) {
 	curUser := sophrosyne.ExtractUser(ctx)
 	if curUser == nil {
-		return nil, fmt.Errorf("error extracting user from context")
+		return nil, status.Errorf(codes.Unauthenticated, InvalidTokenMsg)
 	}
 
 	profile, err := s.lookupProfile(ctx, request, curUser)

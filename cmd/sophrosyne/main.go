@@ -22,11 +22,13 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	http2 "net/http"
 	"os"
 	"os/signal"
-	"syscall"
-	"time"
+
+	googlegrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 
 	"github.com/madsrc/sophrosyne/internal/cache"
 
@@ -36,14 +38,9 @@ import (
 	"github.com/madsrc/sophrosyne"
 	"github.com/madsrc/sophrosyne/internal/cedar"
 	"github.com/madsrc/sophrosyne/internal/configProvider"
-	"github.com/madsrc/sophrosyne/internal/healthchecker"
-	"github.com/madsrc/sophrosyne/internal/http"
-	"github.com/madsrc/sophrosyne/internal/http/middleware"
 	"github.com/madsrc/sophrosyne/internal/migrate"
 	"github.com/madsrc/sophrosyne/internal/otel"
 	"github.com/madsrc/sophrosyne/internal/pgx"
-	"github.com/madsrc/sophrosyne/internal/rpc"
-	"github.com/madsrc/sophrosyne/internal/rpc/services"
 	"github.com/madsrc/sophrosyne/internal/tls"
 	"github.com/madsrc/sophrosyne/internal/validator"
 )
@@ -167,7 +164,7 @@ func main() {
 					&cli.StringFlag{
 						Name:  "target",
 						Usage: "target server address. Must include scheme and port number",
-						Value: "https://127.0.0.1:8080/healthz",
+						Value: "127.0.0.1:8080",
 					},
 					&cli.BoolFlag{
 						Name:  "insecure-skip-verify",
@@ -188,23 +185,36 @@ func main() {
 					if err != nil {
 						return err
 					}
-					client := http2.Client{
-						Timeout: 5 * time.Second,
-						Transport: &http2.Transport{
-							TLSClientConfig: tlsConfig,
-						},
+
+					options := []googlegrpc.DialOption{
+						googlegrpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)),
 					}
-					resp, err := client.Get(c.String("target"))
+					if config.Security.TLS.InsecureSkipVerify {
+						options = append(options, googlegrpc.WithTransportCredentials(insecure.NewCredentials()))
+					}
+
+					conn, err := googlegrpc.NewClient(c.String("target"), options...)
 					if err != nil {
-						if errors.Is(err, syscall.ECONNREFUSED) {
-							return cli.Exit("unhealthy", 2)
-						}
-						return cli.Exit(err.Error(), 1)
+						return err
 					}
-					if resp.StatusCode == http2.StatusOK {
+
+					defer conn.Close()
+
+					healthClient := healthpb.NewHealthClient(conn)
+
+					resp, err := healthClient.Check(context.Background(), &healthpb.HealthCheckRequest{
+						Service: "",
+					})
+
+					// TODO: Why does this trigger "panic: rpc error: code = Unavailable desc = connection error: desc = "error reading server preface: EOF" ?
+					if err != nil {
+						return err
+					}
+
+					if resp.GetStatus() == healthpb.HealthCheckResponse_SERVING {
 						return cli.Exit("healthy", 0)
 					}
-					return cli.Exit("unhealthy", 3)
+					return cli.Exit("unhealthy", 1)
 
 				},
 			},
@@ -302,82 +312,21 @@ func run(c *cli.Context) error {
 
 	authzProvider, err := cedar.NewAuthorizationProvider(ctx, logger, userService, otelService, profileService, checkService)
 
-	rpcServer, err := rpc.NewRPCServer(logger)
-	if err != nil {
-		return err
-	}
-
-	rpcUserService, err := services.NewUserService(userService, authzProvider, logger, validate)
-	if err != nil {
-		return err
-	}
-
-	rpcCheckService, err := services.NewCheckService(checkService, authzProvider, logger, validate)
-	if err != nil {
-		return err
-	}
-
-	rpcProfileService, err := services.NewProfileService(profileService, authzProvider, logger, validate)
-	if err != nil {
-		return err
-	}
-
-	rpcServer.Register(rpcUserService.EntityID(), rpcUserService)
-	rpcServer.Register(rpcCheckService.EntityID(), rpcCheckService)
-	rpcServer.Register(rpcProfileService.EntityID(), rpcProfileService)
-
 	tlsConfig, err := tls.NewTLSServerConfig(config, rand.Reader)
 
-	healthcheckService, err := healthchecker.NewHealthcheckService(
-		[]sophrosyne.HealthChecker{
-			userService,
-			userServiceDatabase,
-		},
-	)
-
-	s, err := http.NewServer(ctx, config, validate, logger, otelService, userService, tlsConfig)
+	GRPCServices, err := createGRPCServices(ctx, config, logger, validate, authzProvider, checkService, profileService, userService)
 	if err != nil {
 		return err
 	}
 
-	s.Handle(
-		"/v1/rpc",
-		middleware.PanicCatcher(
-			logger,
-			otelService,
-			middleware.SetupTracing(
-				otelService,
-				middleware.RequestLogging(
-					logger,
-					middleware.Authentication(
-						nil,
-						config,
-						userService,
-						logger,
-						http.RPCHandler(logger, rpcServer, config),
-					),
-				),
-			),
-		),
-	)
-	s.Handle(
-		"/healthz",
-		middleware.PanicCatcher(
-			logger,
-			otelService,
-			middleware.SetupTracing(
-				otelService,
-				middleware.RequestLogging(
-					logger,
-					http.HealthcheckHandler(logger, healthcheckService),
-				),
-			),
-		),
-	)
+	grpcServer, err := setupGRPCServer(ctx, config, logger, *GRPCServices, tlsConfig, validate, userService, otelService)
+	if err != nil {
+		return err
+	}
 
 	srvErr := make(chan error, 1)
 	go func() {
-		srvErr <- s.Start()
+		srvErr <- grpcServer.Serve()
 	}()
 
 	// Wait for interruption.
@@ -392,7 +341,6 @@ func run(c *cli.Context) error {
 		stop()
 	}
 
-	// When Shutdown is called, ListenAndServe immediately returns ErrServerClosed.
-	err = s.Shutdown(context.Background())
-	return err
+	grpcServer.GracefulStop()
+	return nil
 }

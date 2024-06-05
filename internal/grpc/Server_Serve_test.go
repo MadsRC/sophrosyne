@@ -17,15 +17,17 @@
 package grpc
 
 import (
-	"github.com/madsrc/sophrosyne"
-	"github.com/madsrc/sophrosyne/internal/validator"
-	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"log/slog"
 	"net"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
+	"github.com/madsrc/sophrosyne"
+	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
 // Serve starts the gRPC server successfully

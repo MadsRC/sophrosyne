@@ -17,9 +17,11 @@
 package grpc
 
 import (
-	"github.com/madsrc/sophrosyne/internal/log"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/madsrc/sophrosyne/internal/log"
 )
 
 // Applies all default options to the target.

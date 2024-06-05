@@ -17,9 +17,10 @@
 package grpc
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
-	"testing"
 )
 
 // Assigns grpcServer to Server when Server is not nil.

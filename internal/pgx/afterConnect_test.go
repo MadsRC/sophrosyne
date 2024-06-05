@@ -21,9 +21,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"log/slog"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 // Verify that the function logs 'database connection established', at the debug level, when called.

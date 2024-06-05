@@ -18,15 +18,17 @@ package grpc
 
 import (
 	"context"
-	"github.com/madsrc/sophrosyne"
-	"github.com/madsrc/sophrosyne/internal/log"
-	"github.com/madsrc/sophrosyne/internal/validator"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc"
 	"log/slog"
 	"net"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
+
+	"github.com/madsrc/sophrosyne"
+	"github.com/madsrc/sophrosyne/internal/log"
+	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
 // Applies all provided Option functions to the Server instance.

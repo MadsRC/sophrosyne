@@ -18,13 +18,15 @@ package pgx
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/madsrc/sophrosyne"
-	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/madsrc/sophrosyne"
+	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
 )
 
 // Verify that all fields from getUserDbReturn are correctly mapped to User

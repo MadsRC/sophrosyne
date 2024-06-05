@@ -30,4 +30,4 @@ SOPH_LOGGING_LEVEL=debug \
   OTEL_TRACES_EXPORTER="otlp" \
   OTEL_METRICS_EXPORTER="otlp" \
   OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf" \
-go run cmd/sophrosyne/main.go --config configurations/dev.yaml run
+go run cmd/sophrosyne/* --config configurations/dev.yaml run

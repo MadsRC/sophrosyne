@@ -25,11 +25,12 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/madsrc/sophrosyne"
-	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
 	"github.com/pashagolub/pgxmock/v3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/madsrc/sophrosyne"
+	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
 )
 
 // Verify correct user is returned when queried by email

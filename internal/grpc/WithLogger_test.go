@@ -17,16 +17,18 @@
 package grpc
 
 import (
-	"github.com/madsrc/sophrosyne"
-	"github.com/madsrc/sophrosyne/internal/log"
-	"github.com/madsrc/sophrosyne/internal/validator"
-	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc"
 	"log/slog"
 	"net"
 	"os"
 	"sync"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
+
+	"github.com/madsrc/sophrosyne"
+	"github.com/madsrc/sophrosyne/internal/log"
+	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
 // sets the log for a valid Server instance.
