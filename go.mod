@@ -1,6 +1,6 @@
 module github.com/madsrc/sophrosyne
 
-go 1.22.3
+go 1.22.4
 
 require (
 	github.com/cedar-policy/cedar-go v0.0.0-20240429205519-77c610b20627
@@ -19,7 +19,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.31.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.31.0
 	github.com/urfave/cli/v2 v2.27.2
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.45.0
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.46.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.52.0
 	go.opentelemetry.io/otel v1.27.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.27.0

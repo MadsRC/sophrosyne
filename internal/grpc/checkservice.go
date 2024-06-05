@@ -49,6 +49,10 @@ func newGetCheckResponseFromCheck(check *sophrosyne.Check) *v0.GetCheckResponse 
 		resp.Profiles = append(resp.Profiles, profile.Name)
 	}
 
+	for _, svc := range check.UpstreamServices {
+		resp.UpstreamServices = append(resp.UpstreamServices, svc.Host)
+	}
+
 	if check.DeletedAt != nil {
 		resp.DeletedAt = timestamppb.New(*check.DeletedAt)
 	}
@@ -145,8 +149,9 @@ func (p CheckServiceServer) CreateCheck(ctx context.Context, request *v0.CreateC
 	}
 
 	check, err := p.checkService.CreateCheck(ctx, sophrosyne.CreateCheckRequest{
-		Name:     request.GetName(),
-		Profiles: request.Profiles,
+		Name:             request.GetName(),
+		Profiles:         request.Profiles,
+		UpstreamServices: request.UpstreamServices,
 	})
 
 	if err != nil {
@@ -156,10 +161,11 @@ func (p CheckServiceServer) CreateCheck(ctx context.Context, request *v0.CreateC
 
 	p.logger.InfoContext(ctx, "check created", "check", check)
 	resp := &v0.CreateCheckResponse{
-		Name:      check.Name,
-		Profiles:  request.Profiles,
-		CreatedAt: timestamppb.New(check.CreatedAt),
-		UpdatedAt: timestamppb.New(check.UpdatedAt),
+		Name:             check.Name,
+		Profiles:         request.Profiles,
+		UpstreamServices: request.UpstreamServices,
+		CreatedAt:        timestamppb.New(check.CreatedAt),
+		UpdatedAt:        timestamppb.New(check.UpdatedAt),
 	}
 
 	return resp, nil
@@ -172,8 +178,9 @@ func (p CheckServiceServer) UpdateCheck(ctx context.Context, request *v0.UpdateC
 	}
 
 	check, err := p.checkService.UpdateCheck(ctx, sophrosyne.UpdateCheckRequest{
-		Name:     target.Name,
-		Profiles: request.Profiles,
+		Name:             target.Name,
+		Profiles:         request.Profiles,
+		UpstreamServices: request.UpstreamServices,
 	})
 	if err != nil {
 		p.logger.ErrorContext(ctx, "unable to update check", "error", err)
@@ -182,10 +189,11 @@ func (p CheckServiceServer) UpdateCheck(ctx context.Context, request *v0.UpdateC
 
 	p.logger.InfoContext(ctx, "check updated", "check", check)
 	resp := &v0.UpdateCheckResponse{
-		Name:      check.Name,
-		Profiles:  request.Profiles,
-		CreatedAt: timestamppb.New(check.CreatedAt),
-		UpdatedAt: timestamppb.New(check.UpdatedAt),
+		Name:             check.Name,
+		Profiles:         request.Profiles,
+		UpstreamServices: request.UpstreamServices,
+		CreatedAt:        timestamppb.New(check.CreatedAt),
+		UpdatedAt:        timestamppb.New(check.UpdatedAt),
 	}
 
 	if check.DeletedAt != nil {
@@ -249,7 +257,7 @@ func NewCheckServiceServer(ctx context.Context, opts ...Option) (*CheckServiceSe
 	setOptions(s, defaultCheckServiceServerOptions(), opts...)
 
 	if s.logger != nil {
-		s.logger.DebugContext(ctx, "validating server options", "options", opts, "defaults", defaultCheckServiceServerOptions())
+		s.logger.DebugContext(ctx, "validating server options")
 	}
 	err := s.validator.Validate(s)
 	if err != nil {

@@ -250,7 +250,7 @@ func NewProfileServiceServer(ctx context.Context, opts ...Option) (*ProfileServi
 	setOptions(s, defaultProfileServiceServerOptions(), opts...)
 
 	if s.logger != nil {
-		s.logger.DebugContext(ctx, "validating server options", "options", opts, "defaults", defaultProfileServiceServerOptions())
+		s.logger.DebugContext(ctx, "validating server options")
 	}
 	err := s.validator.Validate(s)
 	if err != nil {

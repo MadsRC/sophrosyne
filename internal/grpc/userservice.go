@@ -54,7 +54,7 @@ func NewUserServiceServer(ctx context.Context, opts ...Option) (*UserServiceServ
 	setOptions(s, defaultUserServiceServerOptions(), opts...)
 
 	if s.logger != nil {
-		s.logger.DebugContext(ctx, "validating server options", "options", opts, "defaults", defaultUserServiceServerOptions())
+		s.logger.DebugContext(ctx, "validating server options")
 	}
 	err := s.validator.Validate(s)
 	if err != nil {

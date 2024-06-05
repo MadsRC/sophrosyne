@@ -56,7 +56,7 @@ func NewScanServiceServer(ctx context.Context, opts ...Option) (*ScanServiceServ
 	setOptions(s, defaultScanServiceServerOptions(), opts...)
 
 	if s.logger != nil {
-		s.logger.DebugContext(ctx, "validating server options", "options", opts, "defaults", defaultScanServiceServerOptions())
+		s.logger.DebugContext(ctx, "validating server options")
 	}
 	err := s.validator.Validate(s)
 	if err != nil {
@@ -217,6 +217,8 @@ func processCheckResults(ctx context.Context, messages chan *v0.CheckResult, log
 		} else {
 			success = false
 		}
+
+		checkResults = append(checkResults, msg)
 	}
 
 	resp := processedCheckResults{
@@ -229,7 +231,7 @@ func processCheckResults(ctx context.Context, messages chan *v0.CheckResult, log
 }
 
 func checkProviderRequestFromScanRequest(ctx context.Context, logger *slog.Logger, req *v0.ScanRequest) (*v0.CheckProviderRequest, error) {
-	if len(req.GetImage()) == 0 {
+	if len(req.GetImage()) != 0 {
 		logger.DebugContext(ctx, "creating check request for image", "image", req.GetImage())
 		return &v0.CheckProviderRequest{Check: &v0.CheckProviderRequest_Image{Image: req.GetImage()}}, nil
 	}

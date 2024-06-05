@@ -26,7 +26,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"google.golang.org/grpc"
 
-	"github.com/madsrc/sophrosyne/internal/grpc/sophrosyne/v0"
+	v0 "github.com/madsrc/sophrosyne/internal/grpc/sophrosyne/v0"
 )
 
 func main() {

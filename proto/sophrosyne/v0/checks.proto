@@ -42,9 +42,10 @@ message GetCheckRequest {
 message GetCheckResponse {
   string name = 1;
   repeated string profiles = 2;
-  google.protobuf.Timestamp created_at = 3;
-  google.protobuf.Timestamp updated_at = 4;
-  google.protobuf.Timestamp deleted_at = 5;
+  repeated string upstream_services = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  google.protobuf.Timestamp deleted_at = 6;
 }
 
 message GetChecksRequest {
@@ -60,26 +61,30 @@ message GetChecksResponse {
 message CreateCheckRequest {
   string name = 1;
   repeated string profiles = 2;
+  repeated string upstream_services = 3;
 }
 
 message CreateCheckResponse {
   string name = 1;
   repeated string profiles = 2;
-  google.protobuf.Timestamp created_at = 3;
-  google.protobuf.Timestamp updated_at = 4;
+  repeated string upstream_services = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
 }
 
 message UpdateCheckRequest {
   string name = 1;
   repeated string profiles = 2;
+  repeated string upstream_services = 3;
 }
 
 message UpdateCheckResponse {
   string name = 1;
   repeated string profiles = 2;
-  google.protobuf.Timestamp created_at = 3;
-  google.protobuf.Timestamp updated_at = 4;
-  google.protobuf.Timestamp deleted_at = 5;
+  repeated string upstream_services = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  google.protobuf.Timestamp deleted_at = 6;
 }
 
 message DeleteCheckRequest {

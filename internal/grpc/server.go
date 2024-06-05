@@ -54,6 +54,7 @@ func NewServer(ctx context.Context, opts ...Option) (*Server, error) {
 
 // Serve starts the server. It is a wrapper around [grpc.Server.Serve].
 func (s Server) Serve() error {
+	s.logger.InfoContext(context.Background(), "starting server", "port", s.config.Server.Port)
 	return s.grpcServer.Serve(s.listener)
 }
 
