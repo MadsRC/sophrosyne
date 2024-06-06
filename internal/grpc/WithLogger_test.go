@@ -31,6 +31,71 @@ import (
 	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
+func TestWithLogger(t *testing.T) {
+	type testStruct struct {
+		logger *slog.Logger
+	}
+	cases := []struct {
+		name   string
+		target any
+	}{
+		{
+			"ScanServiceServer",
+			&ScanServiceServer{},
+		},
+		{
+			"Server",
+			&Server{},
+		},
+		{
+			"UserServiceServer",
+			&UserServiceServer{},
+		},
+		{
+			"CheckServiceServer",
+			&CheckServiceServer{},
+		},
+		{
+			"ProfileServiceServer",
+			&ProfileServiceServer{},
+		},
+		{
+			"Unknown type",
+			&testStruct{},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			logger, _ := log.NewTestLogger(nil)
+			option := WithLogger(logger)
+			option(c.target)
+
+			require.NotNil(t, c.target)
+
+			switch c.target.(type) {
+			case *ScanServiceServer:
+				require.NotNil(t, c.target.(*ScanServiceServer).logger)
+				require.Equal(t, logger, c.target.(*ScanServiceServer).logger)
+			case *Server:
+				require.NotNil(t, c.target.(*Server).logger)
+				require.Equal(t, logger, c.target.(*Server).logger)
+			case *UserServiceServer:
+				require.NotNil(t, c.target.(*UserServiceServer).logger)
+				require.Equal(t, logger, c.target.(*UserServiceServer).logger)
+			case *CheckServiceServer:
+				require.NotNil(t, c.target.(*CheckServiceServer).logger)
+				require.Equal(t, logger, c.target.(*CheckServiceServer).logger)
+			case *ProfileServiceServer:
+				require.NotNil(t, c.target.(*ProfileServiceServer).logger)
+				require.Equal(t, logger, c.target.(*ProfileServiceServer).logger)
+			default:
+				require.Nil(t, c.target.(*testStruct).logger)
+			}
+		})
+	}
+}
+
 // sets the log for a valid Server instance.
 func TestWithLogger_SetsLogger(t *testing.T) {
 	logger, _ := log.NewTestLogger(nil)

@@ -30,7 +30,7 @@ import (
 	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
-// Successfully extracts user from context and performs scan
+// Successfully extracts user from context and performs scan.
 func TestScanServiceServer_SuccessfullyExtractsUserAndPerformsScan(t *testing.T) {
 	ctx := context.WithValue(context.Background(), sophrosyne.UserContextKey{}, &sophrosyne.User{
 		DefaultProfile: sophrosyne.Profile{Name: "default"},
@@ -56,7 +56,7 @@ func TestScanServiceServer_SuccessfullyExtractsUserAndPerformsScan(t *testing.T)
 	require.NotNil(t, response)
 }
 
-// User extraction from context fails
+// User extraction from context fails.
 func TestScanServiceServer_UserExtractionFails(t *testing.T) {
 	ctx := context.Background()
 
@@ -77,7 +77,7 @@ func TestScanServiceServer_UserExtractionFails(t *testing.T) {
 	require.Nil(t, response)
 }
 
-// Profile lookup fails
+// Profile lookup fails.
 func TestScanServiceServer_ProfileLookupFails(t *testing.T) {
 	ctx := context.WithValue(context.Background(), sophrosyne.UserContextKey{}, &sophrosyne.User{
 		DefaultProfile: sophrosyne.Profile{Name: "default"},

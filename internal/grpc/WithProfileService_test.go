@@ -26,6 +26,50 @@ import (
 	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
 )
 
+func TestWithProfileService(t *testing.T) {
+	type testStruct struct {
+		profileService sophrosyne.ProfileService
+	}
+	cases := []struct {
+		name   string
+		target any
+	}{
+		{
+			"ScanServiceServer",
+			&ScanServiceServer{},
+		},
+		{
+			"ProfileServiceServer",
+			&ProfileServiceServer{},
+		},
+		{
+			"Unknown type",
+			&testStruct{},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			v := sophrosyne2.NewMockProfileService(t)
+			option := WithProfileService(v)
+			option(c.target)
+
+			require.NotNil(t, c.target)
+
+			switch c.target.(type) {
+			case *ScanServiceServer:
+				require.NotNil(t, c.target.(*ScanServiceServer).profileService)
+				require.Equal(t, v, c.target.(*ScanServiceServer).profileService)
+			case *ProfileServiceServer:
+				require.NotNil(t, c.target.(*ProfileServiceServer).profileService)
+				require.Equal(t, v, c.target.(*ProfileServiceServer).profileService)
+			default:
+				require.Nil(t, c.target.(*testStruct).profileService)
+			}
+		})
+	}
+}
+
 // correctly assigns profileService to ScanServiceServer
 func TestWithProfileService_CorrectlyAssignsProfileService(t *testing.T) {
 	// Create a mock ProfileService

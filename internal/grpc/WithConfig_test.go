@@ -28,6 +28,74 @@ import (
 	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
+func TestWithConfig(t *testing.T) {
+	type testStruct struct {
+		config *sophrosyne.Config
+	}
+	cases := []struct {
+		name   string
+		target any
+	}{
+		{
+			"ScanServiceServer",
+			&ScanServiceServer{},
+		},
+		{
+			"Server",
+			&Server{},
+		},
+		{
+			"UserServiceServer",
+			&UserServiceServer{},
+		},
+		{
+			"CheckServiceServer",
+			&CheckServiceServer{},
+		},
+		{
+			"ProfileServiceServer",
+			&ProfileServiceServer{},
+		},
+		{
+			"Unknown type",
+			&testStruct{},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			option := WithConfig(&sophrosyne.Config{
+				Server: sophrosyne.ServerConfig{
+					Port: 2500,
+				},
+			})
+			option(c.target)
+
+			require.NotNil(t, c.target)
+
+			switch c.target.(type) {
+			case *ScanServiceServer:
+				require.NotNil(t, c.target.(*ScanServiceServer).config)
+				require.Equal(t, 2500, c.target.(*ScanServiceServer).config.Server.Port)
+			case *Server:
+				require.NotNil(t, c.target.(*Server).config)
+				require.Equal(t, 2500, c.target.(*Server).config.Server.Port)
+			case *UserServiceServer:
+				require.NotNil(t, c.target.(*UserServiceServer).config)
+				require.Equal(t, 2500, c.target.(*UserServiceServer).config.Server.Port)
+			case *CheckServiceServer:
+				require.NotNil(t, c.target.(*CheckServiceServer).config)
+				require.Equal(t, 2500, c.target.(*CheckServiceServer).config.Server.Port)
+			case *ProfileServiceServer:
+				require.NotNil(t, c.target.(*ProfileServiceServer).config)
+				require.Equal(t, 2500, c.target.(*ProfileServiceServer).config.Server.Port)
+			default:
+				require.Nil(t, c.target.(*testStruct).config)
+			}
+		})
+	}
+}
+
 // Sets the server's config field when a valid config is provided.
 func TestWithConfig_SetsConfigField(t *testing.T) {
 	config := &sophrosyne.Config{}

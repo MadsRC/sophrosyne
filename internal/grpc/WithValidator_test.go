@@ -29,6 +29,71 @@ import (
 	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
+func TestWithValidator(t *testing.T) {
+	type testStruct struct {
+		validator sophrosyne.Validator
+	}
+	cases := []struct {
+		name   string
+		target any
+	}{
+		{
+			"ScanServiceServer",
+			&ScanServiceServer{},
+		},
+		{
+			"Server",
+			&Server{},
+		},
+		{
+			"UserServiceServer",
+			&UserServiceServer{},
+		},
+		{
+			"CheckServiceServer",
+			&CheckServiceServer{},
+		},
+		{
+			"ProfileServiceServer",
+			&ProfileServiceServer{},
+		},
+		{
+			"Unknown type",
+			&testStruct{},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			v := validator.NewValidator()
+			option := WithValidator(v)
+			option(c.target)
+
+			require.NotNil(t, c.target)
+
+			switch c.target.(type) {
+			case *ScanServiceServer:
+				require.NotNil(t, c.target.(*ScanServiceServer).validator)
+				require.Equal(t, v, c.target.(*ScanServiceServer).validator)
+			case *Server:
+				require.NotNil(t, c.target.(*Server).validator)
+				require.Equal(t, v, c.target.(*Server).validator)
+			case *UserServiceServer:
+				require.NotNil(t, c.target.(*UserServiceServer).validator)
+				require.Equal(t, v, c.target.(*UserServiceServer).validator)
+			case *CheckServiceServer:
+				require.NotNil(t, c.target.(*CheckServiceServer).validator)
+				require.Equal(t, v, c.target.(*CheckServiceServer).validator)
+			case *ProfileServiceServer:
+				require.NotNil(t, c.target.(*ProfileServiceServer).validator)
+				require.Equal(t, v, c.target.(*ProfileServiceServer).validator)
+			default:
+				require.Nil(t, c.target.(*testStruct).validator)
+			}
+		})
+	}
+}
+
 // Assigns the provided validator to the server's validator field.
 func TestWithValidator_AssignsValidator(t *testing.T) {
 	v := validator.NewValidator()

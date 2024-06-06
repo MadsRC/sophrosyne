@@ -17,7 +17,7 @@
 package grpc
 
 import (
-	"log/slog"
+	"github.com/madsrc/sophrosyne/internal/log"
 	"net"
 	"testing"
 	"time"
@@ -40,12 +40,13 @@ func TestServe_StartsGRPCServerSuccessfully(t *testing.T) {
 	// Create a mock gRPC server
 	grpcServer := grpc.NewServer()
 
+	logger, _ := log.NewTestLogger(nil)
 	// Create a new Server instance
 	server := &Server{
 		grpcServer: grpcServer,
 		listener:   listener,
 		config:     &sophrosyne.Config{},
-		logger:     &slog.Logger{},
+		logger:     logger,
 		validator:  &validator.Validator{},
 	}
 
