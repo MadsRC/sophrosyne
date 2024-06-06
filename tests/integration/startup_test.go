@@ -88,7 +88,7 @@ func (te testEnv) Close(ctx context.Context) {
 }
 
 func (te testEnv) getAuthContext(ctx context.Context) context.Context {
-	return metadata.NewOutgoingContext(context.Background(), metadata.New(map[string]string{"authorization": fmt.Sprintf("Bearer %s", te.rootToken)}))
+	return metadata.NewOutgoingContext(ctx, metadata.New(map[string]string{"authorization": fmt.Sprintf("Bearer %s", te.rootToken)}))
 }
 
 func newClients(t *testing.T, te *testEnv) {
