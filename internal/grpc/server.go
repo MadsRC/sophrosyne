@@ -80,7 +80,7 @@ func (s Server) GetServiceInfo() map[string]grpc.ServiceInfo {
 // defaultServerOptions returns a set of default ServerOption functions.
 //
 // The default ServerOption functions are:
-// - WithServerValidator using [validator.NewValidator()].
+// - WithServerValidator using [Validator.NewValidator()].
 func defaultServerOptions() []Option {
 	return []Option{
 		WithValidator(validator.NewValidator()),

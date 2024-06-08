@@ -36,10 +36,10 @@ import (
 // ScanServiceServer is a gGRPC server that handles scans.
 type ScanServiceServer struct {
 	v0.UnimplementedScanServiceServer
-	logger         *slog.Logger              `validate:"required"`
-	config         *sophrosyne.Config        `validate:"required"`
-	validator      sophrosyne.Validator      `validate:"required"`
-	profileService sophrosyne.ProfileService `validate:"required"`
+	Logger         *slog.Logger              `validate:"required"`
+	Config         *sophrosyne.Config        `validate:"required"`
+	Validator      sophrosyne.Validator      `validate:"required"`
+	ProfileService sophrosyne.ProfileService `validate:"required"`
 }
 
 // NewScanServiceServer returns a new ScanServiceServer instance.
@@ -55,10 +55,10 @@ func NewScanServiceServer(ctx context.Context, opts ...Option) (*ScanServiceServ
 	s := &ScanServiceServer{}
 	setOptions(s, defaultScanServiceServerOptions(), opts...)
 
-	if s.logger != nil {
-		s.logger.DebugContext(ctx, "validating server options")
+	if s.Logger != nil {
+		s.Logger.DebugContext(ctx, "validating server options")
 	}
-	err := s.validator.Validate(s)
+	err := s.Validator.Validate(s)
 	if err != nil {
 		return nil, err
 	}
@@ -102,22 +102,22 @@ func (s ScanServiceServer) lookupProfile(ctx context.Context, req *v0.ScanReques
 	}
 	var profile *sophrosyne.Profile
 	if req.GetProfile() != "" {
-		dbp, err := s.profileService.GetProfileByName(ctx, req.GetProfile())
+		dbp, err := s.ProfileService.GetProfileByName(ctx, req.GetProfile())
 		if err != nil {
 			return nil, fmt.Errorf("error getting profile by name: %v", err)
 		}
-		s.logger.DebugContext(ctx, "using profile from request for scan", "profile", req.Profile)
+		s.Logger.DebugContext(ctx, "using profile from request for scan", "profile", req.Profile)
 		profile = &dbp
 	} else {
 		if curUser.DefaultProfile.Name == "" {
-			dbp, err := s.profileService.GetProfileByName(ctx, "default")
+			dbp, err := s.ProfileService.GetProfileByName(ctx, "default")
 			if err != nil {
 				return nil, fmt.Errorf("error getting default profile: %v", err)
 			}
-			s.logger.DebugContext(ctx, "using service-wide default profile for scan", "profile", dbp.Name)
+			s.Logger.DebugContext(ctx, "using service-wide default profile for scan", "profile", dbp.Name)
 			profile = &dbp
 		} else {
-			s.logger.DebugContext(ctx, "using default profile for scan", "profile", curUser.DefaultProfile.Name)
+			s.Logger.DebugContext(ctx, "using default profile for scan", "profile", curUser.DefaultProfile.Name)
 			profile = &curUser.DefaultProfile
 		}
 	}
@@ -131,12 +131,12 @@ func (s ScanServiceServer) performScan(ctx context.Context, req *v0.ScanRequest,
 	wg.Add(len(profile.Checks))
 
 	for _, check := range profile.Checks {
-		s.logger.DebugContext(ctx, "running check from profile", "profile", profile.Name, "check", check.Name)
+		s.Logger.DebugContext(ctx, "running check from profile", "profile", profile.Name, "check", check.Name)
 		go func(check sophrosyne.Check) {
 			defer wg.Done()
-			res, err := doCheck(ctx, s.logger, check, nil, req)
+			res, err := doCheck(ctx, s.Logger, check, nil, req)
 			if err != nil {
-				s.logger.ErrorContext(ctx, "error running check", "check", check.Name, "error", err)
+				s.Logger.ErrorContext(ctx, "error running check", "check", check.Name, "error", err)
 			}
 
 			messages <- res
@@ -146,7 +146,7 @@ func (s ScanServiceServer) performScan(ctx context.Context, req *v0.ScanRequest,
 	wg.Wait()
 	close(messages)
 
-	results := processCheckResults(ctx, messages, s.logger)
+	results := processCheckResults(ctx, messages, s.Logger)
 
 	return &v0.ScanResponse{
 		Result: results.Result,
@@ -162,11 +162,7 @@ func doCheck(ctx context.Context, log *slog.Logger, check sophrosyne.Check, clie
 
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	conn, err := grpc.NewClient(check.UpstreamServices[0].Host, opts...)
-	if err != nil {
-		log.DebugContext(ctx, "error connecting to check", "check", check.Name, "error", err)
-		return nil, err
-	}
+	conn, _ := grpc.NewClient(check.UpstreamServices[0].Host, opts...)
 	defer func() {
 		err := conn.Close()
 		if err != nil {
@@ -178,13 +174,7 @@ func doCheck(ctx context.Context, log *slog.Logger, check sophrosyne.Check, clie
 		client = v0.NewCheckProviderServiceClient(conn)
 	}
 
-	outReq, err := checkProviderRequestFromScanRequest(ctx, log, req)
-	if err != nil {
-		log.DebugContext(ctx, "error creating check request", "check", check.Name, "error", err)
-		return nil, err
-	}
-
-	resp, err := client.Check(ctx, outReq)
+	resp, err := client.Check(ctx, checkProviderRequestFromScanRequest(ctx, log, req))
 	if err != nil {
 		log.DebugContext(ctx, "error calling check", "check", check.Name, "error", err)
 		return nil, err
@@ -207,6 +197,10 @@ func processCheckResults(ctx context.Context, messages chan *v0.CheckResult, log
 	checkResults := make([]*v0.CheckResult, 0)
 	var success bool
 	for msg := range messages {
+		if msg == nil {
+			logger.DebugContext(ctx, "ignoring nil message")
+			continue
+		}
 		logger.DebugContext(ctx, "receiving check result", "check", msg.Name, "check_result", msg)
 		if msg.Name == "" {
 			logger.DebugContext(ctx, "ignoring check result")
@@ -230,14 +224,11 @@ func processCheckResults(ctx context.Context, messages chan *v0.CheckResult, log
 	return resp
 }
 
-func checkProviderRequestFromScanRequest(ctx context.Context, logger *slog.Logger, req *v0.ScanRequest) (*v0.CheckProviderRequest, error) {
+func checkProviderRequestFromScanRequest(ctx context.Context, logger *slog.Logger, req *v0.ScanRequest) *v0.CheckProviderRequest {
 	if len(req.GetImage()) != 0 {
 		logger.DebugContext(ctx, "creating check request for image", "image", req.GetImage())
-		return &v0.CheckProviderRequest{Check: &v0.CheckProviderRequest_Image{Image: req.GetImage()}}, nil
+		return &v0.CheckProviderRequest{Check: &v0.CheckProviderRequest_Image{Image: req.GetImage()}}
 	}
-	if req.GetText() != "" {
-		logger.DebugContext(ctx, "creating check request for text", "text", req.GetText())
-		return &v0.CheckProviderRequest{Check: &v0.CheckProviderRequest_Text{Text: req.GetText()}}, nil
-	}
-	return nil, nil
+	logger.DebugContext(ctx, "creating check request for text", "text", req.GetText())
+	return &v0.CheckProviderRequest{Check: &v0.CheckProviderRequest_Text{Text: req.GetText()}}
 }

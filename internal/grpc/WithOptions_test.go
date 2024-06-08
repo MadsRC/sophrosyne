@@ -234,7 +234,7 @@ func TestWithOptions_Order(t *testing.T) {
 	WithOptions(opt1, opt2, opt3)(s)
 	assert.NotNil(t, s.logger, "log should not be nil")
 	assert.NotNil(t, s.listener, "listener should not be nil")
-	assert.NotNil(t, s.config, "config should not be nil")
+	assert.NotNil(t, s.config, "Config should not be nil")
 
 	// Reset server instance
 	s = &Server{}
@@ -243,7 +243,7 @@ func TestWithOptions_Order(t *testing.T) {
 	WithOptions(opt3, opt2, opt1)(s)
 	assert.NotNil(t, s.logger, "log should not be nil")
 	assert.NotNil(t, s.listener, "listener should not be nil")
-	assert.NotNil(t, s.config, "config should not be nil")
+	assert.NotNil(t, s.config, "Config should not be nil")
 }
 
 // Verifies that the function does not modify Server fields not targeted by options.
@@ -268,9 +268,9 @@ func TestWithOptions_DoesNotModifyOtherFields(t *testing.T) {
 	// Assertions
 	require.NotNil(t, s.grpcServer, "grpcServer field should not be modified")
 	require.NotNil(t, s.listener, "listener field should not be modified")
-	require.NotNil(t, s.config, "config field should not be modified")
+	require.NotNil(t, s.config, "Config field should not be modified")
 	require.NotNil(t, s.logger, "log field should not be modified")
-	require.NotNil(t, s.validator, "validator field should not be modified")
+	require.NotNil(t, s.validator, "Validator field should not be modified")
 }
 
 // Ensures that the function does not panic when the Server instance is nil.

@@ -75,6 +75,6 @@ func TestSetOptions_AppliesProvidedOptionsAfterDefaultOptions(t *testing.T) {
 	// Call setOptions with target, default options, and provided options
 	setOptions(target, []Option{defaultOption1}, providedOption1)
 
-	// Verify that the target's logger is logger2
+	// Verify that the target's Logger is logger2
 	require.Equal(t, target.logger, logger2)
 }

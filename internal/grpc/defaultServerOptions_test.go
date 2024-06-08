@@ -36,7 +36,7 @@ func TestDefaultServerOptions_HandlesNilServerGracefully(t *testing.T) {
 	}
 }
 
-// includes a validator in the returned ServerOption slice
+// includes a Validator in the returned ServerOption slice
 func TestDefaultServerOptions_IncludesValidator(t *testing.T) {
 	// Create a new Server instance
 	server := &Server{}
@@ -47,7 +47,7 @@ func TestDefaultServerOptions_IncludesValidator(t *testing.T) {
 		option(server)
 	}
 
-	// Assert that the validator is included in the Server options
+	// Assert that the Validator is included in the Server options
 	require.NotNil(t, server.validator)
 }
 

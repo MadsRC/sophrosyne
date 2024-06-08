@@ -73,8 +73,8 @@ func TestWithValidator(t *testing.T) {
 
 			switch c.target.(type) {
 			case *ScanServiceServer:
-				require.NotNil(t, c.target.(*ScanServiceServer).validator)
-				require.Equal(t, v, c.target.(*ScanServiceServer).validator)
+				require.NotNil(t, c.target.(*ScanServiceServer).Validator)
+				require.Equal(t, v, c.target.(*ScanServiceServer).Validator)
 			case *Server:
 				require.NotNil(t, c.target.(*Server).validator)
 				require.Equal(t, v, c.target.(*Server).validator)
@@ -94,7 +94,7 @@ func TestWithValidator(t *testing.T) {
 	}
 }
 
-// Assigns the provided validator to the server's validator field.
+// Assigns the provided Validator to the server's Validator field.
 func TestWithValidator_AssignsValidator(t *testing.T) {
 	v := validator.NewValidator()
 	s := &Server{}
@@ -119,7 +119,7 @@ func TestWithValidator_HandlesNilServer(t *testing.T) {
 
 // Does not alter other fields of the server struct.
 func TestWithValidator_DoesNotAlterOtherFields(t *testing.T) {
-	// Create a new validator
+	// Create a new Validator
 	v := &validator.Validator{}
 
 	// Create a new server with some initial values
@@ -135,7 +135,7 @@ func TestWithValidator_DoesNotAlterOtherFields(t *testing.T) {
 	opt := WithValidator(v)
 	opt(s)
 
-	// Validate that only the validator field was altered
+	// Validate that only the Validator field was altered
 	require.Equal(t, v, s.validator)
 	require.NotNil(t, s.grpcServer)
 	require.NotNil(t, s.listener)
@@ -145,7 +145,7 @@ func TestWithValidator_DoesNotAlterOtherFields(t *testing.T) {
 
 // Works correctly when a valid Server instance is passed.
 func TestWithValidator_ValidServerInstance(t *testing.T) {
-	// Create a new validator
+	// Create a new Validator
 	v := validator.NewValidator()
 
 	// Create a new Server instance
@@ -157,17 +157,17 @@ func TestWithValidator_ValidServerInstance(t *testing.T) {
 		validator:  nil,
 	}
 
-	// Call the WithValidator function with the validator
+	// Call the WithValidator function with the Validator
 	opt := WithValidator(v)
 	opt(s)
 
-	// Assert that the validator in the Server instance is set to the created validator
+	// Assert that the Validator in the Server instance is set to the created Validator
 	require.Equal(t, v, s.validator)
 }
 
 // Returns a Option function that can be executed without errors.
 func TestWithValidator_ReturnsValidFunction(t *testing.T) {
-	// Create a new validator
+	// Create a new Validator
 	v := validator.NewValidator()
 
 	// Create a new Server
@@ -179,11 +179,11 @@ func TestWithValidator_ReturnsValidFunction(t *testing.T) {
 	// Execute the Option function returned
 	opt(s)
 
-	// Assert that the validator in the Server is set to the created validator
+	// Assert that the Validator in the Server is set to the created Validator
 	require.Equal(t, v, s.validator)
 }
 
-// Works correctly when the provided validator is nil.
+// Works correctly when the provided Validator is nil.
 func TestWithValidator_NilValidator(t *testing.T) {
 	// Setup
 	var s Server
@@ -210,7 +210,7 @@ func TestWithValidator_NoSideEffectsWhenServerIsNil(t *testing.T) {
 	require.Nil(t, server.validator, "Validator should not be set when server is nil")
 }
 
-// Does not modify the server if the validator is already set.
+// Does not modify the server if the Validator is already set.
 func TestWithValidator_ValidatorAlreadySet(t *testing.T) {
 	// Setup
 	validator := &validator.Validator{}
@@ -242,7 +242,7 @@ func TestWithValidator_Idempotency(t *testing.T) {
 	opt1(s)
 	opt2(s)
 
-	// Validate that the validator is set only once
+	// Validate that the Validator is set only once
 	require.Equal(t, v, s.validator)
 }
 
@@ -274,16 +274,16 @@ func TestWithValidator_Chained(t *testing.T) {
 
 // Checks that the Option function does not introduce memory leaks.
 func TestWithValidator_NoMemoryLeaks(t *testing.T) {
-	// Create a mock validator
+	// Create a mock Validator
 	mockValidator := validator.NewValidator()
 
 	// Create a new Server
 	server := &ScanServiceServer{}
 
-	// Call the WithValidator function with the mock validator
+	// Call the WithValidator function with the mock Validator
 	opt := WithValidator(mockValidator)
 	opt(server)
 
-	// Assert that the validator in the server is the same as the mock validator
-	require.Equal(t, mockValidator, server.validator)
+	// Assert that the Validator in the server is the same as the mock Validator
+	require.Equal(t, mockValidator, server.Validator)
 }

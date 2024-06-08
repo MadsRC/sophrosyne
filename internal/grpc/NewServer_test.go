@@ -29,13 +29,13 @@ import (
 	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
-// Tests that a default validator is attached to the server
+// Tests that a default Validator is attached to the server
 func TestNewServer_HasDefaultValidator(t *testing.T) {
 	server, _ := NewServer(context.Background())
 	require.NotNil(t, server.validator)
 }
 
-// Test that a provided validator replaces the default validator
+// Test that a provided Validator replaces the default Validator
 func TestNewServer_UsesProvidedValidator(t *testing.T) {
 	v := validator.NewValidator()
 	server, _ := NewServer(context.Background(), WithValidator(v))

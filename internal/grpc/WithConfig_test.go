@@ -75,8 +75,8 @@ func TestWithConfig(t *testing.T) {
 
 			switch c.target.(type) {
 			case *ScanServiceServer:
-				require.NotNil(t, c.target.(*ScanServiceServer).config)
-				require.Equal(t, 2500, c.target.(*ScanServiceServer).config.Server.Port)
+				require.NotNil(t, c.target.(*ScanServiceServer).Config)
+				require.Equal(t, 2500, c.target.(*ScanServiceServer).Config.Server.Port)
 			case *Server:
 				require.NotNil(t, c.target.(*Server).config)
 				require.Equal(t, 2500, c.target.(*Server).config.Server.Port)
@@ -96,7 +96,7 @@ func TestWithConfig(t *testing.T) {
 	}
 }
 
-// Sets the server's config field when a valid config is provided.
+// Sets the server's Config field when a valid Config is provided.
 func TestWithConfig_SetsConfigField(t *testing.T) {
 	config := &sophrosyne.Config{}
 	server := &Server{}
@@ -136,7 +136,7 @@ func TestWithConfig_DoesNotAlterOtherFields(t *testing.T) {
 	option := WithConfig(newConfig)
 	option(initialServer)
 
-	// Assert that only the config field has been altered
+	// Assert that only the Config field has been altered
 	require.Equal(t, newConfig, initialServer.config)
 	require.NotNil(t, initialServer.grpcServer)
 	require.NotNil(t, initialServer.listener)
@@ -146,7 +146,7 @@ func TestWithConfig_DoesNotAlterOtherFields(t *testing.T) {
 
 // Returns a Option function that can be applied to a Server instance.
 func TestWithConfig_ReturnsOption(t *testing.T) {
-	// Create a dummy config
+	// Create a dummy Config
 	dummyConfig := &sophrosyne.Config{}
 
 	// Call the WithConfig function
@@ -158,20 +158,20 @@ func TestWithConfig_ReturnsOption(t *testing.T) {
 	// Apply the Option function to the Server instance
 	option(server)
 
-	// Check if the config field of the Server instance is set to the dummy config
+	// Check if the Config field of the Server instance is set to the dummy Config
 	require.Equal(t, dummyConfig, server.config)
 }
 
-// Handles a nil config gracefully without causing a panic.
+// Handles a nil Config gracefully without causing a panic.
 func TestWithConfig_NilConfig(t *testing.T) {
 	s := &ScanServiceServer{}
 	opt := WithConfig(nil)
 	opt(s)
 
-	require.Nil(t, s.config)
+	require.Nil(t, s.Config)
 }
 
-// Ensures the server's config field is set to nil if a nil config is provided.
+// Ensures the server's Config field is set to nil if a nil Config is provided.
 func TestWithConfig_NilConfigProvided(t *testing.T) {
 	// Setup
 	s := &Server{}
@@ -184,7 +184,7 @@ func TestWithConfig_NilConfigProvided(t *testing.T) {
 	require.Nil(t, s.config)
 }
 
-// Validates that the config field is correctly assigned in the server struct.
+// Validates that the Config field is correctly assigned in the server struct.
 func TestWithConfig_ConfigAssigned(t *testing.T) {
 	// Create a new Server
 	s := &Server{}
@@ -196,29 +196,29 @@ func TestWithConfig_ConfigAssigned(t *testing.T) {
 	option := WithConfig(config)
 	option(s)
 
-	// Check if the config field in the Server struct is correctly assigned
+	// Check if the Config field in the Server struct is correctly assigned
 	require.Equal(t, config, s.config)
 }
 
-// Ensures idempotency when the same config is applied multiple times.
+// Ensures idempotency when the same Config is applied multiple times.
 func TestWithConfig_Idempotency(t *testing.T) {
 	// Create a new Server instance
 	server := &Server{}
 
-	// Create a sample config
+	// Create a sample Config
 	config := &sophrosyne.Config{}
 
-	// Apply the config using WithConfig function twice
+	// Apply the Config using WithConfig function twice
 	WithConfig(config)(server)
 	WithConfig(config)(server)
 
-	// Assert that the config is applied only once
+	// Assert that the Config is applied only once
 	require.Equal(t, config, server.config)
 }
 
-// Confirms that the function does not modify the input config.
+// Confirms that the function does not modify the input Config.
 func TestWithConfig_DoesNotModifyInputConfig(t *testing.T) {
-	// Create a sample config
+	// Create a sample Config
 	sampleConfig := &sophrosyne.Config{
 		Principals: struct {
 			Root struct {
@@ -242,10 +242,10 @@ func TestWithConfig_DoesNotModifyInputConfig(t *testing.T) {
 	// Create a server instance
 	server := &Server{}
 
-	// Call the WithConfig function with the sample config
+	// Call the WithConfig function with the sample Config
 	option := WithConfig(sampleConfig)
 	option(server)
 
-	// Assert that the config in the server instance is the same as the sample config
+	// Assert that the Config in the server instance is the same as the sample Config
 	require.Equal(t, sampleConfig, server.config)
 }

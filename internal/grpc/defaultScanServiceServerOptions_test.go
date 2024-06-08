@@ -24,7 +24,7 @@ import (
 	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
-// returns a slice of Option with a validator
+// returns a slice of Option with a Validator
 func TestDefaultScanServiceServerOptions_ReturnsSliceWithValidator(t *testing.T) {
 	options := defaultScanServiceServerOptions()
 
@@ -34,7 +34,7 @@ func TestDefaultScanServiceServerOptions_ReturnsSliceWithValidator(t *testing.T)
 	scanServiceServer := &ScanServiceServer{}
 	options[0](scanServiceServer)
 
-	require.NotNil(t, scanServiceServer.validator)
+	require.NotNil(t, scanServiceServer.Validator)
 }
 
 // NewValidator returns nil

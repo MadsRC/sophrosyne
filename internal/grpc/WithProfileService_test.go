@@ -58,8 +58,8 @@ func TestWithProfileService(t *testing.T) {
 
 			switch c.target.(type) {
 			case *ScanServiceServer:
-				require.NotNil(t, c.target.(*ScanServiceServer).profileService)
-				require.Equal(t, v, c.target.(*ScanServiceServer).profileService)
+				require.NotNil(t, c.target.(*ScanServiceServer).ProfileService)
+				require.Equal(t, v, c.target.(*ScanServiceServer).ProfileService)
 			case *ProfileServiceServer:
 				require.NotNil(t, c.target.(*ProfileServiceServer).profileService)
 				require.Equal(t, v, c.target.(*ProfileServiceServer).profileService)
@@ -70,41 +70,41 @@ func TestWithProfileService(t *testing.T) {
 	}
 }
 
-// correctly assigns profileService to ScanServiceServer
+// correctly assigns ProfileService to ScanServiceServer
 func TestWithProfileService_CorrectlyAssignsProfileService(t *testing.T) {
 	// Create a mock ProfileService
 	mockProfileService := sophrosyne2.NewMockProfileService(t)
 
 	// Create a new ScanServiceServer instance with initial values
 	initialServer := &ScanServiceServer{
-		logger:    &slog.Logger{},
-		config:    &sophrosyne.Config{},
-		validator: sophrosyne2.NewMockValidator(t),
+		Logger:    &slog.Logger{},
+		Config:    &sophrosyne.Config{},
+		Validator: sophrosyne2.NewMockValidator(t),
 	}
 
 	// Call the WithProfileService function
 	option := WithProfileService(mockProfileService)
 	option(initialServer)
 
-	// Assert that the profileService field has been correctly assigned
-	require.Equal(t, mockProfileService, initialServer.profileService)
+	// Assert that the ProfileService field has been correctly assigned
+	require.Equal(t, mockProfileService, initialServer.ProfileService)
 }
 
-// handles nil profileService gracefully
+// handles nil ProfileService gracefully
 func TestWithProfileService_HandlesNilProfileServiceGracefully(t *testing.T) {
 	// Create a new ScanServiceServer instance with initial values
 	initialServer := &ScanServiceServer{
-		logger:    &slog.Logger{},
-		config:    &sophrosyne.Config{},
-		validator: sophrosyne2.NewMockValidator(t),
+		Logger:    &slog.Logger{},
+		Config:    &sophrosyne.Config{},
+		Validator: sophrosyne2.NewMockValidator(t),
 	}
 
-	// Call the WithProfileService function with nil profileService
+	// Call the WithProfileService function with nil ProfileService
 	option := WithProfileService(nil)
 	option(initialServer)
 
-	// Assert that the profileService field is nil
-	require.Nil(t, initialServer.profileService)
+	// Assert that the ProfileService field is nil
+	require.Nil(t, initialServer.ProfileService)
 }
 
 // Does nothing if provided an unsupported type

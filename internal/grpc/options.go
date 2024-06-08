@@ -56,7 +56,7 @@ func WithOptions(opts ...Option) Option {
 }
 
 // WithLogger returns an Option function that sets the
-// provided logger to instance.
+// provided Logger to instance.
 //
 // The Option function can only be applied to the following types:
 // - *ScanServiceServer
@@ -70,7 +70,7 @@ func WithLogger(logger *slog.Logger) Option {
 	return func(target any) {
 		switch s := target.(type) {
 		case *ScanServiceServer:
-			s.logger = logger
+			s.Logger = logger
 		case *Server:
 			s.logger = logger
 		case *UserServiceServer:
@@ -86,7 +86,7 @@ func WithLogger(logger *slog.Logger) Option {
 }
 
 // WithConfig returns an Option function that sets the
-// provided config to instance.
+// provided Config to instance.
 //
 // The Option function can only be applied to the following types:
 // - *ScanServiceServer
@@ -100,7 +100,7 @@ func WithConfig(config *sophrosyne.Config) Option {
 	return func(target any) {
 		switch s := target.(type) {
 		case *ScanServiceServer:
-			s.config = config
+			s.Config = config
 		case *Server:
 			s.config = config
 		case *UserServiceServer:
@@ -116,7 +116,7 @@ func WithConfig(config *sophrosyne.Config) Option {
 }
 
 // WithValidator returns an Option function that sets the
-// provided validator to instance.
+// provided Validator to instance.
 //
 // The Option function can only be applied to the following types:
 // - *ScanServiceServer
@@ -130,7 +130,7 @@ func WithValidator(validator sophrosyne.Validator) Option {
 	return func(target any) {
 		switch s := target.(type) {
 		case *ScanServiceServer:
-			s.validator = validator
+			s.Validator = validator
 		case *Server:
 			s.validator = validator
 		case *UserServiceServer:
@@ -182,7 +182,7 @@ func WithGrpcServer(grpcServer *grpc.Server) Option {
 }
 
 // WithProfileService returns an Option function that sets the
-// provided profileService to instance.
+// provided ProfileService to instance.
 //
 // The Option function can only be applied to the following types:
 // - *ScanServiceServer
@@ -193,7 +193,7 @@ func WithProfileService(profileService sophrosyne.ProfileService) Option {
 	return func(target any) {
 		switch s := target.(type) {
 		case *ScanServiceServer:
-			s.profileService = profileService
+			s.ProfileService = profileService
 		case *ProfileServiceServer:
 			s.profileService = profileService
 		default:

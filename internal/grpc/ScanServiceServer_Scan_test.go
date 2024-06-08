@@ -44,10 +44,10 @@ func TestScanServiceServer_SuccessfullyExtractsUserAndPerformsScan(t *testing.T)
 	mockProfileService.On("GetProfileByName", ctx, "testProfile").Return(sophrosyne.Profile{Name: "testProfile"}, nil)
 
 	server := ScanServiceServer{
-		logger:         logger,
-		config:         &sophrosyne.Config{},
-		validator:      &validator.Validator{},
-		profileService: mockProfileService,
+		Logger:         logger,
+		Config:         &sophrosyne.Config{},
+		Validator:      &validator.Validator{},
+		ProfileService: mockProfileService,
 	}
 
 	response, err := server.Scan(ctx, request)
@@ -65,10 +65,10 @@ func TestScanServiceServer_UserExtractionFails(t *testing.T) {
 	logger, _ := log.NewTestLogger(nil)
 
 	server := ScanServiceServer{
-		logger:         logger,
-		config:         &sophrosyne.Config{},
-		validator:      &validator.Validator{},
-		profileService: sophrosyne2.NewMockProfileService(t),
+		Logger:         logger,
+		Config:         &sophrosyne.Config{},
+		Validator:      &validator.Validator{},
+		ProfileService: sophrosyne2.NewMockProfileService(t),
 	}
 
 	response, err := server.Scan(ctx, request)
@@ -91,10 +91,10 @@ func TestScanServiceServer_ProfileLookupFails(t *testing.T) {
 	mockProfileService.On("GetProfileByName", ctx, "testProfile").Return(sophrosyne.Profile{}, assert.AnError)
 
 	server := ScanServiceServer{
-		logger:         logger,
-		config:         &sophrosyne.Config{},
-		validator:      &validator.Validator{},
-		profileService: mockProfileService,
+		Logger:         logger,
+		Config:         &sophrosyne.Config{},
+		Validator:      &validator.Validator{},
+		ProfileService: mockProfileService,
 	}
 
 	response, err := server.Scan(ctx, request)

@@ -75,8 +75,8 @@ func TestWithLogger(t *testing.T) {
 
 			switch c.target.(type) {
 			case *ScanServiceServer:
-				require.NotNil(t, c.target.(*ScanServiceServer).logger)
-				require.Equal(t, logger, c.target.(*ScanServiceServer).logger)
+				require.NotNil(t, c.target.(*ScanServiceServer).Logger)
+				require.Equal(t, logger, c.target.(*ScanServiceServer).Logger)
 			case *Server:
 				require.NotNil(t, c.target.(*Server).logger)
 				require.Equal(t, logger, c.target.(*Server).logger)
@@ -173,7 +173,7 @@ func TestWithLoggerInConjunctionWithOtherOptions(t *testing.T) {
 	opt2(server)
 
 	// Assertion
-	require.Equal(t, logger, server.logger)
+	require.Equal(t, logger, server.Logger)
 }
 
 // does not panic when log is nil.
