@@ -1,6 +1,6 @@
 module github.com/madsrc/sophrosyne
 
-go 1.22.3
+go 1.22.4
 
 require (
 	github.com/cedar-policy/cedar-go v0.0.0-20240429205519-77c610b20627
