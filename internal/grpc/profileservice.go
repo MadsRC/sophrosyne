@@ -95,7 +95,7 @@ func (p ProfileServiceServer) GetProfiles(ctx context.Context, request *v0.GetPr
 		return nil, status.Errorf(codes.Unauthenticated, InvalidTokenMsg)
 	}
 
-	var cursor *sophrosyne.DatabaseCursor
+	cursor := &sophrosyne.DatabaseCursor{}
 	var err error
 	if request.GetCursor() != "" {
 		cursor, err = sophrosyne.DecodeDatabaseCursorWithOwner(request.GetCursor(), curUser.ID)

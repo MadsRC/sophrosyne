@@ -17,10 +17,12 @@
 package grpc
 
 import (
-	"github.com/madsrc/sophrosyne"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/madsrc/sophrosyne"
 )
 
 func Test_newGetProfileResponseFromProfile(t *testing.T) {

@@ -18,14 +18,16 @@ package grpc
 
 import (
 	"context"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/require"
+
 	"github.com/madsrc/sophrosyne"
 	v0 "github.com/madsrc/sophrosyne/internal/grpc/sophrosyne/v0"
 	"github.com/madsrc/sophrosyne/internal/log"
 	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
 	"github.com/madsrc/sophrosyne/internal/validator"
-	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestPerformScan(t *testing.T) {

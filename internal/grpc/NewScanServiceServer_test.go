@@ -18,13 +18,15 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
+	"testing"
+
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+
 	"github.com/madsrc/sophrosyne"
 	"github.com/madsrc/sophrosyne/internal/log"
 	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
-	"log/slog"
-	"testing"
 )
 
 func TestNewScanServiceServer(t *testing.T) {

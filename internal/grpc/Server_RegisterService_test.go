@@ -17,8 +17,9 @@
 package grpc
 
 import (
-	"google.golang.org/grpc"
 	"testing"
+
+	"google.golang.org/grpc"
 )
 
 // GracefulStop successfully stops the grpcServer without errors

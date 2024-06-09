@@ -98,7 +98,7 @@ func (p CheckServiceServer) GetChecks(ctx context.Context, request *v0.GetChecks
 		return nil, status.Errorf(codes.Unauthenticated, InvalidTokenMsg)
 	}
 
-	var cursor *sophrosyne.DatabaseCursor
+	cursor := &sophrosyne.DatabaseCursor{}
 	var err error
 	if request.GetCursor() != "" {
 		cursor, err = sophrosyne.DecodeDatabaseCursorWithOwner(request.GetCursor(), curUser.ID)
@@ -119,7 +119,7 @@ func (p CheckServiceServer) GetChecks(ctx context.Context, request *v0.GetChecks
 		ok := p.authzProvider.IsAuthorized(ctx, sophrosyne.AuthorizationRequest{
 			Principal: curUser,
 			Action:    sophrosyne.AuthorizationAction("GetCheck"),
-			Resource:  sophrosyne.Profile{ID: check.ID},
+			Resource:  sophrosyne.Check{ID: check.ID},
 		})
 		if ok {
 			checkResponse = append(checkResponse, newGetCheckResponseFromCheck(&check)) // #nosec G601

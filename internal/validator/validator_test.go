@@ -19,8 +19,9 @@
 package validator
 
 import (
-	"github.com/madsrc/sophrosyne"
 	"testing"
+
+	"github.com/madsrc/sophrosyne"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/require"

@@ -17,10 +17,11 @@
 package grpc
 
 import (
-	"github.com/madsrc/sophrosyne/internal/log"
 	"net"
 	"testing"
 	"time"
+
+	"github.com/madsrc/sophrosyne/internal/log"
 
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"

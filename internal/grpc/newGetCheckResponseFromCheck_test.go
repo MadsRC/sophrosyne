@@ -17,11 +17,13 @@
 package grpc
 
 import (
-	"github.com/madsrc/sophrosyne"
-	"github.com/stretchr/testify/require"
 	"net/url"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/madsrc/sophrosyne"
 )
 
 func Test_newGetCheckResponseFromCheck(t *testing.T) {

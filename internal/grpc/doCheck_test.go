@@ -18,16 +18,18 @@ package grpc
 
 import (
 	"context"
+	"net/url"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+
 	"github.com/madsrc/sophrosyne"
 	v0 "github.com/madsrc/sophrosyne/internal/grpc/sophrosyne/v0"
 	"github.com/madsrc/sophrosyne/internal/log"
 	v02 "github.com/madsrc/sophrosyne/internal/mocks/internal_/grpc/sophrosyne/v0"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
-	"net/url"
-	"testing"
-	"time"
 )
 
 // Successfully connects to upstream service and returns a valid CheckResult.

@@ -18,14 +18,16 @@ package grpc
 
 import (
 	"context"
-	"github.com/madsrc/sophrosyne"
-	v0 "github.com/madsrc/sophrosyne/internal/grpc/sophrosyne/v0"
-	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"testing"
+
+	"github.com/madsrc/sophrosyne"
+	v0 "github.com/madsrc/sophrosyne/internal/grpc/sophrosyne/v0"
+	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
 )
 
 // GetCheck runs successfully with name.

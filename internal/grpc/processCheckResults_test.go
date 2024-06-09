@@ -18,10 +18,12 @@ package grpc
 
 import (
 	"context"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+
 	v0 "github.com/madsrc/sophrosyne/internal/grpc/sophrosyne/v0"
 	"github.com/madsrc/sophrosyne/internal/log"
-	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 // processes multiple valid check results correctly
