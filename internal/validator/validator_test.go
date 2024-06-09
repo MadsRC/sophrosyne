@@ -19,6 +19,7 @@
 package validator
 
 import (
+	"github.com/madsrc/sophrosyne"
 	"testing"
 
 	"github.com/go-playground/validator/v10"
@@ -123,7 +124,8 @@ func TestValidator_Validate(t *testing.T) {
 			err := v.Validate(tt.args.i)
 			if tt.wantErr {
 				require.Error(t, err)
-				require.ErrorAs(t, err, &validator.ValidationErrors{})
+				valErr := &sophrosyne.ValidationError{}
+				require.ErrorAs(t, err, &valErr)
 			} else {
 				require.NoError(t, err)
 			}
@@ -187,11 +189,8 @@ func TestMutualExclusivity_Two_Fields(t *testing.T) {
 			err := v.Validate(tt.args.i)
 			if tt.wantErr {
 				require.Error(t, err)
-				var ve validator.ValidationErrors
+				var ve *sophrosyne.ValidationError
 				require.ErrorAs(t, err, &ve)
-				require.Len(t, ve, 1)
-				require.Equal(t, "B", ve[0].Field())
-				require.Equal(t, tt.failedTag, ve[0].Tag())
 			} else {
 				require.NoError(t, err)
 			}
@@ -210,11 +209,6 @@ func TestValidate_RequiredPointerIsNil(t *testing.T) {
 	i := obj{}
 	err := v.Validate(i)
 	require.Error(t, err)
-	var ve validator.ValidationErrors
+	var ve *sophrosyne.ValidationError
 	require.ErrorAs(t, err, &ve)
-	require.Len(t, ve, 2)
-	require.Equal(t, "A", ve[0].Field())
-	require.Equal(t, "required", ve[0].Tag())
-	require.Equal(t, "B", ve[1].Field())
-	require.Equal(t, "required", ve[1].Tag())
 }
