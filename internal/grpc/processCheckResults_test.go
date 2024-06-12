@@ -56,7 +56,7 @@ func TestProcessCheckResults_IgnoresCheckResultsWithEmptyNames(t *testing.T) {
 	messages := make(chan *v0.CheckResult, 3)
 
 	messages <- &v0.CheckResult{Name: "", Result: true}
-	messages <- &v0.CheckResult{Name: "check2", Result: false}
+	messages <- &v0.CheckResult{Name: "check2", Result: true}
 	messages <- &v0.CheckResult{Name: "", Result: true}
 	close(messages)
 

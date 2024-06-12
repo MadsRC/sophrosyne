@@ -33,7 +33,7 @@ import (
 	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
 )
 
-// Verify correct user is returned when queried by email
+// Verify correct user is returned when queried by email.
 func TestGetUser_ByEmail(t *testing.T) {
 	ctx := context.Background()
 	config := &sophrosyne.Config{}
@@ -91,7 +91,7 @@ func TestGetUser_ByEmail(t *testing.T) {
 	require.True(t, profileService.AssertExpectations(t))
 }
 
-// Column not found in getUserQueryMap
+// Column not found in getUserQueryMap.
 func TestGetUser_ColumnNotFound(t *testing.T) {
 	ctx := context.Background()
 	pool, err := pgxmock.NewPool()
@@ -111,7 +111,7 @@ func TestGetUser_ColumnNotFound(t *testing.T) {
 	require.True(t, profileService.AssertExpectations(t))
 }
 
-// Valid column and input returns a correct user with additional fields
+// Valid column and input returns a correct user with additional fields.
 func TestGetUser_ValidColumnAndInput_WithMoreFields(t *testing.T) {
 	ctx := context.Background()
 	pool, err := pgxmock.NewPool()
@@ -168,7 +168,7 @@ func TestGetUser_ValidColumnAndInput_WithMoreFields(t *testing.T) {
 	require.True(t, profileService.AssertExpectations(t))
 }
 
-// Query execution returns exactly one row
+// Query execution returns exactly one row.
 func TestGetUser_WithValidQueryResult(t *testing.T) {
 	ctx := context.Background()
 	config := &sophrosyne.Config{}
