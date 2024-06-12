@@ -22,13 +22,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// returns a non-nil slice of ServerOption
+// returns a non-nil slice of ServerOption.
 func TestDefaultServerOptions_ReturnsNonNilSlice(t *testing.T) {
 	options := defaultServerOptions()
 	require.NotNil(t, options)
 }
 
-// handles nil Server instance gracefully when applying ServerOption
+// handles nil Server instance gracefully when applying ServerOption.
 func TestDefaultServerOptions_HandlesNilServerGracefully(t *testing.T) {
 	options := defaultServerOptions()
 	for _, option := range options {
@@ -36,7 +36,7 @@ func TestDefaultServerOptions_HandlesNilServerGracefully(t *testing.T) {
 	}
 }
 
-// includes a Validator in the returned ServerOption slice
+// includes a Validator in the returned ServerOption slice.
 func TestDefaultServerOptions_IncludesValidator(t *testing.T) {
 	// Create a new Server instance
 	server := &Server{}
@@ -51,7 +51,7 @@ func TestDefaultServerOptions_IncludesValidator(t *testing.T) {
 	require.NotNil(t, server.validator)
 }
 
-// each ServerOption in the slice can be applied to a Server instance
+// each ServerOption in the slice can be applied to a Server instance.
 func TestDefaultServerOptions_EachOptionCanBeAppliedToServerInstance(t *testing.T) {
 	// Create a new Server instance
 	server := &Server{}
@@ -68,7 +68,7 @@ func TestDefaultServerOptions_EachOptionCanBeAppliedToServerInstance(t *testing.
 	require.NotNil(t, server.validator)
 }
 
-// ensures the returned slice is not modified by subsequent calls
+// ensures the returned slice is not modified by subsequent calls.
 func TestDefaultServerOptions_EnsuresReturnedSliceNotModified(t *testing.T) {
 	// Call defaultServerOptions function twice
 	options1 := defaultServerOptions()

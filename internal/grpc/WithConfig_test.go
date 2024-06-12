@@ -108,7 +108,7 @@ func TestWithConfig_SetsConfigField(t *testing.T) {
 	require.Equal(t, config, server.config)
 }
 
-// Does nothing if the server instance is nil
+// Does nothing if the server instance is nil.
 func TestWithConfig_ServerIsNil(t *testing.T) {
 	config := &sophrosyne.Config{}
 

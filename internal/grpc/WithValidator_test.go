@@ -199,11 +199,11 @@ func TestWithValidator_NilValidator(t *testing.T) {
 // Ensures no side effects when the server is nil.
 func TestWithValidator_NoSideEffectsWhenServerIsNil(t *testing.T) {
 	// Setup
-	var validator *validator.Validator
+	var val *validator.Validator
 	server := &Server{}
 
 	// Execution
-	opt := WithValidator(validator)
+	opt := WithValidator(val)
 	opt(nil)
 
 	// Validation
@@ -213,17 +213,17 @@ func TestWithValidator_NoSideEffectsWhenServerIsNil(t *testing.T) {
 // Does not modify the server if the Validator is already set.
 func TestWithValidator_ValidatorAlreadySet(t *testing.T) {
 	// Setup
-	validator := &validator.Validator{}
+	val := &validator.Validator{}
 	server := &Server{
-		validator: validator,
+		validator: val,
 	}
 
 	// Call the function
-	opt := WithValidator(validator)
+	opt := WithValidator(val)
 	opt(server)
 
 	// Validate
-	require.Equal(t, validator, server.validator, "Validator should not be modified if already set")
+	require.Equal(t, val, server.validator, "Validator should not be modified if already set")
 }
 
 // Ensures idempotency when the Option function is called multiple times.
@@ -248,8 +248,6 @@ func TestWithValidator_Idempotency(t *testing.T) {
 
 // Validates that the Option function can be chained with other Option functions.
 func TestWithValidator_Chained(t *testing.T) {
-	require := require.New(t)
-
 	// Create a new Server
 	s := &Server{}
 
@@ -269,7 +267,7 @@ func TestWithValidator_Chained(t *testing.T) {
 	anotherOption(s)
 
 	// Assert that the Validator is set in the Server
-	require.Equal(v, s.validator)
+	require.Equal(t, v, s.validator)
 }
 
 // Checks that the Option function does not introduce memory leaks.

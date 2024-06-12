@@ -63,7 +63,7 @@ func TestWithCheckService(t *testing.T) {
 	}
 }
 
-// correctly assigns checkService to CheckServiceServer
+// correctly assigns checkService to CheckServiceServer.
 func TestWithCheckService_CorrectlyAssignsCheckService(t *testing.T) {
 	// Create a mock CheckService
 	mockCheckService := sophrosyne2.NewMockCheckService(t)
@@ -83,7 +83,7 @@ func TestWithCheckService_CorrectlyAssignsCheckService(t *testing.T) {
 	require.Equal(t, mockCheckService, initialServer.checkService)
 }
 
-// handles nil checkService gracefully
+// handles nil checkService gracefully.
 func TestWithCheckService_HandlesNilCheckServiceGracefully(t *testing.T) {
 	// Create a new CheckServiceServer instance with initial values
 	initialServer := &CheckServiceServer{
@@ -100,7 +100,7 @@ func TestWithCheckService_HandlesNilCheckServiceGracefully(t *testing.T) {
 	require.Nil(t, initialServer.checkService)
 }
 
-// Does nothing if provided an unsupported type
+// Does nothing if provided an unsupported type.
 func TestWithCheckService_DoesNothingIfUnsupportedType(t *testing.T) {
 
 	// Call the WithCheckService function with unsupported type

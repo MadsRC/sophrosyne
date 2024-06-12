@@ -77,7 +77,7 @@ func TestWithAuthorizationProvider(t *testing.T) {
 	}
 }
 
-// correctly assigns checkService to CheckServiceServer
+// correctly assigns checkService to CheckServiceServer.
 func TestWithAuthorizationProvider_CorrectlyAssignsCheckService(t *testing.T) {
 	// Create a mock CheckService
 	mockAuthzProvider := sophrosyne2.NewMockAuthorizationProvider(t)
@@ -97,7 +97,7 @@ func TestWithAuthorizationProvider_CorrectlyAssignsCheckService(t *testing.T) {
 	require.Equal(t, mockAuthzProvider, initialServer.authzProvider)
 }
 
-// handles nil authzProvider gracefully
+// handles nil authzProvider gracefully.
 func TestWithAuthorizationProvider_HandlesNilCheckServiceGracefully(t *testing.T) {
 	// Create a new CheckServiceServer instance with initial values
 	initialServer := &CheckServiceServer{
@@ -114,7 +114,7 @@ func TestWithAuthorizationProvider_HandlesNilCheckServiceGracefully(t *testing.T
 	require.Nil(t, initialServer.checkService)
 }
 
-// Does nothing if provided an unsupported type
+// Does nothing if provided an unsupported type.
 func TestWithAuthorizationProvider_DoesNothingIfUnsupportedType(t *testing.T) {
 
 	// Call the WithCheckService function with unsupported type

@@ -77,7 +77,7 @@ func TestWithGrpcServer_ReturnsValidOption(t *testing.T) {
 	require.Equal(t, grpcServer, s.grpcServer)
 }
 
-// grpcServer is nil, function should still assign nil to Server
+// grpcServer is nil, function should still assign nil to Server.
 func TestWithGrpcServer_GrpcServerIsNil(t *testing.T) {
 	// Setup
 	var s Server
@@ -91,7 +91,7 @@ func TestWithGrpcServer_GrpcServerIsNil(t *testing.T) {
 	require.Nil(t, s.grpcServer)
 }
 
-// Server already has a grpcServer assigned, function should overwrite it
+// Server already has a grpcServer assigned, function should overwrite it.
 func TestWithGrpcServer_OverwriteGrpcServer(t *testing.T) {
 	// Setup
 	s := &Server{
@@ -107,7 +107,7 @@ func TestWithGrpcServer_OverwriteGrpcServer(t *testing.T) {
 	require.Equal(t, newGrpcServer, s.grpcServer)
 }
 
-// Ensure no other fields in Server are modified
+// Ensure no other fields in Server are modified.
 func TestWithGrpcServer_NoOtherFieldsModified(t *testing.T) {
 	// Setup
 	s := &Server{
@@ -132,7 +132,7 @@ func TestWithGrpcServer_NoOtherFieldsModified(t *testing.T) {
 	require.Nil(t, s.validator)
 }
 
-// Validate that the returned Option is a function
+// Validate that the returned Option is a function.
 func TestWithGrpcServer_ReturnedFunction(t *testing.T) {
 	// Create a dummy grpc server
 	dummyGrpcServer := grpc.NewServer()
@@ -145,7 +145,7 @@ func TestWithGrpcServer_ReturnedFunction(t *testing.T) {
 	require.IsType(t, Option(nil), option)
 }
 
-// Verify that the function does not panic with invalid inputs
+// Verify that the function does not panic with invalid inputs.
 func TestWithGrpcServer_InvalidInputs(t *testing.T) {
 	// Create a dummy server
 	s := &Server{}

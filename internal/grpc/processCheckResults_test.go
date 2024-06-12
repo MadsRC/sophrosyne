@@ -26,7 +26,7 @@ import (
 	"github.com/madsrc/sophrosyne/internal/log"
 )
 
-// processes multiple valid check results correctly
+// processes multiple valid check results correctly.
 func TestProcessCheckResults_ProcessesMultipleValidCheckResultsCorrectly(t *testing.T) {
 	ctx := context.Background()
 	logger, _ := log.NewTestLogger(nil)
@@ -41,15 +41,15 @@ func TestProcessCheckResults_ProcessesMultipleValidCheckResultsCorrectly(t *test
 
 	require.Len(t, result.Checks, 3)
 	require.Equal(t, "check1", result.Checks[0].Name)
-	require.Equal(t, true, result.Checks[0].Result)
+	require.True(t, result.Checks[0].Result)
 	require.Equal(t, "check2", result.Checks[1].Name)
-	require.Equal(t, false, result.Checks[1].Result)
+	require.False(t, result.Checks[1].Result)
 	require.Equal(t, "check3", result.Checks[2].Name)
-	require.Equal(t, true, result.Checks[2].Result)
-	require.Equal(t, true, result.Result)
+	require.True(t, result.Checks[2].Result)
+	require.True(t, result.Result)
 }
 
-// ignores check results with empty names
+// ignores check results with empty names.
 func TestProcessCheckResults_IgnoresCheckResultsWithEmptyNames(t *testing.T) {
 	ctx := context.Background()
 	logger, _ := log.NewTestLogger(nil)
@@ -64,11 +64,11 @@ func TestProcessCheckResults_IgnoresCheckResultsWithEmptyNames(t *testing.T) {
 
 	require.Len(t, result.Checks, 1)
 	require.Equal(t, "check2", result.Checks[0].Name)
-	require.Equal(t, false, result.Checks[0].Result)
-	require.Equal(t, false, result.Result)
+	require.True(t, result.Checks[0].Result)
+	require.True(t, result.Result)
 }
 
-// does not panic when a nil message is received
+// does not panic when a nil message is received.
 func TestProcessCheckResults_DoesNotPanicWhenNilMessageIsReceived(t *testing.T) {
 	ctx := context.Background()
 	logger, _ := log.NewTestLogger(nil)

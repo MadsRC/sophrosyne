@@ -22,7 +22,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// GracefulStop successfully stops the grpcServer without errors
+// GracefulStop successfully stops the grpcServer without errors.
 func TestServer_GracefulStop_SuccessfullyStopsServer(t *testing.T) {
 	server := &Server{
 		grpcServer: grpc.NewServer(),

@@ -50,12 +50,14 @@ func tokenFromMetadata(md metadata.MD, logger *slog.Logger) []byte {
 	return token
 }
 
+var MissingMetadata = status.Errorf(codes.InvalidArgument, "no metadata provided")
+
 func EnsureValidTokenUnary(userService sophrosyne.UserService, logger *slog.Logger, config *sophrosyne.Config) googlegrpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *googlegrpc.UnaryServerInfo, handler googlegrpc.UnaryHandler) (any, error) {
 		logger.InfoContext(ctx, "ensuring valid token - unary")
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
-			return nil, status.Errorf(codes.InvalidArgument, "no metadata provided")
+			return nil, MissingMetadata
 		}
 
 		user, err := userService.GetUserByToken(ctx, sophrosyne.ProtectToken(tokenFromMetadata(md, logger), config))
@@ -76,7 +78,7 @@ func EnsureValidTokenStream(userService sophrosyne.UserService, logger *slog.Log
 		md, ok := metadata.FromIncomingContext(ss.Context())
 		if !ok {
 			logger.InfoContext(ss.Context(), "no metadata provided")
-			return status.Errorf(codes.InvalidArgument, "no metadata provided")
+			return MissingMetadata
 		}
 
 		user, err := userService.GetUserByToken(ss.Context(), sophrosyne.ProtectToken(tokenFromMetadata(md, logger), config))

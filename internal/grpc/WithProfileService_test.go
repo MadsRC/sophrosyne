@@ -70,7 +70,7 @@ func TestWithProfileService(t *testing.T) {
 	}
 }
 
-// correctly assigns ProfileService to ScanServiceServer
+// correctly assigns ProfileService to ScanServiceServer.
 func TestWithProfileService_CorrectlyAssignsProfileService(t *testing.T) {
 	// Create a mock ProfileService
 	mockProfileService := sophrosyne2.NewMockProfileService(t)
@@ -90,7 +90,7 @@ func TestWithProfileService_CorrectlyAssignsProfileService(t *testing.T) {
 	require.Equal(t, mockProfileService, initialServer.ProfileService)
 }
 
-// handles nil ProfileService gracefully
+// handles nil ProfileService gracefully.
 func TestWithProfileService_HandlesNilProfileServiceGracefully(t *testing.T) {
 	// Create a new ScanServiceServer instance with initial values
 	initialServer := &ScanServiceServer{
@@ -107,7 +107,7 @@ func TestWithProfileService_HandlesNilProfileServiceGracefully(t *testing.T) {
 	require.Nil(t, initialServer.ProfileService)
 }
 
-// Does nothing if provided an unsupported type
+// Does nothing if provided an unsupported type.
 func TestWithProfileService_DoesNothingIfUnsupportedType(t *testing.T) {
 
 	// Call the WithProfileService function with unsupported type

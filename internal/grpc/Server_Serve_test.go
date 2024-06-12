@@ -31,7 +31,7 @@ import (
 	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
-// Serve starts the gRPC server successfully
+// Serve starts the gRPC server successfully.
 func TestServe_StartsGRPCServerSuccessfully(t *testing.T) {
 	// Create a mock listener
 	listener, err := net.Listen("tcp", "localhost:0")

@@ -26,7 +26,7 @@ import (
 	"github.com/madsrc/sophrosyne/internal/log"
 )
 
-// returns CheckProviderRequest with image when ScanRequest contains image data
+// returns CheckProviderRequest with image when ScanRequest contains image data.
 func TestCheckProviderRequestFromScanRequest_ReturnsCheckProviderRequestWithImage(t *testing.T) {
 	ctx := context.Background()
 	logger, _ := log.NewTestLogger(nil)
@@ -42,7 +42,7 @@ func TestCheckProviderRequestFromScanRequest_ReturnsCheckProviderRequestWithImag
 	require.Equal(t, imageData, result.GetImage())
 }
 
-// handles empty ScanRequest gracefully
+// handles empty ScanRequest gracefully.
 func TestCheckProviderRequestFromScanRequest_HandlesEmptyScanRequestGracefully(t *testing.T) {
 	ctx := context.Background()
 	logger, _ := log.NewTestLogger(nil)
@@ -53,7 +53,7 @@ func TestCheckProviderRequestFromScanRequest_HandlesEmptyScanRequestGracefully(t
 	require.Equal(t, "", result.GetText())
 }
 
-// returns CheckProviderRequest with text when ScanRequest contains text data
+// returns CheckProviderRequest with text when ScanRequest contains text data.
 func TestCheckProviderRequestFromScanRequest_ReturnsCheckProviderRequestWithTextNewLogger(t *testing.T) {
 	ctx := context.Background()
 	logger, _ := log.NewTestLogger(nil)

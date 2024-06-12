@@ -29,20 +29,20 @@ import (
 	"github.com/madsrc/sophrosyne/internal/validator"
 )
 
-// Tests that a default Validator is attached to the server
+// Tests that a default Validator is attached to the server.
 func TestNewServer_HasDefaultValidator(t *testing.T) {
 	server, _ := NewServer(context.Background())
 	require.NotNil(t, server.validator)
 }
 
-// Test that a provided Validator replaces the default Validator
+// Test that a provided Validator replaces the default Validator.
 func TestNewServer_UsesProvidedValidator(t *testing.T) {
 	v := validator.NewValidator()
 	server, _ := NewServer(context.Background(), WithValidator(v))
 	require.Equal(t, v, server.validator)
 }
 
-// Test that no grpcServer is provided, validation fails
+// Test that no grpcServer is provided, validation fails.
 func TestNewServer_ReturnsErrorIfNoGrpcServer(t *testing.T) {
 	// TODO: Fix this - The "required" tag on the grpcServer pointer should cause an error when validated and the pointer is nil.
 	t.Skip()
@@ -53,7 +53,7 @@ func TestNewServer_ReturnsErrorIfNoGrpcServer(t *testing.T) {
 	require.ErrorAs(t, err, &ve)
 }
 
-// Test that if validation fails, an error is returned
+// Test that if validation fails, an error is returned.
 func TestNewServer_ReturnsErrorIfValidationFails(t *testing.T) {
 	mockValidator := sophrosyne2.NewMockValidator(t)
 	mockValidator.On("Validate", mock.Anything).Return(assert.AnError)

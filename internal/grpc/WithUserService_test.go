@@ -63,7 +63,7 @@ func TestWithUserService(t *testing.T) {
 	}
 }
 
-// correctly assigns userService to UserServiceServer
+// correctly assigns userService to UserServiceServer.
 func TestWithUserService_CorrectlyAssignsUserService(t *testing.T) {
 	// Create a mock UserService
 	mockUserService := sophrosyne2.NewMockUserService(t)
@@ -83,7 +83,7 @@ func TestWithUserService_CorrectlyAssignsUserService(t *testing.T) {
 	require.Equal(t, mockUserService, initialServer.userService)
 }
 
-// handles nil userService gracefully
+// handles nil userService gracefully.
 func TestWithUserService_HandlesNilUserServiceGracefully(t *testing.T) {
 	// Create a new UserServiceServer instance with initial values
 	initialServer := &UserServiceServer{
@@ -100,7 +100,7 @@ func TestWithUserService_HandlesNilUserServiceGracefully(t *testing.T) {
 	require.Nil(t, initialServer.userService)
 }
 
-// Does nothing if provided an unsupported type
+// Does nothing if provided an unsupported type.
 func TestWithUserService_DoesNothingIfUnsupportedType(t *testing.T) {
 
 	// Call the WithUserService function with unsupported type
