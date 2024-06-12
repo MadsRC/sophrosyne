@@ -20,16 +20,18 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
-	"github.com/jackc/pgx/v5"
-	"github.com/madsrc/sophrosyne"
-	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
-	"github.com/pashagolub/pgxmock/v3"
-	"github.com/stretchr/testify/require"
 	"log/slog"
 	"testing"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/pashagolub/pgxmock/v3"
+	"github.com/stretchr/testify/require"
+
+	"github.com/madsrc/sophrosyne"
+	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
 )
 
-// UserService is successfully created when all inputs are valid
+// UserService is successfully created when all inputs are valid.
 func TestNewUserService_CreationSuccess(t *testing.T) {
 	ctx := context.Background()
 	config := &sophrosyne.Config{
@@ -62,7 +64,7 @@ func TestNewUserService_CreationSuccess(t *testing.T) {
 	require.NoError(t, mockedDb.ExpectationsWereMet())
 }
 
-// Database connection fails during pool creation
+// Database connection fails during pool creation.
 func TestNewUserService_CreationDatabaseFailure(t *testing.T) {
 	ctx := context.Background()
 	config := &sophrosyne.Config{
@@ -87,7 +89,7 @@ func TestNewUserService_CreationDatabaseFailure(t *testing.T) {
 	require.Nil(t, userService)
 }
 
-// Database query fails when running createRootUser
+// Database query fails when running createRootUser.
 func TestNewUserService_CreationFailure(t *testing.T) {
 	ctx := context.Background()
 	config := &sophrosyne.Config{

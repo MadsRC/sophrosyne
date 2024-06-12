@@ -1,0 +1,102 @@
+// Sophrosyne
+//   Copyright (C) 2024  Mads R. Havmand
+//
+// This program is free software: you can redistribute it and/or modify
+//   it under the terms of the GNU Affero General Public License as published by
+//   the Free Software Foundation, either version 3 of the License, or
+//   (at your option) any later version.
+//
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU Affero General Public License for more details.
+//
+//   You should have received a copy of the GNU Affero General Public License
+//   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package sophrosyne.v0;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/madsrc/sophrosyne/internal/grpc/sophrosyne/v0";
+
+service UserService {
+  rpc GetUser (GetUserRequest) returns (GetUserResponse);
+  rpc GetUsers (GetUsersRequest) returns (GetUsersResponse);
+  rpc CreateUser (CreateUserRequest) returns (CreateUserResponse);
+  rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
+  rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty);
+  rpc RotateToken (RotateTokenRequest) returns (RotateTokenResponse);
+}
+
+message GetUserRequest {
+  oneof user {
+    string id = 1;
+    string email = 2;
+    string name = 3;
+  }
+}
+
+message GetUserResponse {
+  string name = 1;
+  string email = 2;
+  bool is_admin = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  google.protobuf.Timestamp deleted_at = 6;
+}
+
+message GetUsersRequest {
+  string cursor = 1;
+}
+
+message GetUsersResponse {
+  repeated GetUserResponse users = 1;
+  string cursor = 2;
+  int32 total = 3;
+}
+
+message CreateUserRequest {
+  string name = 1;
+  string email = 2;
+  bool is_admin = 3;
+}
+
+message CreateUserResponse {
+  string name = 1;
+  string email = 2;
+  bool is_admin = 3;
+  string token = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message UpdateUserRequest {
+  string name = 1;
+  string email = 2;
+  bool is_admin = 3;
+}
+
+message UpdateUserResponse {
+  string name = 1;
+  string email = 2;
+  bool is_admin = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  google.protobuf.Timestamp deleted_at = 6;
+}
+
+message DeleteUserRequest {
+  string name = 1;
+}
+
+message RotateTokenRequest {
+  string name = 1;
+}
+
+message RotateTokenResponse {
+  string token = 1;
+}

@@ -36,7 +36,7 @@ import (
 )
 
 const (
-	// Name of the default profile in the database
+	// Name of the default profile in the database.
 	DefaultProfileName = "default"
 )
 
@@ -49,7 +49,7 @@ type conn interface {
 
 // afterConnect is a pgx.ConnConfig.AfterConnect function that logs 'database connection established', at the debug level.
 //
-// If logger is nil, this function panics.
+// If log is nil, this function panics.
 func afterConnect(logger *slog.Logger) func(ctx context.Context, conn *pgx.Conn) error {
 	return func(ctx context.Context, conn *pgx.Conn) error {
 		logger.DebugContext(ctx, "database connection established")
@@ -57,7 +57,7 @@ func afterConnect(logger *slog.Logger) func(ctx context.Context, conn *pgx.Conn)
 	}
 }
 
-// newPool creates a new pgx connection pool using the provided configuration and logger.
+// newPool creates a new pgx connection pool using the provided configuration and log.
 // It parses the configuration details, sets up a new tracer, and defines a function to be executed after connecting to the database.
 // It returns a new pgx connection pool based on the provided context and configuration, or an error if the configuration parsing fails.
 func newPool(ctx context.Context, config *sophrosyne.Config, logger *slog.Logger) (*pgxpool.Pool, error) {
@@ -204,7 +204,7 @@ func (s *UserService) GetUsers(ctx context.Context, cursor *sophrosyne.DatabaseC
 		cursor = &sophrosyne.DatabaseCursor{}
 	}
 	s.logger.DebugContext(ctx, "getting users", "cursor", cursor)
-	rows, _ := s.pool.Query(ctx, "SELECT * FROM users WHERE id > $1 AND deleted_at IS NULL ORDER BY id ASC LIMIT $2", cursor.Position, s.config.Services.Users.PageSize+1)
+	rows, _ := s.pool.Query(ctx, "SELECT * FROM users WHERE id > $1 AND deleted_at IS NULL ORDER BY id LIMIT $2", cursor.Position, s.config.Services.Users.PageSize+1)
 	users, err := pgx.CollectRows(rows, pgx.RowToStructByName[sophrosyne.User])
 	if err != nil {
 		return []sophrosyne.User{}, err

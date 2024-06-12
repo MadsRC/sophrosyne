@@ -1,0 +1,92 @@
+// Sophrosyne
+//   Copyright (C) 2024  Mads R. Havmand
+//
+// This program is free software: you can redistribute it and/or modify
+//   it under the terms of the GNU Affero General Public License as published by
+//   the Free Software Foundation, either version 3 of the License, or
+//   (at your option) any later version.
+//
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU Affero General Public License for more details.
+//
+//   You should have received a copy of the GNU Affero General Public License
+//   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package sophrosyne.v0;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/madsrc/sophrosyne/internal/grpc/sophrosyne/v0";
+
+service CheckService {
+
+  rpc GetCheck (GetCheckRequest) returns (GetCheckResponse);
+  rpc GetChecks (GetChecksRequest) returns (GetChecksResponse);
+  rpc CreateCheck (CreateCheckRequest) returns (CreateCheckResponse);
+  rpc UpdateCheck (UpdateCheckRequest) returns (UpdateCheckResponse);
+  rpc DeleteCheck (DeleteCheckRequest) returns (google.protobuf.Empty);
+}
+
+message GetCheckRequest {
+  oneof check {
+    string id = 1;
+    string name = 2;
+  }
+}
+
+message GetCheckResponse {
+  string name = 1;
+  repeated string profiles = 2;
+  repeated string upstream_services = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  google.protobuf.Timestamp deleted_at = 6;
+}
+
+message GetChecksRequest {
+  string cursor = 1;
+}
+
+message GetChecksResponse {
+  repeated GetCheckResponse checks = 1;
+  string cursor = 2;
+  int32 total = 3;
+}
+
+message CreateCheckRequest {
+  string name = 1;
+  repeated string profiles = 2;
+  repeated string upstream_services = 3;
+}
+
+message CreateCheckResponse {
+  string name = 1;
+  repeated string profiles = 2;
+  repeated string upstream_services = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+}
+
+message UpdateCheckRequest {
+  string name = 1;
+  repeated string profiles = 2;
+  repeated string upstream_services = 3;
+}
+
+message UpdateCheckResponse {
+  string name = 1;
+  repeated string profiles = 2;
+  repeated string upstream_services = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  google.protobuf.Timestamp deleted_at = 6;
+}
+
+message DeleteCheckRequest {
+  string name = 1;
+}

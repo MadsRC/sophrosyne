@@ -18,9 +18,11 @@ package pgx
 
 import (
 	"context"
-	"github.com/madsrc/sophrosyne"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+
+	"github.com/madsrc/sophrosyne"
 )
 
 // Verify successful pool creation with valid configuration.

@@ -21,9 +21,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"log/slog"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 // Verify that the function logs 'database connection established', at the debug level, when called.
@@ -50,7 +51,7 @@ func TestAfterConnect_LogsMessage(t *testing.T) {
 	require.Equal(t, "DEBUG", logEvent["level"])
 }
 
-// Check behavior when logger is nil.
+// Check behavior when log is nil.
 func TestAfterConnect_WithNilLogger(t *testing.T) {
 	afterConnectFunc := afterConnect(nil)
 

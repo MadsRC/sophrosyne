@@ -39,11 +39,24 @@ while test "$#" -gt 0; do
   esac
 done
 
-mkdir -p internal/grpc/checks
-mkdir -p build/backups/grpc
-echo "Backing up GRPC files to build/backups/grpc/checks"
-mv -f internal/grpc/checks build/backups/grpc/checks
-rm -rf internal/grpc/checks
+anyProtoChecksum="bcf5de6ce463b1a38ff76b77955aa7e580b4ec12af34a927b1d45c9efb0faf66"
+emptyProtoChecksum="ecef3d54cc9e079673b9816c67bac770f7f3bf6dada2d4596ba69d71daa971e6"
+
+mkdir -p proto/google/protobuf
+
+curl -s -o proto/google/protobuf/any.proto https://raw.githubusercontent.com/protocolbuffers/protobuf/a978b75794a6ce4547c9db08a115c458d9190934/src/google/protobuf/any.proto
+
+if test "$(sha256sum proto/google/protobuf/any.proto | cut -d' ' -f1)" != "$anyProtoChecksum"; then
+  echo "Checksum mismatch for proto/google/protobuf/any.proto" >&2
+  exit 1
+fi
+
+curl -s -o proto/google/protobuf/empty.proto https://raw.githubusercontent.com/protocolbuffers/protobuf/a978b75794a6ce4547c9db08a115c458d9190934/src/google/protobuf/empty.proto
+
+if test "$(sha256sum proto/google/protobuf/empty.proto | cut -d' ' -f1)" != "$emptyProtoChecksum"; then
+  echo "Checksum mismatch for proto/google/protobuf/empty.proto" >&2
+  exit 1
+fi
 
 protoc \
 --proto_path=proto \
@@ -51,7 +64,7 @@ protoc \
 --go_opt=paths=source_relative \
 --go-grpc_out=internal/grpc \
 --go-grpc_opt=paths=source_relative \
-proto/checks/checks.proto
+proto/sophrosyne/v0/*
 
 touch build/.protobufsentinel
 

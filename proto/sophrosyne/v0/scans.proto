@@ -1,0 +1,67 @@
+// Sophrosyne
+//   Copyright (C) 2024  Mads R. Havmand
+//
+// This program is free software: you can redistribute it and/or modify
+//   it under the terms of the GNU Affero General Public License as published by
+//   the Free Software Foundation, either version 3 of the License, or
+//   (at your option) any later version.
+//
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU Affero General Public License for more details.
+//
+//   You should have received a copy of the GNU Affero General Public License
+//   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+syntax = "proto3";
+
+package sophrosyne.v0;
+
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/madsrc/sophrosyne/internal/grpc/sophrosyne/v0";
+
+/**
+ * Service definition for ScanService.
+ * Defines an RPC method Scan that takes a ScanRequest and returns a ScanResponse.
+ */
+service ScanService {
+  rpc Scan (ScanRequest) returns (ScanResponse);
+}
+
+ /**
+ * Request message for Scan.
+ * profile is the name of the profile to use. If no profile is provided, the default profile will be used.
+ * text is the raw text to scan in UTF-8.
+ * image is the image to scan.
+ */
+message ScanRequest {
+  string profile = 1;
+  oneof kind {
+    string text = 2;
+    bytes image = 3;
+  }
+}
+
+/**
+ * Response message for Scan.
+ * result indicates that whether or not the scan found what it was looking for. For a scan that looks for toxicity, a true value indicates that the scan found toxic text.
+ * Checks is a list of the checks that were run, their individual results and any potential details.
+ */
+message ScanResponse {
+  bool result = 1;
+  repeated CheckResult checks = 2;
+}
+
+/**
+ * Result from an individual check.
+ * name is the name of the check.
+ * result indicates whether the check found what it was looking for.
+ * details indicates any potential details.
+ */
+message CheckResult {
+  string name = 1;
+  bool result = 2;
+  google.protobuf.Any details = 3;
+}

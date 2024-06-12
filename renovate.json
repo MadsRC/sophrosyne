@@ -18,6 +18,9 @@
     "helpers:pinGitHubActionDigests",
     ":pinDevDependencies"
   ],
+  "git-submodules": {
+    "enabled": true
+  },
   "gomod": {
     "enabled": true
   },

@@ -148,6 +148,14 @@ func (c *DatabaseCursor) LogValue() slog.Value {
 
 var errInvalidCursor = errors.New("invalid cursor")
 
+// DecodeDatabaseCursorWithOwner decodes a cursor string into a DatabaseCursor and verifies that the
+// ownerID matches.
+//
+// It is sugar around [DecodeDatabaseCursor] and carries with it the same caveats as
+// [DecodeDatabaseCursor] does.
+//
+// In addition to the possible errors returned by [DecodeDatabaseCursor], this function returns
+// an error if the ownerID does not match.
 func DecodeDatabaseCursorWithOwner(s string, ownerID string) (*DatabaseCursor, error) {
 	cursor, err := DecodeDatabaseCursor(s)
 	if err != nil {
@@ -159,6 +167,13 @@ func DecodeDatabaseCursorWithOwner(s string, ownerID string) (*DatabaseCursor, e
 	return cursor, nil
 }
 
+// DecodeDatabaseCursor decodes a cursor string into a DatabaseCursor.
+//
+// A database cursor is a base64 encoded string of the form:
+//
+//	<ownerID>::<lastReadPosition>
+//
+// The ownerID and lastReadPositions must be textual representations of an XID.
 func DecodeDatabaseCursor(s string) (*DatabaseCursor, error) {
 	b, err := base64.StdEncoding.DecodeString(s)
 	if err != nil {

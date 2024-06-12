@@ -18,16 +18,18 @@ package pgx
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/madsrc/sophrosyne"
-	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/madsrc/sophrosyne"
+	sophrosyne2 "github.com/madsrc/sophrosyne/internal/mocks"
 )
 
-// Verify that all fields from getUserDbReturn are correctly mapped to User
+// Verify that all fields from getUserDbReturn are correctly mapped to User.
 func TestGetUserDbReturn_ToUser_FieldMappingToUser(t *testing.T) {
 	now := time.Now()
 	deletedAt := now.Add(-24 * time.Hour)
@@ -67,7 +69,7 @@ func TestGetUserDbReturn_ToUser_FieldMappingToUser(t *testing.T) {
 	require.Equal(t, g.DeletedAt, user.DeletedAt)
 }
 
-// Test with a nil DeletedAt to ensure it is handled without errors
+// Test with a nil DeletedAt to ensure it is handled without errors.
 func TestGetUserDbReturn_ToUser_NilDeletedAtHandling(t *testing.T) {
 	now := time.Now()
 	g := getUserDbReturn{

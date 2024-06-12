@@ -18,6 +18,8 @@ package validator
 
 import (
 	"github.com/go-playground/validator/v10"
+
+	"github.com/madsrc/sophrosyne"
 )
 
 type Validator struct {
@@ -29,5 +31,11 @@ func NewValidator() *Validator {
 }
 
 func (v *Validator) Validate(i interface{}) error {
-	return v.v.Struct(i)
+	err := v.v.Struct(i)
+	if err != nil {
+		return &sophrosyne.ValidationError{
+			Detail: err.Error(),
+		}
+	}
+	return nil
 }

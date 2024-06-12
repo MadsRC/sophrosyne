@@ -21,6 +21,8 @@ package validator
 import (
 	"testing"
 
+	"github.com/madsrc/sophrosyne"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/require"
 )
@@ -123,7 +125,8 @@ func TestValidator_Validate(t *testing.T) {
 			err := v.Validate(tt.args.i)
 			if tt.wantErr {
 				require.Error(t, err)
-				require.ErrorAs(t, err, &validator.ValidationErrors{})
+				valErr := &sophrosyne.ValidationError{}
+				require.ErrorAs(t, err, &valErr)
 			} else {
 				require.NoError(t, err)
 			}
@@ -187,14 +190,26 @@ func TestMutualExclusivity_Two_Fields(t *testing.T) {
 			err := v.Validate(tt.args.i)
 			if tt.wantErr {
 				require.Error(t, err)
-				var ve validator.ValidationErrors
+				var ve *sophrosyne.ValidationError
 				require.ErrorAs(t, err, &ve)
-				require.Len(t, ve, 1)
-				require.Equal(t, "B", ve[0].Field())
-				require.Equal(t, tt.failedTag, ve[0].Tag())
 			} else {
 				require.NoError(t, err)
 			}
 		})
 	}
+}
+
+// Test that the validator fails validation if the field tag is required and the field is a nil pointer
+func TestValidate_RequiredPointerIsNil(t *testing.T) {
+	v := NewValidator()
+	type thing struct{}
+	type obj struct {
+		A *thing  `validate:"required"`
+		B *string `validate:"required"`
+	}
+	i := obj{}
+	err := v.Validate(i)
+	require.Error(t, err)
+	var ve *sophrosyne.ValidationError
+	require.ErrorAs(t, err, &ve)
 }
