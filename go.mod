@@ -3,7 +3,7 @@ module github.com/madsrc/sophrosyne
 go 1.22.4
 
 require (
-	github.com/cedar-policy/cedar-go v0.0.0-20240429205519-77c610b20627
+	github.com/cedar-policy/cedar-go v0.0.0-20240613132717-dc52df660b80
 	github.com/exaring/otelpgx v0.6.0
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/golang-migrate/migrate/v4 v4.17.1
