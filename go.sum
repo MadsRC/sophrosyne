@@ -47,6 +47,8 @@ github.com/exaring/otelpgx v0.5.4 h1:uytSs8A9/8tpnJ4J8jsusbRtNgP6Cn5npnffCxE2Unk
 github.com/exaring/otelpgx v0.5.4/go.mod h1:DuRveXIeRNz6VJrMTj2uCBFqiocMx4msCN1mIMmbZUI=
 github.com/exaring/otelpgx v0.6.0 h1:kxqxEi579Pw+pm1TJGI4LFbk+gcg1UwSqomS9PUTBcE=
 github.com/exaring/otelpgx v0.6.0/go.mod h1:DuRveXIeRNz6VJrMTj2uCBFqiocMx4msCN1mIMmbZUI=
+github.com/exaring/otelpgx v0.6.1 h1:oVm7H3obc7eXg0iXWk62wJTWprB2pHu6rYApHjqmCUs=
+github.com/exaring/otelpgx v0.6.1/go.mod h1:DuRveXIeRNz6VJrMTj2uCBFqiocMx4msCN1mIMmbZUI=
 github.com/felixge/httpsnoop v1.0.4 h1:NFTV2Zj1bL4mc9sqWACXbQFVBBg2W3GPvqp8/ESS2Wg=
 github.com/felixge/httpsnoop v1.0.4/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
 github.com/fsnotify/fsnotify v1.6.0 h1:n+5WquG0fcWoWp6xPWfHdbskMCQaFnG6PfBrh1Ky4HY=
