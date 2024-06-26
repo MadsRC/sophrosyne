@@ -4,7 +4,7 @@ go 1.22.4
 
 require (
 	github.com/cedar-policy/cedar-go v0.0.0-20240613132717-dc52df660b80
-	github.com/exaring/otelpgx v0.6.1
+	github.com/exaring/otelpgx v0.6.2
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/golang-migrate/migrate/v4 v4.17.1
 	github.com/jackc/pgx/v5 v5.6.0
