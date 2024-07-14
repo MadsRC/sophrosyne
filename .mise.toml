@@ -1,5 +1,5 @@
 [tools]
-go = "1.22.4"
+go = "1.22.5"
 watchexec = "latest"
 "go:github.com/golangci/golangci-lint/cmd/golangci-lint" = "1.58.1"
 "go:golang.org/x/tools/cmd/goimports" = "latest"
