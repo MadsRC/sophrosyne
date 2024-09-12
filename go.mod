@@ -17,16 +17,16 @@ require (
 	github.com/testcontainers/testcontainers-go v0.33.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.33.0
 	github.com/urfave/cli/v2 v2.27.4
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.54.0
-	go.opentelemetry.io/otel v1.29.0
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.55.0
+	go.opentelemetry.io/otel v1.30.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.29.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.29.0
 	go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v1.29.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.29.0
-	go.opentelemetry.io/otel/metric v1.29.0
+	go.opentelemetry.io/otel/metric v1.30.0
 	go.opentelemetry.io/otel/sdk v1.29.0
 	go.opentelemetry.io/otel/sdk/metric v1.29.0
-	go.opentelemetry.io/otel/trace v1.29.0
+	go.opentelemetry.io/otel/trace v1.30.0
 	google.golang.org/grpc v1.66.2
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v3 v3.0.1
