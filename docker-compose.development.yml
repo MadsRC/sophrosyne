@@ -1,7 +1,7 @@
 services:
 
   db:
-    image: postgres@sha256:fe4dbda1be91f4297f8037728ccb184568dbb201ea389fe915b965af1c5e87c0
+    image: postgres@sha256:5c33d748663e30fd18e3fbaaa3e177f91c23e5b3c6272c7f5ce80e8481fdcaf1
     restart: always
     # set shared memory limit when using docker-compose
     shm_size: 128mb
