@@ -27,5 +27,5 @@ jobs:
     container:
       image: returntocorp/semgrep@sha256:9db30dc32ec342e99160500801b0b975a77e78ad9293e23d988d8022d558b94b
     steps:
-    - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - run: semgrep ci
