@@ -9,7 +9,7 @@ protoc = "26.1"
 mockery = "2.43.1"
 protoc-gen-go = "1.34.1"
 protoc-gen-go-grpc = "1.3.0"
-node = "22.10.0"
+node = "22.11.0"
 "go:github.com/goreleaser/goreleaser" = "1.26.1"
 "go:golang.org/x/pkgsite/cmd/pkgsite" = "latest"
 
