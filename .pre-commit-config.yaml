@@ -4,7 +4,7 @@ repos:
     hooks:
       - id: gitleaks
   - repo: https://github.com/google/osv-scanner/
-    rev: v1.9.0 # v1.7.3
+    rev: v1.9.1 # v1.7.3
     hooks:
       - id: osv-scanner
         args: ["-r", "."]
