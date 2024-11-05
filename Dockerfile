@@ -1,4 +1,4 @@
-FROM --platform=$TARGETPLATFORM cgr.dev/chainguard/glibc-dynamic:latest@sha256:1cfd1bd060c8c46e60778f8e8aa3664e335a57e661e97a448a455454c128851e
+FROM --platform=$TARGETPLATFORM cgr.dev/chainguard/glibc-dynamic:latest@sha256:19daed59c01e09340015c20167092a4d51c397458949857585b946eb109f39b6
 USER nonroot
 COPY sophrosyne /usr/bin/sophrosyne
 ENTRYPOINT ["/usr/bin/sophrosyne"]
