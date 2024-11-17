@@ -1,6 +1,8 @@
 module github.com/madsrc/sophrosyne
 
-go 1.22.4
+go 1.22.7
+
+toolchain go1.23.3
 
 require (
 	github.com/cedar-policy/cedar-go v0.1.0
@@ -27,7 +29,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.32.0
 	go.opentelemetry.io/otel/sdk/metric v1.32.0
 	go.opentelemetry.io/otel/trace v1.32.0
-	google.golang.org/grpc v1.67.1
+	google.golang.org/grpc v1.68.0
 	google.golang.org/protobuf v1.35.2
 	gopkg.in/yaml.v3 v3.0.1
 )
