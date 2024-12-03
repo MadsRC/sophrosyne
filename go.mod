@@ -2,7 +2,7 @@ module github.com/madsrc/sophrosyne
 
 go 1.22.7
 
-toolchain go1.23.3
+toolchain go1.23.4
 
 require (
 	github.com/cedar-policy/cedar-go v0.1.0
