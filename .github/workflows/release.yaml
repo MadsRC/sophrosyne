@@ -33,7 +33,7 @@ jobs:
     - name: Get syft
       uses: anchore/sbom-action/download-syft@fc46e51fd3cb168ffb36c6d1915723c47db58abb # v0.17.7
     - name: Set up Go
-      uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5
+      uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5
       with:
         go-version-file: 'go.mod'
     - name: Run GoReleaser
