@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.23.3
 
 require (
-	github.com/cedar-policy/cedar-go v0.1.0
+	github.com/cedar-policy/cedar-go v0.4.0
 	github.com/exaring/otelpgx v0.7.0
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/golang-migrate/migrate/v4 v4.18.1
