@@ -25,6 +25,8 @@ github.com/cedar-policy/cedar-go v0.0.0-20240715162045-a71e93ee6ae7 h1:3WPOmm5kg
 github.com/cedar-policy/cedar-go v0.0.0-20240715162045-a71e93ee6ae7/go.mod h1:pEgiK479O5dJfzXnTguOMm+bCplzy5rEEFPGdZKPWz4=
 github.com/cedar-policy/cedar-go v0.1.0 h1:2tZwWn8tNO/896YAM7OQmH3vn98EeHEA3g9anwdVZvA=
 github.com/cedar-policy/cedar-go v0.1.0/go.mod h1:pEgiK479O5dJfzXnTguOMm+bCplzy5rEEFPGdZKPWz4=
+github.com/cedar-policy/cedar-go v0.4.0 h1:pC7/ThVmVrkMdS1b9zA2FPyx2a13NrMlBWcM48pNyho=
+github.com/cedar-policy/cedar-go v0.4.0/go.mod h1:pEgiK479O5dJfzXnTguOMm+bCplzy5rEEFPGdZKPWz4=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
 github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
 github.com/containerd/containerd v1.7.12 h1:+KQsnv4VnzyxWcfO9mlxxELaoztsDEjOuCMPAuPqgU0=
