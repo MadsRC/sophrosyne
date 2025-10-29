@@ -1,7 +1,7 @@
 [tools]
 go = "1.25.3"
 watchexec = "latest"
-"go:github.com/golangci/golangci-lint/cmd/golangci-lint" = "1.58.1"
+"go:github.com/golangci/golangci-lint/cmd/golangci-lint" = "1.64.8"
 "go:golang.org/x/tools/cmd/goimports" = "latest"
 "go:github.com/google/osv-scanner/cmd/osv-scanner" = "v1"
 "pipx:pre-commit" = "3.8.0"
