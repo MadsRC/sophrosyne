@@ -4,12 +4,12 @@ repos:
     hooks:
       - id: gitleaks
   - repo: https://github.com/google/osv-scanner/
-    rev: v1.9.2 # v1.7.3
+    rev: v2.2.4 # v1.7.3
     hooks:
       - id: osv-scanner
         args: ["-r", "."]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
         args: ['--maxkb=4000']
