@@ -39,8 +39,8 @@
       "matchDepTypes": [
         "action"
       ],
-      "matchSourceUrlPrefixes": [
-        "https://github.com/"
+      "matchSourceUrls": [
+        "https://github.com/{/,}**"
       ],
       "pinDigests": true,
       "prBodyColumns": [
